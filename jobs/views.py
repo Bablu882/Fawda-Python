@@ -267,3 +267,42 @@ class BookingJobMachine(APIView):
 #     else:
 #         # Return a 405 Method Not Allowed response for all other request methods
 #         return JsonResponse({'error': 'Method Not Allowed'}, status=405)
+import math
+
+def calculate_distance(lat1, lon1, lat2, lon2):
+    R = 6371  # Radius of the earth in km
+    dLat = math.radians(lat2 - lat1)
+    dLon = math.radians(lon2 - lon1)
+    a = math.sin(dLat/2) * math.sin(dLat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dLon/2) * math.sin(dLon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    distance = R * c  # Distance in km
+    return distance
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def get_job_posts(request):
+    sahayak = request.user
+    sahayak_profile = sahayak.profile
+    sahayak_lat = sahayak_profile.latitude
+    sahayak_lon = sahayak_profile.longitude
+    job_posts = JobSahayak.objects.filter(grahak=request.user,status='Pending')
+    result = []
+    for job_post in job_posts:
+        grahak_profile = job_post.grahak.profile
+        grahak_lat = grahak_profile.latitude
+        grahak_lon = grahak_profile.longitude
+        distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
+        if distance <= 5:
+            result.append({
+                'id': job_post.id,
+                'job_type': job_post.job_type,
+                'status': job_post.status,
+                'village': job_post.village,
+                'datetime': job_post.formatted_datetime(),
+                'description': job_post.description,
+                'distance': distance
+            })
+    return JsonResponse(result, safe=False)
