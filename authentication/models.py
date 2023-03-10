@@ -1,11 +1,11 @@
 from django.db import models
-
+from django.utils.text import slugify
 # Create your models here.
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
-from django.contrib.gis.db import models as mode
-from django.contrib.gis.geos import GEOSGeometry, fromstr
+# from django.contrib.gis.db import models as mode
+# from django.contrib.gis.geos import GEOSGeometry, fromstr
 
 
 # from django.contrib.gis.db import models as mode
@@ -66,9 +66,6 @@ class Profile(models.Model):
 
 ###-----------------------------------------------------------------------------------####
 
-
-from django.db import models
-from django.utils.text import slugify
 
 class State(models.Model):
     name = models.CharField(max_length=100)
