@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,12 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'django.contrib.gis',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',
     'jobs',
     'booking',
+    'payments',
     'rest_framework',
+    'rest_framework_simplejwt',
+    # 'rest_framework.authtoken',
+
 
 ]
 
@@ -90,8 +96,8 @@ WSGI_APPLICATION = 'fawda.wsgi.application'
 # }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'fawdatest',
+        'ENGINE': 'django.contrib.gis.db.backends.mysql',
+        'NAME': 'fawdatest3',
         'USER': 'root',
         'PASSWORD': 'XdQ6e2UIIxlzxhg',
         'HOST': 'localhost',
@@ -148,3 +154,33 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# JWT authentication settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1000),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=1000),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.TokenAuthentication',
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated', )
+# }
+
+AUTHENTICATION_BACKENDS = [
+    'authentication.views.MobileNoAuthBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# GDAL_LIBRARY_PATH = '/usr/lib/libgdal.so'

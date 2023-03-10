@@ -20,7 +20,7 @@
                     data: {
                         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                         datasets: [{
-                            label: 'Sales',
+                            label: 'Completed',
                             tension: 0.3,
                             fill: true,
                             backgroundColor: 'rgba(4, 209, 130, 0.2)',
@@ -37,7 +37,7 @@
                         //     data: [40, 20, 17, 9, 23, 35, 39, 30, 34, 25, 27, 17]
                         // },
                         {
-                            label: 'Products',
+                            label: 'Jobs',
                             tension: 0.3,
                             fill: true,
                             backgroundColor: 'rgba(380, 200, 230, 0.2)',

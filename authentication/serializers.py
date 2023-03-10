@@ -1,4 +1,4 @@
-from .models import User
+from .models import *
 from rest_framework import serializers
 import random
 from django.core.validators import RegexValidator
@@ -31,3 +31,8 @@ class DistrictSerializer(serializers.ModelSerializer):
     class Meta:
         model = District
         fields = ['id', 'name', 'state', 'slug']
+
+class ProfileSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=Profile
+        fields='__all__'
