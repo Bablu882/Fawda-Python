@@ -7,7 +7,7 @@ urlpatterns=[
     path('api/post_individuals/',BookingSahayakIndividuals.as_view()),
     path('api/post_machine/',BookingJobMachine.as_view()),
     # path('api/jobs/',JobSahayakWithin5km.as_view()),
-    # path('api/nearjob/',nearby_jobs),
+    path('api/nearjob/',get_job_posts),
     
 
 ]
