@@ -7,7 +7,20 @@ from django.views import View
 from datetime import datetime, date, timedelta
 from django.http import JsonResponse
 from rest_framework import viewsets
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+# from rest_framework.decorators import api_view, permission_classes
+from django.contrib.auth import authenticate,login
+from django.contrib.auth.backends import BaseBackend
+
+
+import random
+from rest_framework.permissions import AllowAny,IsAuthenticated
+# from twilio.rest import Client
+
 
 def test(request):
     return render(request,'authentication/test.html')
@@ -31,20 +44,136 @@ class Register(APIView):
             user.save()
             OTP.objects.create(otp=otp,user=user)
         return Response({'message':True,'OTP':otp})
-    
 
+def get_token(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'access_token': str(refresh.access_token),
+        'refresh_token': str(refresh),
+    }
+
+class RegisterApi(APIView):
+    permission_classes=[AllowAny,]
+    def post(self,request,format=None):
+        name=request.data.get('name')
+        gender=request.data.get('gender')
+        phone=request.data.get('phone')
+        mohalla=request.data.get('mohalla')
+        village=request.data.get('village')
+        status=request.data.get('status')
+        state=request.data.get('state')
+        district=request.data.get('district')
+        #check if user is exists or not 
+        if User.objects.filter(mobile_no=phone).exists():
+            return Response({'error':'User already exists'})
+        else:
+            otp=random.randint(100000, 999999)
+            user=User.objects.create(
+                username=phone,
+                mobile_no=phone,
+                status=status,
+                is_active=False,
+                is_verified=False,
+            )
+            profile=Profile.objects.create(
+                user=user,
+                name=name,
+                gender=gender,
+                mohalla=mohalla,
+                village=village,
+                state=state,
+                district=district
+            )
+            otps=OTP.objects.create(
+                otp=otp,
+                user=user
+            )
+            # tokens=get_token(user)
+            token= RefreshToken.for_user(user)
+            key=({
+            'refresh': str(token),
+            'access': str(token.access_token),
+             })
+            #send here otp to user mobile no.
+            # account_sid = 'your_account_sid'
+            # auth_token = 'your_auth_token'
+            # client = Client(account_sid, auth_token)
+
+            # # send OTP via SMS using Twilio
+            # message = client.messages.create(
+            #     body=f'Your OTP is: {otp}',
+            #     from_='your_twilio_phone_number',
+            #     to=mobile_no
+            # )
+
+            # # check if message was sent successfully
+            # if message.sid:
+            #     return Response({'message':True,'otp':otp})
+            # else:
+            #     return Response({'error': 'Failed to send OTP'})
+            return Response({'success':True,'otp':otps.otp,'token':key})
 
 class VerifyMobile(APIView):
-    def post(self,request,format=None):
-        serializers=MobileVerifySerializer(data=request.data)
-        if serializers.is_valid(raise_exception=True):
-            mobile=serializers.data.get('mobile_no')
-            if not User.objects.filter(mobile_no=mobile).exists():
-                return Response({'Message':'User not exist with this mobile_no','Status':False})
-            else:
-                return Response({'Message':'User exist with this mobile_no','Status':True})
+    def post(self, request, format=None):
+        otp_input = request.data.get('otp')
+        # get the user associated with the OTP
+        try:
+            otp = OTP.objects.get(otp=otp_input)
+            user = otp.user
+        except OTP.DoesNotExist:
+            return Response({'error': 'Invalid OTP'})
+        # mark user as verified and active
+        user.is_verified = True
+        user.is_active = True
+        user.save()
+        # delete the OTP
+        otp.delete()
+        return Response({'verified': True})
 
+class LoginApi(APIView):
+    permission_classes=[AllowAny,]
+    def post(self, request, *args, **kwargs):
+        phone = request.data.get('phone')
+        user = authenticate(request, mobile_no=phone)
+        if user is not None:
+            login(request, user)
+            otp=random.randint(100000, 999999)
+            otps=OTP.objects.create(
+                otp=otp,
+                user=user
+            )
+            refresh = RefreshToken.for_user(user)
+            tokens = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response({'success':True,'otp':otps.otp,'token':tokens})
+        return Response({'message':'User not registered','success': False})
+    
 
+class MobileNoAuthBackend(BaseBackend):
+    def authenticate(self, request, mobile_no=None):
+        try:
+            user = User.objects.get(mobile_no=mobile_no)
+            return user
+        except User.DoesNotExist:
+            return None
+
+    def get_user(self, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+            if user.is_active:
+                return user
+            return None
+        except User.DoesNotExist:
+            return None
+        
+from rest_framework.permissions import BasePermission
+
+class IsOwnerOrReadOnly(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.user == request.user or request.method in ['GET','POST','PUT', 'HEAD', 'OPTIONS']        
+###-------------------------------------------------------------------------------####
 class chartJsonListView(View):
     def get(self, *args, **kwargs):
         today = date.today()
@@ -87,6 +216,7 @@ class chartJsonListViewAdmin(View):
 
 
 class StateViewSet(viewsets.ModelViewSet):
+    permission_classes=[IsOwnerOrReadOnly,]
     queryset = State.objects.all()
     serializer_class = StateSerializer
     lookup_field = 'slug'
@@ -99,6 +229,14 @@ class StateViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class DistrictViewSet(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated,]
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
     lookup_field = 'slug'
+
+class ProfileApi(APIView):
+    permission_classes=[IsOwnerOrReadOnly]
+    def get(self,request,format=None):
+        profile=Profile.objects.get(user=request.user)
+        serializers=ProfileSerializers(profile)
+        return Response(serializers.data)
