@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.gis',
+    # 'django.contrib.gis',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'authentication',
@@ -183,4 +183,3 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# GDAL_LIBRARY_PATH = '/usr/lib/libgdal.so'
