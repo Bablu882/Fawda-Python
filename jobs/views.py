@@ -97,14 +97,13 @@ class BookingJobMachine(APIView):
             serializers=JobMachineSerializers(data=request.data)
             if serializers.is_valid(raise_exception=True):
                 landprepare=serializers.data.get('landpreparation')
-                print(landprepare)
                 harvesting=serializers.data.get('harvesting')
                 sowing=serializers.data.get('sowing')
                 others=serializers.data.get('others')
                 datetime=serializers.data.get('datetime')
                 landarea=serializers.data.get('land_area')
                 landtype=serializers.data.get('land_type')
-                amount=serializers.data.get('total_amount')
+                amount=serializers.data.get('total_amount_machine')
                 grahak=request.user
                 if landprepare is not None and harvesting is not None and sowing is not None:
                     lnd=LandPreparation.objects.get(name=landprepare)
@@ -120,7 +119,7 @@ class BookingJobMachine(APIView):
                     datetime=datetime,
                     land_area=landarea,
                     land_type=landtype,
-                    total_amount=amount,
+                    total_amount_machine=amount,
                     grahak=grahak,
 
                 )
@@ -134,7 +133,7 @@ class BookingJobMachine(APIView):
                     datetime=datetime,
                     land_area=landarea,
                     land_type=landtype,
-                    total_amount=amount,
+                    total_amount_machine=amount,
                     grahak=grahak,
                 )
                 serial=GetJobMachineSerializer(job)    
@@ -322,7 +321,7 @@ class GetAllJob(APIView):
 class Requestuser(APIView):
     def get(self,request):
         user=request.user
-        return Response({'user':user.mobile_no})
+        return Response({'user':user.mobile_no,'status':user.status})
     
 
 

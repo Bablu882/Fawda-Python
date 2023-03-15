@@ -138,6 +138,8 @@ class LoginApi(APIView):
     permission_classes=[AllowAny,]
     def post(self, request, *args, **kwargs):
         phone = request.data.get('phone')
+        if not phone:
+            return Response({'error':'enter valid phone number !'})
         user = authenticate(request, mobile_no=phone)
         if user is not None:
             login(request, user)

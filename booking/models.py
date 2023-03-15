@@ -22,6 +22,7 @@ class JobBooking(models.Model):
     total_amount=models.CharField(max_length=100,null=True,blank=True)
     total_amount_sahayak=models.CharField(max_length=100,null=True,blank=True)
     total_amount_theka=models.CharField(max_length=100,null=True,blank=True)
+    total_amount_machine=models.CharField(max_length=100,null=True,blank=True)
     payment_your=models.CharField(max_length=100,null=True,blank=True)
 
 

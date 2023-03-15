@@ -11,17 +11,25 @@ from rest_framework.permissions import IsAuthenticated
 class JobAcceptMachin(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
-        job_id=request.data.get(job_id)
-        machin_user=request.user
+        if request.user.status == 'MachineMalik':
+            job_id=request.data.get('job_id')
+            machin_user=request.user
         #check job is exist or not 
-        if not JobMachine.objects.filter(pk=job_id).exists():
-            return Response({'error':'job not exists !'})
-        job=JobBooking.objects.create(jobmachine=job_id,booking_user=machin_user,status='Accepted')
-        get_job=JobMachine.objects.get(pk=job_id)
-        get_job.status= 'Accepted'
-        get_job.save()
-        return Response({'Success':'Job accepted !'})
-        
+            try:
+                job = JobMachine.objects.get(pk=job_id)
+            except JobMachine.DoesNotExist:
+                return Response({'error': 'Job does not exist !'})
+            if JobBooking.objects.filter(jobmachine=job, booking_user=machin_user).exists():
+                return Response({'error': 'Job is already accepted !'})
+            booking=JobBooking.objects.create(jobmachine=job,booking_user=machin_user,status='Accepted')
+            update_booking_amount_machine(booking)
+            get_job=JobMachine.objects.get(pk=job_id)
+            get_job.status= 'Accepted'
+            get_job.save()
+            serial=JobBookingSerializers(booking)
+            return Response({'Success':'Job accepted !','data':serial.data})
+        else:
+            return Response({'error':'you are not MachineMalik'})    
          
 class JobAcceptedSahayakTheka(APIView):
     permission_classes=[IsAuthenticated,]
@@ -136,6 +144,20 @@ def update_booking_amounts(booking):
         booking.total_amount = str(total_amount)
         booking.payment_your = str(payment_your)
         booking.total_amount_theka = str(total_amount_without_fawda)
-        # booking.fawda_fee_percentage = booking.fawda_fee_percentage  # update the original field value without percentage symbol
+        # booking.fawda_fee_percentage = booking.fawda_fee_percentage  # update the original field value without percentage symbol 
     booking.save()    
 
+def update_booking_amount_machine(booking):
+    job_machine=booking.jobmachine
+    total_amount_machine = int(job_machine.total_amount_machine) if job_machine.total_amount_machine else 0
+    fawda_fee_percentage_str = job_machine.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
+    fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+    total_amount_without_fawda = total_amount_machine
+    fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
+    total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+    payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+    # booking.fawda_fee = str(fawda_fee_percentage)
+    booking.total_amount = str(total_amount)
+    booking.payment_your = str(payment_your)
+    booking.total_amount_machine = str(total_amount_without_fawda)   
+    booking.save()
