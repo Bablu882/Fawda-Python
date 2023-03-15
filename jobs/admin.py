@@ -6,4 +6,5 @@ admin.site.register(JobMachine)
 admin.site.register(LandPreparation)
 admin.site.register(Harvesting)
 admin.site.register(Sowing)
+admin.site.register(FawdaFee)
 

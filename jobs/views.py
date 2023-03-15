@@ -17,14 +17,14 @@ class BookingThekePeKam(APIView):
                 description=serializers.data.get('description')
                 landtype=serializers.data.get('land_type')
                 landarea=serializers.data.get('land_area')
-                amount=serializers.data.get('total_amount')
+                amount=serializers.data.get('total_amount_theka')
                 grahak=request.user
                 existing_job = JobSahayak.objects.filter(
                     datetime=datetime,
                     description=description,
                     land_area=landarea,
                     land_type=landtype,
-                    total_amount=amount,
+                    total_amount_theka=amount,
                     job_type='theke_pe_kam',
                     grahak=grahak
                 ).first()
@@ -35,7 +35,7 @@ class BookingThekePeKam(APIView):
                     description=description,
                     land_area=landarea,
                     land_type=landtype,
-                    total_amount=amount,
+                    total_amount_theka=amount,
                     job_type='theke_pe_kam',
                     grahak=grahak
                 )
@@ -46,59 +46,49 @@ class BookingThekePeKam(APIView):
 
 class BookingSahayakIndividuals(APIView):
     permission_classes=[IsAuthenticated,]
-    def post(self,request,format=None):
+    def post(self, request, format=None):
         if request.user.status == 'Grahak':
-            serializers=PostJobIndividualSerializer(data=request.data) 
-            if serializers.is_valid(raise_exception=True):
-                datetime=serializers.data.get('datetime')
-                description=serializers.data.get('description')
-                landtype=serializers.data.get('land_type')
-                landarea=serializers.data.get('land_area')
-                countmale=int(serializers.data.get('count_male'))
-                countfemale=int(serializers.data.get('count_female'))
-                payformale=int(serializers.data.get('pay_amount_male'))
-                payforfemale=int(serializers.data.get('pay_amount_female'))
-                noofdays=int(serializers.data.get('num_days'))
-                grahak=request.user
-
-                # Check if variables are not None
-                if countmale is None or payformale is None or countfemale is None or payforfemale is None or noofdays is None:
-                    return Response({'error':'One or more variables are None'})
-                # total_amount=(countmale*payformale+countfemale*payforfemale)*noofdays
-                existing_job=JobSahayak.objects.filter(
-                    datetime=datetime,
-                    description=description,
-                    land_type=landtype,
-                    land_area=landarea,
-                    count_male=countmale,
-                    count_female=countfemale,
-                    pay_amount_male=payformale,
-                    pay_amount_female=payforfemale,
-                    num_days=noofdays,
-                    # total_amount=total_amount,
+            serializer = PostJobIndividualSerializer(data=request.data) 
+            if serializer.is_valid(raise_exception=True):
+                data = serializer.validated_data
+                # check if a job with the same details already exists
+                existing_jobs = JobSahayak.objects.filter(
+                    grahak=request.user,
                     job_type='individuals_sahayak',
-                    grahak=grahak
-                ).first()
-                if existing_job:
-                    return Response({'error':'Job already exist !'})
-                job=JobSahayak.objects.create(
-                    datetime=datetime,
-                    description=description,
-                    land_type=landtype,
-                    land_area=landarea,
-                    count_male=countmale,
-                    count_female=countfemale,
-                    pay_amount_male=payformale,
-                    pay_amount_female=payforfemale,
-                    num_days=noofdays,
-                    # total_amount=total_amount,
-                    job_type='individuals_sahayak',
-                    grahak=grahak
+                    datetime=data['datetime'],
+                    description=data['description'],
+                    land_type=data['land_type'],
+                    land_area=data['land_area'],
+                    count_male=data['count_male'],
+                    count_female=data['count_female'],
+                    pay_amount_male=data['pay_amount_male'],
+                    pay_amount_female=data['pay_amount_female'],
+                    num_days=data['num_days'],
+                    # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
+                if existing_jobs.exists():
+                    return Response({'status': 'error', 'message': 'A job with the same details already exists.'})
+                
+                # create a new job if it doesn't already exist
+                job = JobSahayak(
+                    grahak=request.user,
+                    job_type='individuals_sahayak',
+                    datetime=data['datetime'],
+                    description=data['description'],
+                    land_type=data['land_type'],
+                    land_area=data['land_area'],
+                    count_male=data['count_male'],
+                    count_female=data['count_female'],
+                    pay_amount_male=data['pay_amount_male'],
+                    pay_amount_female=data['pay_amount_female'],
+                    num_days=data['num_days'],
+                    # fawda_fee_percentage=data['fawda_fee_percentage']
+                )
+                job.save()
                 serial=GetJobIndividualsSerializer(job)
-                return Response({'success':'job created !','data':serial.data})
-        else:
-            return Response({'error':'You are not Grahak'})
+                return Response({'status': 'success','data':serial.data})
+        return Response({'status': 'error'})
+
         
 class BookingJobMachine(APIView):
     permission_classes=[IsAuthenticated,]
@@ -282,27 +272,72 @@ def calculate_distance(lat1, lon1, lat2, lon2):
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-@csrf_exempt
-def get_job_posts(request):
-    sahayak = request.user
-    sahayak_profile = sahayak.profile
-    sahayak_lat = sahayak_profile.latitude
-    sahayak_lon = sahayak_profile.longitude
-    job_posts = JobSahayak.objects.filter(grahak=request.user,status='Pending')
-    result = []
-    for job_post in job_posts:
-        grahak_profile = job_post.grahak.profile
-        grahak_lat = grahak_profile.latitude
-        grahak_lon = grahak_profile.longitude
-        distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
-        if distance <= 5:
-            result.append({
-                'id': job_post.id,
-                'job_type': job_post.job_type,
-                'status': job_post.status,
-                'village': job_post.village,
-                'datetime': job_post.formatted_datetime(),
-                'description': job_post.description,
-                'distance': distance
-            })
-    return JsonResponse(result, safe=False)
+class GetAllJob(APIView):
+    permission_classes=[IsAuthenticated,]
+    # @csrf_exempt
+    def get(self,request,format=None):
+        result = []
+        sahayak = request.user
+        sahayak_profile = sahayak.profile
+        sahayak_lat = sahayak_profile.latitude
+        sahayak_lon = sahayak_profile.longitude
+        if sahayak.status == 'Sahayak':
+            job_posts = JobSahayak.objects.all().filter(status='Pending')
+            for job_post in job_posts:
+                grahak_profile = job_post.grahak.profile
+                grahak_lat = grahak_profile.latitude
+                grahak_lon = grahak_profile.longitude
+                # print(grahak_lat,grahak_lon)
+                distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
+                print(distance)
+                if distance <= 5:
+                    serial=GetJobIndividualsSerializer(job_post)
+                    result.append(serial.data)
+        elif sahayak.status == 'MachineMalik':
+            job_posts_machin=JobMachine.objects.all().filter(status='Pending')
+            for job_post in job_posts_machin:
+                grahak_profile = job_post.grahak.profile
+                # print(grahak_profile)
+                grahak_lat = grahak_profile.latitude
+                grahak_lon = grahak_profile.longitude
+                distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
+                # print(distance)
+                if distance <= 10:
+                    serial=GetJobMachineSerializer(job_post)
+                    result.append(serial.data)        
+        else:
+            return Response({'error':'You are not Sahayak or MachinMalik'})            
+        return Response(result)
+
+
+
+
+
+
+
+
+
+
+###--------------------------------------------------------------------------------####
+class Requestuser(APIView):
+    def get(self,request):
+        user=request.user
+        return Response({'user':user.mobile_no})
+    
+
+
+
+
+
+
+
+
+# result.append({
+            #     'id': job_post.id,
+            #     'job_type': job_post.job_type,
+            #     'status': job_post.status,
+            #     'village': job_post.village,
+            #     'datetime': job_post.formatted_datetime(),
+            #     'description': job_post.description,
+            #     'distance': distance
+            # })
