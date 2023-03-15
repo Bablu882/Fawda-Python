@@ -28,22 +28,22 @@ def test(request):
 
 # Create your views here.
 # @csrf_exempt
-class Register(APIView):
-
-    def post(self,request,format=None):
-        seraializer=RegisterSerializer(data=request.data)
-        if seraializer.is_valid(raise_exception=True):
-            mobile_no=seraializer.data.get('mobile_no')
-            if User.objects.filter(mobile_no=mobile_no).exists():
-                return Response({'error': 'Mobile number already exists'})
-            # generate OTP
-            otp = random.randint(1000, 9999)
-            # save user
-            user = User.objects.create_user(username=mobile_no, mobile_no=mobile_no, is_verified=False, is_active=False, status='Grahak')
-            user.set_password(mobile_no)
-            user.save()
-            OTP.objects.create(otp=otp,user=user)
-        return Response({'message':True,'OTP':otp})
+# class Register(APIView):
+     
+#     def post(self,request,format=None):
+#         seraializer=RegisterSerializer(data=request.data)
+#         if seraializer.is_valid(raise_exception=True):
+#             mobile_no=seraializer.data.get('mobile_no')
+#             if User.objects.filter(mobile_no=mobile_no).exists():
+#                 return Response({'error': 'Mobile number already exists'})
+#             # generate OTP
+#             otp = random.randint(1000, 9999)
+#             # save user
+#             user = User.objects.create_user(username=mobile_no, mobile_no=mobile_no, is_verified=False, is_active=False, status='Grahak')
+#             user.set_password(mobile_no)
+#             user.save()
+#             OTP.objects.create(otp=otp,user=user)
+#         return Response({'message':True,'OTP':otp})
 
 def get_token(user):
     refresh = RefreshToken.for_user(user)
@@ -117,13 +117,13 @@ class RegisterApi(APIView):
             return Response({'success':True,'otp':otps.otp,'token':key})
 
 class VerifyMobile(APIView):
-    permission_classes=[IsAuthenticated,]
+    permission_classes=[AllowAny,]
     def post(self, request, format=None):
         otp_input = request.data.get('otp')
         # get the user associated with the OTP
         try:
             otp = OTP.objects.get(otp=otp_input)
-            user = otp.user
+            user =otp.user
         except OTP.DoesNotExist:
             return Response({'error': 'Invalid OTP'})
         # mark user as verified and active
