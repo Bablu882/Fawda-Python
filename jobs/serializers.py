@@ -50,7 +50,7 @@ class JobMachineSerializers(serializers.ModelSerializer):
             'datetime',
             'land_area',
             'land_type',
-            'total_amount',    
+            'total_amount_machine',    
         ]
 class GetJobMachineSerializer(serializers.ModelSerializer):
     class Meta:

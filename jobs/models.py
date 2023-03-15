@@ -135,8 +135,9 @@ class JobMachine(models.Model):
     land_area=models.CharField(max_length=100,null=True,blank=True)
     total_amount=models.CharField(max_length=100, blank=True, null=True)
     fawda_fee=models.CharField(max_length=100,blank=True,null=True)
-    fawda_fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
-    amount=models.CharField(max_length=100, blank=True, null=True)
+    fawda_fee_percentage = models.ForeignKey(FawdaFee, on_delete=models.CASCADE, null=True, blank=True, default=1)
+    total_amount_machine=models.CharField(max_length=100, blank=True, null=True)
+    payment_your=models.CharField(max_length=100,blank=True,null=True)
     landpreparation=models.ForeignKey(LandPreparation,on_delete=models.CASCADE)
     harvesting=models.ForeignKey(Harvesting,on_delete=models.CASCADE)
     sowing=models.ForeignKey(Sowing,on_delete=models.CASCADE)
@@ -146,6 +147,22 @@ class JobMachine(models.Model):
     
     def formatted_datetime(self):
         return self.datetime.strftime('%I:%M %p')
+    
+    def save(self, *args, **kwargs):
+        if self.job_type == 'machin_malik':
+            total_amount_machine = int(self.total_amount_machine) if self.total_amount_machine else 0
+            fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
+            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+            total_amount_without_fawda = total_amount_machine
+            fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
+            total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+            payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+            self.fawda_fee = str(fawda_fee_percentage)
+            self.total_amount = str(total_amount)
+            self.payment_your = str(payment_your)
+            self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
+            super(JobMachine, self).save(*args, **kwargs)
+
 
 
 
