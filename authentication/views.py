@@ -63,6 +63,9 @@ class RegisterApi(APIView):
         status=request.data.get('status')
         state=request.data.get('state')
         district=request.data.get('district')
+
+        if not name or not gender or not phone or not mohalla or not village or not status or not state or not district:
+            return Response({'error':'all fields are required !'})
         #check if user is exists or not 
         if User.objects.filter(mobile_no=phone).exists():
             return Response({'error':'User already exists'})
@@ -114,6 +117,7 @@ class RegisterApi(APIView):
             return Response({'success':True,'otp':otps.otp,'token':key})
 
 class VerifyMobile(APIView):
+    permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
         otp_input = request.data.get('otp')
         # get the user associated with the OTP
@@ -142,6 +146,7 @@ class LoginApi(APIView):
                 otp=otp,
                 user=user
             )
+            #send here OTP to mobile no.for varification
             refresh = RefreshToken.for_user(user)
             tokens = {
                 'refresh': str(refresh),

@@ -8,7 +8,7 @@ class PostJobThekePeKamSerializer(serializers.ModelSerializer):
                 'description',
                 'land_area',
                 'land_type',
-                'total_amount'
+                'total_amount_theka'
                 ]
 class GetJobThekePeKamSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,6 +27,7 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
                 'pay_amount_male',
                 'pay_amount_female',
                 'num_days',
+                # 'fawda_fee_percentage'
                 # 'total_amount'
                 ]
 class GetJobIndividualsSerializer(serializers.ModelSerializer):

@@ -88,16 +88,28 @@ WSGI_APPLICATION = 'fawda.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.contrib.gis.db.backends.mysql',
-#         'NAME': 'fawdatest3',
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.mysql',
+         'NAME': 'demoserver_fawda',
+         'USER': 'demoserver',
+         'PASSWORD': 'oT7cZIle[iRyhxkq',
+         'HOST': 'localhost',
+         'PORT': '3306',
+     }
+ }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'fawdatest6',
 #         'USER': 'root',
 #         'PASSWORD': 'XdQ6e2UIIxlzxhg',
 #         'HOST': 'localhost',

@@ -49,6 +49,7 @@ class Profile(models.Model):
     district=models.CharField(max_length=50,null=True,blank=True)
     latitude = models.DecimalField(max_digits=50, decimal_places=6, blank=True, null=True)
     longitude = models.DecimalField(max_digits=50, decimal_places=6, blank=True, null=True)
+    is_accepted=models.BooleanField(default=False)
     # geo_location = mode.PointField(null=True) # New field
 
     # def create_geo_location(self):

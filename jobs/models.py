@@ -15,6 +15,8 @@ class Sowing(models.Model):
     name=models.CharField(max_length=500,null=True,blank=True)
     def __str__(self):
         return self.name    
+class FawdaFee(models.Model):
+    fawda_fee_percentage = models.CharField(max_length=100,default='2.5%')
 
 class JobSahayak(models.Model):
     STATUS_TYPE_CHOICES = (
@@ -34,13 +36,17 @@ class JobSahayak(models.Model):
     village = models.CharField(max_length=100)
     date = models.DateTimeField(auto_now_add=True)
     datetime= models.DateTimeField() 
-    payment_amount = models.CharField(max_length=100,blank=True,null=True)
+    payment_your = models.CharField(max_length=100,blank=True,null=True)
+    fawda_fee=models.CharField(max_length=100,blank=True,null=True)
     description = models.TextField(blank=True)
+    fawda_fee_percentage = models.ForeignKey(FawdaFee, on_delete=models.CASCADE, null=True, blank=True, default=1)
     count_male=models.CharField(max_length=100,blank=True,null=True)
     count_female=models.CharField(max_length=100,blank=True,null=True)
     pay_amount_male = models.CharField(max_length=100, blank=True, null=True)
     pay_amount_female = models.CharField(max_length=100, blank=True, null=True)
     total_amount=models.CharField(max_length=100, blank=True, null=True)
+    total_amount_sahayak=models.CharField(max_length=100,null=True,blank=True)
+    total_amount_theka=models.CharField(max_length=100,null=True,blank=True)
     num_days = models.CharField(max_length=100,blank=True, null=True)
     land_area=models.CharField(max_length=100,null=True,blank=True)
     LAND_TYPE=(
@@ -65,8 +71,45 @@ class JobSahayak(models.Model):
             pay_amount_male = int(self.pay_amount_male) if self.pay_amount_male else 0
             pay_amount_female = int(self.pay_amount_female) if self.pay_amount_female else 0
             num_days = int(self.num_days) if self.num_days else 0
-            self.total_amount = str((count_male * pay_amount_male + count_female * pay_amount_female) * num_days)
-        super().save(*args, **kwargs)
+            
+            # Extract the percentage value from fawda_fee_percentage field
+            fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
+            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+
+            # calculate total amount without fawda_fee
+            total_amount_without_fawda = (count_male * pay_amount_male + count_female * pay_amount_female) * num_days
+            
+            # calculate fawda_fee amount
+            fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
+            
+            # calculate total amount with fawda_fee
+            total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+            
+            # calculate payment_your amount
+            payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+            
+            # update the model fields
+            self.fawda_fee = str(fawda_fee_percentage)
+            self.total_amount = str(total_amount)
+            self.payment_your = str(payment_your)
+            self.total_amount_sahayak=str(total_amount_without_fawda)
+            self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
+        if self.job_type == 'theke_pe_kam':
+            total_amount_theka = int(self.total_amount_theka) if self.total_amount_theka else 0
+            fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
+            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+            total_amount_without_fawda = total_amount_theka
+            fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
+            total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+            payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+            self.fawda_fee = str(fawda_fee_percentage)
+            self.total_amount = str(total_amount)
+            self.payment_your = str(payment_your)
+            self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
+        super(JobSahayak, self).save(*args, **kwargs)
+
+
+
 
 
 class JobMachine(models.Model):
@@ -87,9 +130,12 @@ class JobMachine(models.Model):
     datetime= models.DateTimeField() 
     description=models.TextField(blank=True)
     land_type=models.CharField(max_length=10,choices=LAND_TYPE_CHOICES)
+    job_type=models.CharField(max_length=20,default='machin_malik')
     status=models.CharField(max_length=20,choices=STATUS_TYPE_CHOICES,default='Pending')
     land_area=models.CharField(max_length=100,null=True,blank=True)
     total_amount=models.CharField(max_length=100, blank=True, null=True)
+    fawda_fee=models.CharField(max_length=100,blank=True,null=True)
+    fawda_fee_percentage = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     amount=models.CharField(max_length=100, blank=True, null=True)
     landpreparation=models.ForeignKey(LandPreparation,on_delete=models.CASCADE)
     harvesting=models.ForeignKey(Harvesting,on_delete=models.CASCADE)
