@@ -89,7 +89,7 @@ class JobSahayak(models.Model):
             payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
             
             # update the model fields
-            self.fawda_fee = str(fawda_fee_percentage)
+            self.fawda_fee = str(fawda_fee_amount)
             self.total_amount = str(total_amount)
             self.payment_your = str(payment_your)
             self.total_amount_sahayak=str(total_amount_without_fawda)
@@ -102,7 +102,7 @@ class JobSahayak(models.Model):
             fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
             payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
-            self.fawda_fee = str(fawda_fee_percentage)
+            self.fawda_fee = str(fawda_fee_amount)
             self.total_amount = str(total_amount)
             self.payment_your = str(payment_your)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
@@ -157,7 +157,7 @@ class JobMachine(models.Model):
             fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
             payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
-            self.fawda_fee = str(fawda_fee_percentage)
+            self.fawda_fee = str(fawda_fee_amount)
             self.total_amount = str(total_amount)
             self.payment_your = str(payment_your)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol

@@ -9,6 +9,8 @@ urlpatterns=[
     # path('api/jobs/',JobSahayakWithin5km.as_view()),
     path('api/nearjob/',GetAllJob.as_view()),
     path('api/user/',Requestuser.as_view()),
+    path('api/sahayak_job_details/',GetSahayakJobDetails.as_view()),
+    path('api/machine_job_details/',GetMachineJobDetails.as_view()),
     
 
 ]
