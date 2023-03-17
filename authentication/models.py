@@ -62,7 +62,7 @@ class Profile(models.Model):
     #         self.create_geo_location()
 
     def __str__(self):
-        return self.name
+        return self.user.mobile_no
 
 
 ###-----------------------------------------------------------------------------------####
