@@ -12,12 +12,35 @@
 {% block bodyclass %}{{ block.super }} dashboard{% endblock %}
 {% if not is_popup %}
 {% block breadcrumbs %}
+<style>
+  .small-box h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+.small-box .inner p {
+    font-size: 12px;
+    margin-bottom: 0px;
+    color: #fff;
+}
+.small-box .icon>i.ion {
+    top: unset;
+    bottom: 0;
+    font-size: 40px;
+}
+.content-wrapper{
+  min-height: auto !important;
+}
+.myTable th{
+  white-space: nowrap;
+}
+</style>
 <div class="row mb-2">
     <div class="col-sm-6">
         <h2>{{site_info.site_name}} Fawda Administration</h2>
     </div>
     <div class="col-sm-8">
-        <ol class="breadcrumb float-sm-right">
+        <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
             <!-- {% for app in app_list %}
             <li class="breadcrumb-item active">{{ app.name }}</li>
@@ -32,13 +55,13 @@
 {% block content %}
 <div id="content-main" class="container-fluid">
     	<div class="row">
-            <div class="col-lg-3 col-6">
+            <div class="col">
                 <!-- small box -->
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h3>40</h3>
-    
-                    <p>Pending Jobs</p>
+                    <h4>Revinue</h4>
+                    <p>Total:100</p>
+                    <p>Today:05</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-bag"></i>
@@ -47,28 +70,30 @@
                 </div>
               </div>
               <!-- ./col -->
-              <div class="col-lg-3 col-6">
+              <div class="col">
                 <!-- small box -->
                 <div class="small-box bg-success">
                   <div class="inner">
-                    <h3>30</h3>
-    
-                    <p>All Booked</p>
+                    <h4>Grahak Registration</h4>
+                    <p>Total:100</p>
+                    <p>Today:05</p>
+
                   </div>
                   <div class="icon">
-                    <i class="ion ion-stats-bars"></i>
+                    <i class="ion ion-person-add"></i>
                   </div>
                  
                 </div>
               </div>
               <!-- ./col -->
-              <div class="col-lg-3 col-6">
+              <div class="col">
                 <!-- small box -->
                 <div class="small-box bg-warning">
                   <div class="inner">
-                    <h3>100</h3>
+                    <h4>Sahayak Registration</h4>
     
-                    <p>User Registration</p>
+                    <p>Total:100</p>
+                    <p>Today:05</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-person-add"></i>
@@ -77,13 +102,30 @@
                 </div>
               </div>
               <!-- ./col -->
-              <div class="col-lg-3 col-6">
+              <div class="col">
                 <!-- small box -->
                 <div class="small-box bg-danger">
                   <div class="inner">
-                    <h3>80</h3>
+                    <h4>Machine Registration</h4>
     
-                    <p>All Jobs</p>
+                    <p>Total:100</p>
+                    <p>Today:05</p>
+                  </div>
+                  <div class="icon">
+                    <i class="ion ion-person-add"></i>
+                  </div>
+               
+                </div>
+              </div>
+
+              <div class="col">
+                <!-- small box -->
+                <div class="small-box bg-danger">
+                  <div class="inner">
+                    <h4>Job Booking</h4>
+    
+                    <p>Total:100</p>
+                    <p>Today:05</p>
                   </div>
                   <div class="icon">
                     <i class="ion ion-pie-graph"></i>
@@ -97,13 +139,48 @@
        <!-- chart -->
         <div class="row">
             <div class="col-xl-12 col-lg-12">
-                <div class="card mb-4">
-                    <article class="card-body">
-                        <h5 class="card-title">Job statistics</h5>
-                        <canvas id="myChart" height="355" width="890" style="display: block; box-sizing: border-box; height: 284px; width: 712.4px;"></canvas>
-                    </article>
-                </div>
-                
+              <h4>Filter with status</h4>
+              <select class="form-control w-auto my-3">
+                <option value="1">Filter One</option>
+                <option value="2">Filter two</option>
+                <option value="3">Filter three</option>
+                <option value="4">Filter four</option>
+                <option value="5">Filter five</option>
+              </select>
+              <div class="table-responsive">
+                <table class="table table-bordered table-striped myTable">
+                  <thead>
+                      <tr>
+                        <th scope="col">Sr. No</th>
+                        <th scope="col">Job Number</th>
+                        <th scope="col">Job Type</th>
+                        <th scope="col">Job Posting Date</th>
+                        <th scope="col">Job Booking Date</th>
+                        <th scope="col">Job Details</th>
+                        <th scope="col">Job Status</th>
+                        <th scope="col">Payment to Service Provider</th>
+                        <th scope="col">Mobile No. for Payment</th>
+                        <th scope="col">Payment Status</th>
+  
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <th scope="row">1</th>
+                        <td>T-123456</td>
+                        <td>Theke par kaam</td>
+                        <td>25/02/2023</td>
+                        <td>15/03/2023</td>
+                        <td><button class="btn btn-primary">Details</button></td>
+                        <td><button class="btn btn-primary">Pending</button></td>
+                        <td>1000</td>
+                        <td>1234567890</td>
+                        <td>PAID</td>
+                      </tr>
+                    </tbody>
+                    
+                </table>
+              </div>
             </div>
    
        
