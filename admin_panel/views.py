@@ -3,6 +3,7 @@ from authentication.models import User
 from booking.models import JobBooking
 from django.http import JsonResponse
 from jobs.models import JobMachine,JobSahayak
+from rest_framework.response import Response
 
 # Create your views here.
 # def job_booking_list(request):
@@ -190,4 +191,4 @@ class JobDetailsAdmin(APIView):
 
                     })    
 
-        return JsonResponse({'data': data})
+        return Response({'data': data})
