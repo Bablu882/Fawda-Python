@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'payments',
     'rest_framework',
     'rest_framework_simplejwt',
-    # 'rest_framework.authtoken',
+    'admin_panel'
 
 
 ]
@@ -77,6 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'admin_panel.context_processors.registration_status',
             ],
         },
     },

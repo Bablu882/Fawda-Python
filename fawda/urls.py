@@ -22,4 +22,5 @@ urlpatterns = [
     path('',include('jobs.urls')),
     path('',include('booking.urls')),
     path('',include('payments.urls')),
+    path('',include('admin_panel.urls')),
 ]

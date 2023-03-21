@@ -60,3 +60,18 @@ class JobSahaykSerialiser(serializers.ModelSerializer):
     class Meta:
         model=JobSahayak
         fields='__all__'        
+
+class HarvestingSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=Harvesting
+        fields='__all__'        
+
+class LandSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=LandPreparation
+        fields='__all__'  
+
+class SowingSerializers(serializers.ModelSerializer):
+    class Meta:
+        model=Sowing
+        fields='__all__'  
