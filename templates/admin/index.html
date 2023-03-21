@@ -59,9 +59,11 @@
                 <!-- small box -->
                 <div class="small-box bg-info">
                   <div class="inner">
-                    <h4>Revinue</h4>
+                    <h4>Revenue</h4>
+                    <b>
                     <p>Total:100</p>
                     <p>Today:05</p>
+                    </b>
                   </div>
                   <div class="icon">
                     <i class="ion ion-bag"></i>
@@ -75,8 +77,10 @@
                 <div class="small-box bg-success">
                   <div class="inner">
                     <h4>Grahak Registration</h4>
-                    <p>Total:100</p>
-                    <p>Today:05</p>
+                  <b>
+                    <p>Total:{{total_registrations_grahak}}</p>
+                    <p>Today:{{total_registrations_grahak}}</p>
+                  </b>
 
                   </div>
                   <div class="icon">
@@ -91,9 +95,10 @@
                 <div class="small-box bg-warning">
                   <div class="inner">
                     <h4>Sahayak Registration</h4>
-    
-                    <p>Total:100</p>
-                    <p>Today:05</p>
+                  <b>
+                    <p>Total:{{total_registrations_sahayak}}</p>
+                    <p>Today:{{today_registrations_sahayak}}</p>
+                  </b>
                   </div>
                   <div class="icon">
                     <i class="ion ion-person-add"></i>
@@ -107,9 +112,10 @@
                 <div class="small-box bg-danger">
                   <div class="inner">
                     <h4>Machine Registration</h4>
-    
-                    <p>Total:100</p>
-                    <p>Today:05</p>
+                    <b>
+                    <p>Total:{{total_registrations_machine}}</p>
+                    <p>Today:{{total_registrations_machine}}</p>
+                    </b>
                   </div>
                   <div class="icon">
                     <i class="ion ion-person-add"></i>
@@ -120,12 +126,13 @@
 
               <div class="col">
                 <!-- small box -->
-                <div class="small-box bg-danger">
+                <div class="small-box bg-secondary">
                   <div class="inner">
                     <h4>Job Booking</h4>
-    
-                    <p>Total:100</p>
-                    <p>Today:05</p>
+                  <b>
+                    <p>Total:{{total_booking}}</p>
+                    <p>Today:{{today_booking}}</p>
+                  </b>
                   </div>
                   <div class="icon">
                     <i class="ion ion-pie-graph"></i>
@@ -140,12 +147,12 @@
         <div class="row">
             <div class="col-xl-12 col-lg-12">
               <h4>Filter with status</h4>
-              <select class="form-control w-auto my-3">
-                <option value="1">Filter One</option>
-                <option value="2">Filter two</option>
-                <option value="3">Filter three</option>
-                <option value="4">Filter four</option>
-                <option value="5">Filter five</option>
+              <select class="form-control w-auto my-3" id="status-filter" onchange="statusfunction()">
+                <option value="Pending">Pending</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Booked">Booked</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
               </select>
               <div class="table-responsive">
                 <table class="table table-bordered table-striped myTable">
@@ -164,7 +171,7 @@
   
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody >
                       <tr>
                         <th scope="row">1</th>
                         <td>T-123456</td>
@@ -182,7 +189,7 @@
                 </table>
               </div>
             </div>
-   
+          </div>
        
 
 
@@ -251,5 +258,35 @@
         {% endblock %}
 
     </div>
-
+    <script>
+      function statusfunction(){
+        var id = $("#status-filter").val();
+        $.ajax({
+            url: '/job_details/',
+            type: 'GET',
+            data: {status: id},
+            dataType: 'json',
+            success: function(response) {
+              console.log("abc",response);
+              var tableBody = $(".myTable tbody");
+              console.log("abc",tableBody);
+              tableBody.empty(); // Remove existing rows
+              response.forEach(function(data) {
+                var row = $("<tr></tr>");
+                row.append(`<td>${data.id}</td>`);
+                row.append(`<td>${data.job_number}</td>`);
+                row.append(`<td>${data.Job_type}</td>`);
+                row.append(`<td>${data.Job_posting_date}</td>`);
+                row.append(`<td>${data.Job_booking_date}</td>`);
+                row.append(`<td><button class="btn btn-primary">Details</button></td>`);
+                row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
+                row.append(`<td>${data.payment_to_service_provider}</td>`);
+                row.append(`<td>${data.mobile_no_for_payment}</td>`);
+                row.append(`<td>${data.Payment_status}</td>`);
+                tableBody.append(row); // Append new row
+              });
+            }
+        });
+      }
+    </script>
     {% endblock %}

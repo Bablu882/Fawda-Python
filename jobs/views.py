@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 import math
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 # Create your views here.
 
 class BookingThekePeKam(APIView):
@@ -231,7 +231,17 @@ class GetAllJob(APIView):
 
 
 
-
+class GetMachineDetails(APIView):
+    permission_classes=[AllowAny,]
+    def get(self,request,format=None):
+        harvesting=Harvesting.objects.all()
+        landpreparation=LandPreparation.objects.all()
+        sowing=Sowing.objects.all()
+        serial1=LandSerializers(landpreparation,many=True)
+        print(serial1.data)
+        serial2=HarvestingSerializers(harvesting,many=True)
+        serial3=SowingSerializers(sowing,many=True)
+        return Response({'landpreparation':serial1.data,'haevesting':serial2.data,'sowing':serial3.data})
 
 
 
@@ -258,3 +268,4 @@ class Requestuser(APIView):
             #     'description': job_post.description,
             #     'distance': distance
             # })
+

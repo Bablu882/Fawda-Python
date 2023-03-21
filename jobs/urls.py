@@ -11,6 +11,7 @@ urlpatterns=[
     path('api/user/',Requestuser.as_view()),
     path('api/sahayak_job_details/',GetSahayakJobDetails.as_view()),
     path('api/machine_job_details/',GetMachineJobDetails.as_view()),
+    path('api/machines/',GetMachineDetails.as_view()),
     
 
 ]
