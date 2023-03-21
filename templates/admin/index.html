@@ -148,7 +148,7 @@
             <div class="col-xl-12 col-lg-12">
               <h4>Filter with status</h4>
               <select class="form-control w-auto my-3" id="status-filter" onchange="statusfunction()">
-                <option value="Pending">Pending</option>
+                <option value="Pending" selected>Pending</option>
                 <option value="Accepted">Accepted</option>
                 <option value="Booked">Booked</option>
                 <option value="Ongoing">Ongoing</option>
@@ -172,7 +172,7 @@
                       </tr>
                     </thead>
                     <tbody >
-                      <tr>
+                      <!-- <tr>
                         <th scope="row">1</th>
                         <td>T-123456</td>
                         <td>Theke par kaam</td>
@@ -183,8 +183,36 @@
                         <td>1000</td>
                         <td>1234567890</td>
                         <td>PAID</td>
-                      </tr>
+                      </tr> -->
                     </tbody>
+                    <div class="modal" id="myModal">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                    
+                          <!-- Modal Header -->
+                          <div class="modal-header">
+                            <h4 class="modal-title">Job Details</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                          </div>
+                    
+                          <!-- Modal body -->
+                          <div class="modal-body">
+                            <h1>hello</h1>
+                            <h1>hello</h1>
+                            <h1>hello</h1>
+                            <h1>hello</h1>
+                            <h1>hello</h1>
+                          </div>
+                    
+                          <!-- Modal footer -->
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                          </div>
+                    
+                        </div>
+                      </div>
+                    </div>
+
                     
                 </table>
               </div>
@@ -259,34 +287,69 @@
 
     </div>
     <script>
+     window.onload = function() {
+      var id = "Pending";
+        console.log(id);
+        console.log("sdf");
+        $.ajax({
+          url: '/job_details/',
+          type: 'GET',
+          data: {status: id},
+          dataType: 'json',
+          success: function(response) {
+            console.log("abc",response);
+            var tableBody = $(".myTable tbody");
+            console.log("abc",tableBody);
+            tableBody.empty(); // Remove existing rows
+            response.data.forEach(function(data) { // Access the 'data' key and iterate over the array
+              var row = $("<tr></tr>");
+              row.append(`<td>${data.id}</td>`);
+              row.append(`<td>${data.job_number}</td>`);
+              row.append(`<td>${data.Job_type}</td>`);
+              row.append(`<td>${data.Job_posting_date}</td>`);
+              row.append(`<td>${data.Job_booking_date}</td>`);
+              row.append(`<td><button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+              row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
+              row.append(`<td>${data.payment_to_service_provider}</td>`);
+              row.append(`<td>${data.mobile_no_for_payment}</td>`);
+              row.append(`<td>${data.Payment_status}</td>`);
+              tableBody.append(row); // Append new row
+            });
+          }
+        });
+      };
+      
       function statusfunction(){
         var id = $("#status-filter").val();
+        console.log(id);
+        console.log("sdf");
         $.ajax({
-            url: '/job_details/',
-            type: 'GET',
-            data: {status: id},
-            dataType: 'json',
-            success: function(response) {
-              console.log("abc",response);
-              var tableBody = $(".myTable tbody");
-              console.log("abc",tableBody);
-              tableBody.empty(); // Remove existing rows
-              response.forEach(function(data) {
-                var row = $("<tr></tr>");
-                row.append(`<td>${data.id}</td>`);
-                row.append(`<td>${data.job_number}</td>`);
-                row.append(`<td>${data.Job_type}</td>`);
-                row.append(`<td>${data.Job_posting_date}</td>`);
-                row.append(`<td>${data.Job_booking_date}</td>`);
-                row.append(`<td><button class="btn btn-primary">Details</button></td>`);
-                row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
-                row.append(`<td>${data.payment_to_service_provider}</td>`);
-                row.append(`<td>${data.mobile_no_for_payment}</td>`);
-                row.append(`<td>${data.Payment_status}</td>`);
-                tableBody.append(row); // Append new row
-              });
-            }
+          url: '/job_details/',
+          type: 'GET',
+          data: {status: id},
+          dataType: 'json',
+          success: function(response) {
+            console.log("abc",response);
+            var tableBody = $(".myTable tbody");
+            console.log("abc",tableBody);
+            tableBody.empty(); // Remove existing rows
+            response.data.forEach(function(data) { // Access the 'data' key and iterate over the array
+              var row = $("<tr></tr>");
+              row.append(`<td>${data.id}</td>`);
+              row.append(`<td>${data.job_number}</td>`);
+              row.append(`<td>${data.Job_type}</td>`);
+              row.append(`<td>${data.Job_posting_date}</td>`);
+              row.append(`<td>${data.Job_booking_date}</td>`);
+              row.append(`<td><button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+              row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
+              row.append(`<td>${data.payment_to_service_provider}</td>`);
+              row.append(`<td>${data.mobile_no_for_payment}</td>`);
+              row.append(`<td>${data.Payment_status}</td>`);
+              tableBody.append(row); // Append new row
+            });
+          }
         });
       }
+     
     </script>
     {% endblock %}
