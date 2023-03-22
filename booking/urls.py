@@ -10,4 +10,5 @@ urlpatterns=[
        path('api/mybooking_machine_details/',MyBookingDetailsMachine.as_view()),
        path('api/mybooking_pending_sahayak_details/',MyBookingPendingDetailsSahayak.as_view()),
        path('api/mybooking_pending_machine_details/',MyBookingPendingDetailsMachine.as_view()),
+       path('api/my_booking_details/',MyBookingDetails.as_view()),
 ]

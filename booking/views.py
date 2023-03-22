@@ -252,10 +252,10 @@ class MyBookingDetailsSahayak(APIView):
 
 class MyBookingDetailsMachine(APIView):
     def get(self,request,format=None):
-        bookings=JobBooking.objects.filter(jobmachine__grahak=request.user,status='Accepted')
-        booking_data=[]
-        for booking in bookings:
-            booking_data.append({
+        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status='Accepted')
+        booking_data1=[]
+        for booking in bookings1:
+            booking_data1.append({
                 'booking_id':booking.id,
                 'landprepaation':booking.jobmachine.landpreparation.name,
                 'harvesting':booking.jobmachine.harvesting.name,
@@ -272,20 +272,130 @@ class MyBookingDetailsMachine(APIView):
                 'booking_user_id':booking.booking_user.id
                 
             })
-        return Response(booking_data)    
+        return Response(booking_data1)    
 
 class MyBookingPendingDetailsSahayak(APIView):
     def get(self,request,format=None):
-       booking=JobSahayak.objects.filter(grahak=request.user,status='Pending')
-       serializer=JobSahaykSerialiser(booking,many=True)
-       return Response(serializer.data)
+       booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending')
+       serializer1=JobSahaykSerialiser(booking2,many=True)
+       return Response(serializer1.data)
     
 
 class MyBookingPendingDetailsMachine(APIView):
     def get(self,request,format=None):
-        booking=JobMachine.objects.filter(grahak=request.user,status='Pending')    
-        serializer=GetJobMachineSerializer(booking,many=True)
-        return Response(serializer.data)
+        booking3=JobMachine.objects.filter(grahak=request.user,status='Pending')    
+        serializer2=GetJobMachineSerializer(booking3,many=True)
+        return Response(serializer2.data)
+
+
+
+class MyBookingDetails(APIView):
+    def get(self,request,format=None):
+        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status='Accepted')
+        total_amount = 0
+        count_male = 0
+        count_female = 0
+        total_amount_sahayak = 0
+        payment_your = 0
+        fawda_fee = 0
+        booking_data = []
+        for booking in bookings:
+            if booking.jobsahayak.job_type == 'individuals_sahayak':
+                total_amount += float(booking.total_amount) if booking.total_amount else 0
+                count_male += int(booking.count_male) if booking.count_male else 0
+                count_female += int(booking.count_female) if booking.count_female else 0
+                total_amount_sahayak += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
+                payment_your += float(booking.payment_your) if booking.payment_your else 0
+                fawda_fee += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data.append({
+                    'booking_id': booking.id,
+                    'id':booking.jobsahayak.id,
+                    'datetime': booking.jobsahayak.datetime,
+                    'status': booking.status,
+                    'count_male': booking.count_male,
+                    'count_female': booking.count_female,
+                    'total_amount': booking.total_amount,
+                    'total_amount_sahayak': booking.total_amount_sahayak,
+                    # 'total_amount_theka': booking.total_amount_theka,
+                    # 'total_amount_machine': booking.total_amount_machine,
+                    'payment_your': booking.payment_your,
+                    'fawda_fee': booking.fawda_fee,
+                    'booking_user_id':booking.booking_user.id,
+                    'datetime':booking.jobsahayak.datetime,
+                    'discription':booking.jobsahayak.description,
+                    'land_area':booking.jobsahayak.land_area,
+                    'pay_for_male':booking.jobsahayak.pay_amount_male,
+                    'pay_for_female':booking.jobsahayak.pay_amount_female,
+                    'num_days':booking.jobsahayak.num_days,
+                    'job_type':booking.jobsahayak.job_type,
+                    'user_status':booking.booking_user.status,
+                    'sahayak_name':booking.booking_user.profile.name,
+                    'sahayak_village':booking.booking_user.profile.village,
+                    'sahayak_mobile_no':booking.booking_user.mobile_no
+                })
+            else:
+                booking_data.append({
+                    'booking_id':booking.id,
+                    'id':booking.jobsahayak.id,
+                    'status':booking.status,
+                    'total_amount':booking.total_amount,
+                    'total_amount_theka':booking.total_amount_theka,
+                    'payment_your':booking.payment_your,
+                    'datetime':booking.jobsahayak.datetime,
+                    'land_area':booking.jobsahayak.land_area,
+                    'discription':booking.jobsahayak.description,
+                    'fawda_fee':booking.fawda_fee,
+                    'booking_user_id':booking.booking_user.id,
+                    'job_type':booking.jobsahayak.job_type,
+                    'user_status':booking.booking_user.status,
+                    'thekedar_name':booking.booking_user.profile.name,
+                    'thekedar_village':booking.booking_user.profile.village,
+                    'thekedar_mobile_no':booking.booking_user.mobile_no
+                })    
+        response_data = {
+            'total_amount': total_amount,
+            'count_male': count_male,
+            'count_female': count_female,
+            'total_amount_sahayak': total_amount_sahayak,
+            'payment_your': payment_your,
+            'fawda_fee': fawda_fee,
+            'bookings': booking_data,
+        }
+        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status='Accepted')
+        booking_data1=[]
+        for booking in bookings1:
+            booking_data1.append({
+                'booking_id':booking.id,
+                'id':booking.jobmachine.id,
+                'landprepaation':booking.jobmachine.landpreparation.name,
+                'harvesting':booking.jobmachine.harvesting.name,
+                'sowing':booking.jobmachine.sowing.name,
+                'datetime':booking.jobmachine.datetime,
+                'land_area':booking.jobmachine.land_area,
+                'total_amount':booking.jobmachine.total_amount,
+                'total_amount_machine':booking.jobmachine.total_amount_machine,
+                'payment_your':booking.jobmachine.payment_your,
+                'status':booking.status,
+                'machine_malik_name':booking.booking_user.profile.name,
+                'machine_malik_village':booking.booking_user.profile.village,
+                'machine_malik_mobile_no':booking.booking_user.mobile_no,
+                'booking_user_id':booking.booking_user.id
+                
+            })
+        booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending')
+        serializer1=JobSahaykSerialiser(booking2,many=True)
+        booking3=JobMachine.objects.filter(grahak=request.user,status='Pending')    
+        serializer2=GetJobMachineSerializer(booking3,many=True)
+        return Response({
+            'sahayk_booking_details':response_data,
+            'machine_malik_booking_details':booking_data1,
+            'sahayak_pending_booking_details':serializer1.data,
+            'machine_malik_pending_booking_details':serializer2.data
+        })
+
+
+
+
 
 # class AcceptedJobs(APIView):
 #     permission_classes=[IsAuthenticated,]

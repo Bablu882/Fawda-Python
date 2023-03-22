@@ -34,6 +34,12 @@
 .myTable th{
   white-space: nowrap;
 }
+.Borders {
+        border: 1px solid rgb(192, 189, 184);
+        padding: 10px;
+        border-radius: 5px;
+    }
+    
 </style>
 <div class="row mb-2">
     <div class="col-sm-6">
@@ -191,17 +197,45 @@
                     
                           <!-- Modal Header -->
                           <div class="modal-header">
-                            <h4 class="modal-title">Job Details</h4>
+                            <h3 class="modal-title">Booking Details</h3>
                             <button type="button" class="close" data-dismiss="modal">&times;</button>
                           </div>
                     
                           <!-- Modal body -->
                           <div class="modal-body">
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
-                            <h1>hello</h1>
+                            <div class="row">
+                              <div class="col-md-6">
+                                <div class="Borders">
+                                  <h5>Grahak Details</h5>
+                                  <p id="name_details">Name:</p>
+                                  <p id="gender_details">Gender:</p>
+                                  <p id="phone_details">Phone No.:</p>
+                                  <p id="mohalla_details">Mohalla:</p>
+                                  <p id="village_details">Village:</p>
+                                  <p id="state_details">State:</p>
+                                  <p id="district_details">District:</p>                                  
+                                </div>
+                              </div>
+                              <div class="col-md-6" id="hide-info">
+                                <div class="Borders">
+                                  <h5 id="heading1">Sahayak Details</h5>
+                                  <p id="name1">Name:</p>
+                                  <p id="gender1">Gender:</p>
+                                  <p id="phone1">Phone No.:</p>
+                                  <p id="mohalla1">Mohalla:</p>
+                                  <p id="village1">Village:</p>
+                                  <p id="state1">State:</p>
+                                  <p id="district1">District:</p>   
+                                </div>
+                              </div>
+                              <div class="col-md-12">
+                                <div class="Borders mt-2">
+                                <h5>Description</h5>
+                                <p id="descript"></p>
+                                </div>
+                            </div>
+
+                            </div>
                           </div>
                     
                           <!-- Modal footer -->
@@ -308,11 +342,11 @@
               row.append(`<td>${data.Job_type}</td>`);
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
-              row.append(`<td><button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails(${data.id})" data-toggle="modal" data-target="#myModal">Details</button></td>`);
               row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
-              row.append(`<td>${data.Payment_status}</td>`);
+              row.append(`<td><a href="/payment_status_admin/${data.id}/"><button class="btn btn-primary">${data.Job_satatus}</button></a></td>`);
               tableBody.append(row); // Append new row
             });
           }
@@ -340,16 +374,53 @@
               row.append(`<td>${data.Job_type}</td>`);
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
-              row.append(`<td><button class="btn btn-primary" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails(${data.id})" data-toggle="modal" data-target="#myModal">Details</button></td>`);
               row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
-              row.append(`<td>${data.Payment_status}</td>`);
+              row.append(`<td><a href="/payment_status_admin/${data.id}/"><button class="btn btn-primary">${data.Job_satatus}</button></a></td>`);
               tableBody.append(row); // Append new row
             });
           }
         });
       }
      
+      function getJobDetails(id) {
+        
+        console.log("sdf");
+        $.ajax({
+          url: '/job_details_admin/',
+          type: 'GET',
+          data: {id: id},
+          dataType: 'json',
+          success: function(response) {
+            console.log(response)
+             document.getElementById('name_details').innerHTML= "Name:"+response[0].grahak_name;
+             document.getElementById('gender_details').innerHTML= "Gender:"+response[0].grahak_gender;
+             document.getElementById('phone_details').innerHTML= "Phone No:"+response[0].grahak_phone;
+             document.getElementById('mohalla_details').innerHTML= "Mohalla:"+response[0].grahak_mohalla;
+             document.getElementById('village_details').innerHTML= "Village:"+response[0].grahak_village;
+             document.getElementById('district_details').innerHTML= "District:"+response[0].grahak_district;
+             document.getElementById('state_details').innerHTML= "State:"+response[0].grahak_state;
+             document.getElementById('descript').innerHTML=response[0].desc;
+              if(response[0].status == 'Pending'){
+                document.getElementById('hide-info').style.display='none';
+              }
+              else {
+                document.getElementById('hide-info').style.display='block';
+                document.getElementById('heading1').innerHTML=response[0].heading;
+                document.getElementById('name1').innerHTML= "Name:"+response[0].name;
+                document.getElementById('gender1').innerHTML= "Gender:"+response[0].gender;
+                document.getElementById('phone1').innerHTML= "Phone No:"+response[0].phone;
+                document.getElementById('mohalla1').innerHTML= "Mohalla:"+response[0].mohalla;
+                document.getElementById('village1').innerHTML= "Village:"+response[0].village;
+                document.getElementById('district1').innerHTML= "District:"+response[0].district;
+                document.getElementById('state1').innerHTML= "State:"+response[0].state;
+              }
+
+          }
+        }); 
+      }
+    
     </script>
     {% endblock %}
