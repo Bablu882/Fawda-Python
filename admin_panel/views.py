@@ -4,6 +4,8 @@ from booking.models import JobBooking
 from django.http import JsonResponse
 from jobs.models import JobMachine,JobSahayak
 from rest_framework.response import Response
+from .models import BookingHistoryMachine,BookingHistorySahayak
+import uuid
 
 # Create your views here.
 # def job_booking_list(request):
@@ -19,92 +21,93 @@ from rest_framework.response import Response
 
 
 
-def job_booking_list(request):
-    # job_bookings = JobBooking.objects.filter(status=status)
-    # job_bookings = JobBooking.objects.all()
-    data = []
-    if request.method == 'GET':
-        status = request.GET.get('status')
-        if status == 'Pending':
-            job_sahayak=JobSahayak.objects.filter(status=status)
-            job_machine=JobMachine.objects.filter(status=status)
-            print(job_sahayak,job_machine)
-            for jobs in job_sahayak:
-                if jobs.job_type == 'theke_pe_kam':
-                    job_number='T-123456'
-                else:
-                    job_number='S-123456'    
-                data.append({
-                    'id':jobs.id,
-                    'job_number':job_number,
-                    'Job_type':jobs.job_type,
-                    'Job_posting_date':jobs.date,
-                    'Job_booking_date':'Null',
-                    'Job_satatus':jobs.status,
-                    'payment_to_service_provider':jobs.payment_your,
-                    'mobile_no_for_payment':'Null',
-                    'Payment_status':jobs.status
-                })
-            for jobs in job_machine:
-                data.append({
-                    'id':jobs.id,
-                    'job_number':'M-123456',
-                    'Job_type':jobs.job_type,
-                    'Job_posting_date':jobs.date,
-                    'Job_booking_date':'Null',
-                    'Job_satatus':jobs.status,
-                    'payment_to_service_provider':jobs.payment_your,
-                    'mobile_no_for_payment':'Null',
-                    'Payment_status':jobs.status
+# def job_booking_list(request):
+#     # job_bookings = JobBooking.objects.filter(status=status)
+#     # job_bookings = JobBooking.objects.all()
+#     data = []
+#     if request.method == 'GET':
+#         status = request.GET.get('status')
+#         if status == 'Pending':
+#             job_sahayak=JobSahayak.objects.filter(status=status)
+#             job_machine=JobMachine.objects.filter(status=status)
+#             print(job_sahayak,job_machine)
+#             for jobs in job_sahayak:
+#                 if jobs.job_type == 'theke_pe_kam':
+#                     job_number='T-123456'
+#                 else:
+#                     job_number='S-123456'    
+#                 data.append({
+#                     'id':jobs.id,
+#                     'job_number':job_number,
+#                     'Job_type':jobs.job_type,
+#                     'Job_posting_date':jobs.date,
+#                     'Job_booking_date':'Null',
+#                     'Job_satatus':jobs.status,
+#                     'payment_to_service_provider':jobs.payment_your,
+#                     'mobile_no_for_payment':'Null',
+#                     'Payment_status':jobs.status
+#                 })
+#             for jobs in job_machine:
+#                 data.append({
+#                     'id':jobs.id,
+#                     'job_number':'M-123456',
+#                     'Job_type':jobs.job_type,
+#                     'Job_posting_date':jobs.date,
+#                     'Job_booking_date':'Null',
+#                     'Job_satatus':jobs.status,
+#                     'payment_to_service_provider':jobs.payment_your,
+#                     'mobile_no_for_payment':'Null',
+#                     'Payment_status':jobs.status
 
-                })
-        else:
-            job_booking=JobBooking.objects.filter(status=status)
-            for jobs in job_booking:
-                if jobs.jobsahayak.job_type == 'theke_pe_kam':
-                    data.append({
-                        'id':jobs.id,
-                        'job_number':'t-123456',
-                        'Job_type':jobs.jobsahayak.job_type,
-                        'Job_posting_date':jobs.jobsahayak.date,
-                        'Job_booking_date':jobs.date_booked,
-                        'Job_satatus':jobs.status,
-                        'payment_to_service_provider':jobs.payment_your,
-                        'mobile_no_for_payment':'Null',
-                        'Payment_status':jobs.status
+#                 })
+#         else:
+#             job_booking=JobBooking.objects.filter(status=status)
+#             for jobs in job_booking:
+#                 if jobs.jobsahayak.job_type == 'theke_pe_kam':
+#                     data.append({
+#                         'id':jobs.id,
+#                         'job_number':'t-123456',
+#                         'Job_type':jobs.jobsahayak.job_type,
+#                         'Job_posting_date':jobs.jobsahayak.date,
+#                         'Job_booking_date':jobs.date_booked,
+#                         'Job_satatus':jobs.status,
+#                         'payment_to_service_provider':jobs.payment_your,
+#                         'mobile_no_for_payment':'Null',
+#                         'Payment_status':jobs.status
 
-                    })
-                elif jobs.jobsahayak.job_type == 'individuals_sahayak':
-                    data.append({
-                        'id':jobs.id,
-                        'job_number':'t-123456',
-                        'Job_type':jobs.jobsahayak.job,
-                        'Job_posting_date':jobs.jobsahayak.date,
-                        'Job_booking_date':jobs.date_booked,
-                        'Job_satatus':jobs.status,
-                        'payment_to_service_provider':jobs.payment_your,
-                        'mobile_no_for_payment':'Null',
-                        'Payment_status':jobs.status
+#                     })
+#                 elif jobs.jobsahayak.job_type == 'individuals_sahayak':
+#                     data.append({
+#                         'id':jobs.id,
+#                         'job_number':'t-123456',
+#                         'Job_type':jobs.jobsahayak.job,
+#                         'Job_posting_date':jobs.jobsahayak.date,
+#                         'Job_booking_date':jobs.date_booked,
+#                         'Job_satatus':jobs.status,
+#                         'payment_to_service_provider':jobs.payment_your,
+#                         'mobile_no_for_payment':'Null',
+#                         'Payment_status':jobs.status
 
-                    })
-                else:
-                    data.append({
-                        {
-                        'id':jobs.id,
-                        'job_number':'t-123456',
-                        'Job_type':jobs.jobmachine.job,
-                        'Job_posting_date':jobs.jobmachine.date,
-                        'Job_booking_date':jobs.date_booked,
-                        'Job_satatus':jobs.status,
-                        'payment_to_service_provider':jobs.payment_your,
-                        'mobile_no_for_payment':'Null',
-                        'Payment_status':jobs.status
+#                     })
+#                 else:
+#                     data.append({
+#                         {
+#                         'id':jobs.id,
+#                         'job_number':'t-123456',
+#                         'Job_type':jobs.jobmachine.job,
+#                         'Job_posting_date':jobs.jobmachine.date,
+#                         'Job_booking_date':jobs.date_booked,
+#                         'Job_satatus':jobs.status,
+#                         'payment_to_service_provider':jobs.payment_your,
+#                         'mobile_no_for_payment':'Null',
+#                         'Payment_status':jobs.status
 
-                    }
+#                     }
 
-                    })    
+#                     })    
 
-    return JsonResponse({'data': data})
+#     return JsonResponse({'data': data})
+
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 class JobDetailsAdmin(APIView):
@@ -116,77 +119,72 @@ class JobDetailsAdmin(APIView):
         if status == 'Pending':
             job_sahayak=JobSahayak.objects.filter(status=status)
             job_machine=JobMachine.objects.filter(status=status)
-            # print(job_sahayak,job_machine)
             for jobs in job_sahayak:
-                if jobs.job_type == 'theke_pe_kam':
-                    job_number='T-123456'
-                else:
-                    job_number='S-123456'    
                 data.append({
                     'id':jobs.id,
-                    'job_number':job_number,
+                    'job_number':jobs.job_number,
                     'Job_type':jobs.job_type,
                     'Job_posting_date':jobs.date,
                     'Job_booking_date':'Null',
                     'Job_satatus':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
-                    'Payment_status':jobs.status
+                    'Payment_status':'Null'
                 })
             for jobs in job_machine:
                 data.append({
                     'id':jobs.id,
-                    'job_number':'M-123456',
+                    'job_number':jobs.job_number,
                     'Job_type':jobs.job_type,
                     'Job_posting_date':jobs.date,
                     'Job_booking_date':'Null',
                     'Job_satatus':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
-                    'Payment_status':jobs.status
+                    'Payment_status':'Null'
 
                 })
         else:
-            job_booking=JobBooking.objects.filter(status=status)
+            job_booking=JobBooking.objects.filter(status=status,is_admin_paid='Pending')
             for jobs in job_booking:
                 if jobs.jobsahayak:
                     if jobs.jobsahayak.job_type == 'theke_pe_kam':
                         data.append({
                             'id':jobs.id,
-                            'job_number':'t-123456',
+                            'job_number':jobs.jobsahayak.job_number,
                             'Job_type':jobs.jobsahayak.job_type,
                             'Job_posting_date':jobs.jobsahayak.date,
                             'Job_booking_date':jobs.date_booked,
                             'Job_satatus':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
-                            'mobile_no_for_payment':'Null',
-                            'Payment_status':jobs.status
+                            'mobile_no_for_payment':jobs.booking_user.mobile_no,
+                            'Payment_status':jobs.is_admin_paid
 
                         })
                     elif jobs.jobsahayak.job_type == 'individuals_sahayak':
                         data.append({
                             'id':jobs.id,
-                            'job_number':'t-123456',
+                            'job_number':jobs.jobsahayak.job_number,
                             'Job_type':jobs.jobsahayak.job_type,
                             'Job_posting_date':jobs.jobsahayak.date,
                             'Job_booking_date':jobs.date_booked,
                             'Job_satatus':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
-                            'mobile_no_for_payment':'Null',
-                            'Payment_status':jobs.status
+                            'mobile_no_for_payment':jobs.booking_user.mobile_no,
+                            'Payment_status':jobs.is_admin_paid
 
                         })
                 else:
                     data.append({
                         'id':jobs.id,
-                        'job_number':'t-123456',
+                        'job_number':jobs.jobmachine.job_number,
                         'Job_type':jobs.jobmachine.job_type,
                         'Job_posting_date':jobs.jobmachine.date,
                         'Job_booking_date':jobs.date_booked,
                         'Job_satatus':jobs.status,
                         'payment_to_service_provider':jobs.payment_your,
-                        'mobile_no_for_payment':'Null',
-                        'Payment_status':jobs.status
+                        'mobile_no_for_payment':jobs.booking_user.mobile_no,
+                        'Payment_status':jobs.is_admin_paid
 
 
                     })    
@@ -199,8 +197,10 @@ class JobDetailsAdminPanel(APIView):
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
         data=request.GET.get('id')
+        job_number=request.GET.get('job_number')
+        # print('jhlhjkhk',job_number)
         data_list=[]
-        if JobSahayak.objects.filter(id=data,status='Pending').exists():
+        if JobSahayak.objects.filter(id=data,job_number=job_number,status='Pending').exists():
             details1=JobSahayak.objects.get(id=data)
             data_list.append({
                 'grahak_name':details1.grahak.profile.name,
@@ -223,7 +223,7 @@ class JobDetailsAdminPanel(APIView):
                 'district':"",
 
             })
-        elif JobMachine.objects.filter(id=data,status='Pending').exists():
+        elif JobMachine.objects.filter(id=data,job_number=job_number,status='Pending').exists():
             details2=JobMachine.objects.get(id=data)
             data_list.append({
                 'grahak_name':details2.grahak.profile.name,
@@ -246,7 +246,7 @@ class JobDetailsAdminPanel(APIView):
                 'district':"",
 
             })
-        elif JobBooking.objects.filter(id=data ,status='Accepted').exists():
+        elif JobBooking.objects.filter(id=data).exists():
             details3=JobBooking.objects.get(id=data)
             if details3.jobsahayak:
                 data_list.append({
@@ -295,3 +295,45 @@ class JobDetailsAdminPanel(APIView):
         else:
             return Response({'Job not exists !'})         
         return Response(data_list)    
+    
+
+class AdminPaymentStatus(APIView):
+    permission_classes=[AllowAny,]
+    def post(self,request,format=None):
+        get_id=request.POST.get('id')
+        print(get_id)
+        if JobBooking.objects.filter(pk=get_id).exists():
+            get=JobBooking.objects.get(pk=get_id)
+            get.is_admin_paid='Paid'
+            get.save()
+            if get.jobsahayak:
+                booking=BookingHistorySahayak.objects.create(
+                    grahak_name=get.jobsahayak.grahak.profile.name,
+                    grahak_mobile_no=get.jobsahayak.grahak.mobile_no,
+                    job_type=get.jobsahayak.job_type,
+                    job_number=get.jobsahayak.job_number,
+                    job_posting_date=get.jobsahayak.date,
+                    job_booking_date=get.date_booked,
+                    job_status=get.jobsahayak.status,
+                    payment_status_by_admin=get.is_admin_paid,
+                    paid_to_service_provider=get.payment_your,
+                    paid_by_grahak=get.total_amount,
+                    sahayak_name=get.booking_user.profile.name,
+                    sahayak_mobile_no=get.booking_user.mobile_no
+                )
+            else:
+                booking=BookingHistoryMachine.objects.create(
+                    grahak_name=get.jobmachine.grahak.profile.name,
+                    grahak_mobile_no=get.jobmachine.grahak.mobile_no,
+                    job_type=get.jobmachine.job_type,
+                    job_number=get.jobmachine.job_number,
+                    job_posting_date=get.jobmachine.date,
+                    job_booking_date=get.date_booked,
+                    job_status=get.jobmachine.status,
+                    payment_status_by_admin=get.is_admin_paid,
+                    paid_to_service_provider=get.payment_your,
+                    paid_by_grahak=get.total_amount,
+                    machine_malik_name=get.booking_user.profile.name,
+                    machine_malik_mobile_no=get.booking_user.mobile_no
+                )  
+        return Response({'msg':'Payment status updated successfully !'})    
