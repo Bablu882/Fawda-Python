@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .serializers import *
 import math
 from rest_framework.permissions import IsAuthenticated,AllowAny
+import uuid
 # Create your views here.
 
 class BookingThekePeKam(APIView):
@@ -31,6 +32,9 @@ class BookingThekePeKam(APIView):
                 ).first()
                 if existing_job:
                     return Response({'error': 'Booking already exists'})
+                    
+                unique_id = int(uuid.uuid4().hex[:6], 16)
+                job_number='T-'+str(unique_id)
                 job=JobSahayak.objects.create(
                     datetime=datetime,
                     description=description,
@@ -38,7 +42,8 @@ class BookingThekePeKam(APIView):
                     land_type=landtype,
                     total_amount_theka=amount,
                     job_type='theke_pe_kam',
-                    grahak=grahak
+                    grahak=grahak,
+                    job_number=job_number
                 )
                 serial=GetJobThekePeKamSerializer(job)
                 return Response({'success':'Booking created !','data':serial.data})
@@ -71,6 +76,8 @@ class BookingSahayakIndividuals(APIView):
                     return Response({'status': 'error', 'message': 'A job with the same details already exists.'})
                 
                 # create a new job if it doesn't already exist
+                unique_id = int(uuid.uuid4().hex[:6], 16)
+                job_number='S-'+str(unique_id)
                 job = JobSahayak(
                     grahak=request.user,
                     job_type='individuals_sahayak',
@@ -83,6 +90,7 @@ class BookingSahayakIndividuals(APIView):
                     pay_amount_male=data['pay_amount_male'],
                     pay_amount_female=data['pay_amount_female'],
                     num_days=data['num_days'],
+                    job_number=job_number
                     # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
                 job.save()
@@ -122,10 +130,13 @@ class BookingJobMachine(APIView):
                     land_type=landtype,
                     total_amount_machine=amount,
                     grahak=grahak,
+                    
 
                 )
                 if existing_job:
                     return Response({'error':'job already exist !'})
+                unique_id = int(uuid.uuid4().hex[:6], 16)
+                job_number='M-'+str(unique_id)
                 job=JobMachine.objects.create(
                     landpreparation=lnd,
                     harvesting=harv,
@@ -136,6 +147,7 @@ class BookingJobMachine(APIView):
                     land_type=landtype,
                     total_amount_machine=amount,
                     grahak=grahak,
+                    job_number=job_number
                 )
                 serial=GetJobMachineSerializer(job)    
                 return Response({'success':'job created !','data':serial.data})

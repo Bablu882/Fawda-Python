@@ -342,11 +342,11 @@
               row.append(`<td>${data.Job_type}</td>`);
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
-              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails(${data.id})" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-              row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
+              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+              row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_satatus}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
-              row.append(`<td><a href="/payment_status_admin/${data.id}/"><button class="btn btn-primary">${data.Job_satatus}</button></a></td>`);
+              row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
               tableBody.append(row); // Append new row
             });
           }
@@ -368,30 +368,31 @@
             console.log("abc",tableBody);
             tableBody.empty(); // Remove existing rows
             response.data.forEach(function(data) { // Access the 'data' key and iterate over the array
+            console.log(data.job_number)
               var row = $("<tr></tr>");
               row.append(`<td>${data.id}</td>`);
               row.append(`<td>${data.job_number}</td>`);
               row.append(`<td>${data.Job_type}</td>`);
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
-              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails(${data.id})" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-              row.append(`<td><button class="btn btn-primary">${data.Job_satatus}</button></td>`);
+              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+              row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_satatus}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
-              row.append(`<td><a href="/payment_status_admin/${data.id}/"><button class="btn btn-primary">${data.Job_satatus}</button></a></td>`);
+              row.append(`<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`);
               tableBody.append(row); // Append new row
             });
           }
         });
       }
      
-      function getJobDetails(id) {
+      function getJobDetails(id,job_number) {
         
-        console.log("sdf");
+        console.log("sdf", id,job_number);
         $.ajax({
           url: '/job_details_admin/',
           type: 'GET',
-          data: {id: id},
+          data: {id: id,job_number:job_number},
           dataType: 'json',
           success: function(response) {
             console.log(response)
@@ -422,5 +423,20 @@
         }); 
       }
     
+    function GetJobID(id) {
+      const confirmed = confirm("Are you sure you want to make the payment?");
+      if (confirmed) {
+        // If the user clicks "OK"
+        alert("Payment updated successfully !","");
+      } else {
+        // If the user clicks "Cancel" or presses the escape key
+        alert("Payment not updated !.","");
+      }
+      $.ajax({
+          url: '/payment_status/',
+          type: 'POST',
+          data: {id: id},
+          dataType: 'json',
+        })}  
     </script>
     {% endblock %}

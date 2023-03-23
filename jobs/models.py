@@ -54,6 +54,7 @@ class JobSahayak(models.Model):
         ('Bigha','Bigha')
     )
     land_type=models.CharField(max_length=10,choices=LAND_TYPE)
+    job_number=models.CharField(max_length=50,null=True,blank=True)
 
     class Meta:
         ordering = ['-date']
@@ -130,7 +131,7 @@ class JobMachine(models.Model):
     datetime= models.DateTimeField() 
     description=models.TextField(blank=True)
     land_type=models.CharField(max_length=10,choices=LAND_TYPE_CHOICES)
-    job_type=models.CharField(max_length=20,default='machin_malik')
+    job_type=models.CharField(max_length=20,default='machine_malik')
     status=models.CharField(max_length=20,choices=STATUS_TYPE_CHOICES,default='Pending')
     land_area=models.CharField(max_length=100,null=True,blank=True)
     total_amount=models.CharField(max_length=100, blank=True, null=True)
@@ -142,6 +143,8 @@ class JobMachine(models.Model):
     harvesting=models.ForeignKey(Harvesting,on_delete=models.CASCADE)
     sowing=models.ForeignKey(Sowing,on_delete=models.CASCADE)
     others=models.CharField(max_length=500,null=True,blank=True)
+    job_number=models.CharField(max_length=50,null=True,blank=True)
+
     def __str__(self) -> str:
         return self.grahak.mobile_no
     
@@ -149,7 +152,7 @@ class JobMachine(models.Model):
         return self.datetime.strftime('%I:%M %p')
     
     def save(self, *args, **kwargs):
-        if self.job_type == 'machin_malik':
+        if self.job_type == 'machine_malik':
             total_amount_machine = int(self.total_amount_machine) if self.total_amount_machine else 0
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
             fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
