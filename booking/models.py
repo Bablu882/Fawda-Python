@@ -31,7 +31,11 @@ class JobBooking(models.Model):
     )
     is_admin_paid=models.CharField(max_length=20,choices=ADMIN_PAYMENT, default='Pending')
 
-
+    def __str__(self):
+        if self.jobsahayak:
+            return f"{self.jobsahayak.job_type}: grahak:{self.jobsahayak.grahak.profile.name}"
+        else:    
+            return f"{self.jobmachine.job_type}: grahak:{self.jobmachine.grahak.profile.name}" 
 
     # # other fields as needed
     # def save(self, *args, **kwargs):

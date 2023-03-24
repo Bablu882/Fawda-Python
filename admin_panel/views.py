@@ -126,7 +126,7 @@ class JobDetailsAdmin(APIView):
                     'Job_type':jobs.job_type,
                     'Job_posting_date':jobs.date,
                     'Job_booking_date':'Null',
-                    'Job_satatus':jobs.status,
+                    'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
                     'Payment_status':'Null'
@@ -138,7 +138,7 @@ class JobDetailsAdmin(APIView):
                     'Job_type':jobs.job_type,
                     'Job_posting_date':jobs.date,
                     'Job_booking_date':'Null',
-                    'Job_satatus':jobs.status,
+                    'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
                     'Payment_status':'Null'
@@ -155,7 +155,7 @@ class JobDetailsAdmin(APIView):
                             'Job_type':jobs.jobsahayak.job_type,
                             'Job_posting_date':jobs.jobsahayak.date,
                             'Job_booking_date':jobs.date_booked,
-                            'Job_satatus':jobs.status,
+                            'Job_status':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
                             'Payment_status':jobs.is_admin_paid
@@ -168,7 +168,7 @@ class JobDetailsAdmin(APIView):
                             'Job_type':jobs.jobsahayak.job_type,
                             'Job_posting_date':jobs.jobsahayak.date,
                             'Job_booking_date':jobs.date_booked,
-                            'Job_satatus':jobs.status,
+                            'Job_status':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
                             'Payment_status':jobs.is_admin_paid
@@ -181,7 +181,7 @@ class JobDetailsAdmin(APIView):
                         'Job_type':jobs.jobmachine.job_type,
                         'Job_posting_date':jobs.jobmachine.date,
                         'Job_booking_date':jobs.date_booked,
-                        'Job_satatus':jobs.status,
+                        'Job_status':jobs.status,
                         'payment_to_service_provider':jobs.payment_your,
                         'mobile_no_for_payment':jobs.booking_user.mobile_no,
                         'Payment_status':jobs.is_admin_paid

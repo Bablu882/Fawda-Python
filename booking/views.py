@@ -12,7 +12,7 @@ from jobs.serializers import JobSahaykSerialiser,GetJobMachineSerializer
 class JobAcceptMachin(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
-        if request.user.status == 'MachineMalik':
+        if request.user.user_type == 'MachineMalik':
             job_id=request.data.get('job_id')
             machin_user=request.user
             #check job is exist or not 
@@ -171,7 +171,7 @@ def update_booking_amount_machine(booking):
 class MyJobsDetais(APIView):
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
-        if request.user.status == 'Sahayak' or request.user.status == 'MachineMalik':
+        if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
             bookedjob=JobBooking.objects.all().filter(booking_user=request.user)
             serial=JobBookingSerializers(bookedjob,many=True)
             return Response({'success':True,'data':serial.data})
@@ -216,7 +216,7 @@ class MyBookingDetailsSahayak(APIView):
                     'pay_for_female':booking.jobsahayak.pay_amount_female,
                     'num_days':booking.jobsahayak.num_days,
                     'job_type':booking.jobsahayak.job_type,
-                    'user_status':booking.booking_user.status,
+                    'user_status':booking.booking_user.user_type,
                     'sahayak_name':booking.booking_user.profile.name,
                     'sahayak_village':booking.booking_user.profile.village,
                     'sahayak_mobile_no':booking.booking_user.mobile_no
@@ -234,7 +234,7 @@ class MyBookingDetailsSahayak(APIView):
                     'fawda_fee':booking.fawda_fee,
                     'booking_user_id':booking.booking_user.id,
                     'job_type':booking.jobsahayak.job_type,
-                    'user_status':booking.booking_user.status,
+                    'user_status':booking.booking_user.user_type,
                     'thekedar_name':booking.booking_user.profile.name,
                     'thekedar_village':booking.booking_user.profile.village,
                     'thekedar_mobile_no':booking.booking_user.mobile_no
@@ -328,7 +328,7 @@ class MyBookingDetails(APIView):
                     'pay_for_female':booking.jobsahayak.pay_amount_female,
                     'num_days':booking.jobsahayak.num_days,
                     'job_type':booking.jobsahayak.job_type,
-                    'user_status':booking.booking_user.status,
+                    'user_status':booking.booking_user.user_type,
                     'sahayak_name':booking.booking_user.profile.name,
                     'sahayak_village':booking.booking_user.profile.village,
                     'sahayak_mobile_no':booking.booking_user.mobile_no
@@ -347,7 +347,7 @@ class MyBookingDetails(APIView):
                     'fawda_fee':booking.fawda_fee,
                     'booking_user_id':booking.booking_user.id,
                     'job_type':booking.jobsahayak.job_type,
-                    'user_status':booking.booking_user.status,
+                    'user_status':booking.booking_user.user_type,
                     'thekedar_name':booking.booking_user.profile.name,
                     'thekedar_village':booking.booking_user.profile.village,
                     'thekedar_mobile_no':booking.booking_user.mobile_no

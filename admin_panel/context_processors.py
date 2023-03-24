@@ -4,12 +4,12 @@ from booking.models import JobBooking
 # Create your views here.
 def registration_status(request):
     today = date.today()
-    total_registrations_sahayak = User.objects.filter(status='Sahayak').count()
-    today_registrations_sahayak = User.objects.filter(date_joined__date=today,status='Sahayak').count()
-    total_registrations_grahak = User.objects.filter(status='Grahak').count()
-    today_registrations_grahak = User.objects.filter(date_joined__date=today,status='Grahak').count()
-    total_registrations_machine = User.objects.filter(status='MachineMalik').count()
-    today_registrations_machine = User.objects.filter(date_joined__date=today,status='MachineMalik').count()
+    total_registrations_sahayak = User.objects.filter(user_type='Sahayak').count()
+    today_registrations_sahayak = User.objects.filter(date_joined__date=today,user_type='Sahayak').count()
+    total_registrations_grahak = User.objects.filter(user_type='Grahak').count()
+    today_registrations_grahak = User.objects.filter(date_joined__date=today,user_type='Grahak').count()
+    total_registrations_machine = User.objects.filter(user_type='MachineMalik').count()
+    today_registrations_machine = User.objects.filter(date_joined__date=today,user_type='MachineMalik').count()
     job_booking_total=JobBooking.objects.filter(status='Booked').count()
     job_booking_today=JobBooking.objects.filter(date_booked__date=today,status='Booked').count()
     return {
