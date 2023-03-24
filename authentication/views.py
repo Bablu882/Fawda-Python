@@ -12,9 +12,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-# from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+from django.urls import reverse
+
 
 
 import random
@@ -25,25 +28,6 @@ from rest_framework.permissions import AllowAny,IsAuthenticated
 def test(request):
     return render(request,'authentication/test.html')
 
-
-# Create your views here.
-# @csrf_exempt
-# class Register(APIView):
-     
-#     def post(self,request,format=None):
-#         seraializer=RegisterSerializer(data=request.data)
-#         if seraializer.is_valid(raise_exception=True):
-#             mobile_no=seraializer.data.get('mobile_no')
-#             if User.objects.filter(mobile_no=mobile_no).exists():
-#                 return Response({'error': 'Mobile number already exists'})
-#             # generate OTP
-#             otp = random.randint(1000, 9999)
-#             # save user
-#             user = User.objects.create_user(username=mobile_no, mobile_no=mobile_no, is_verified=False, is_active=False, status='Grahak')
-#             user.set_password(mobile_no)
-#             user.save()
-#             OTP.objects.create(otp=otp,user=user)
-#         return Response({'message':True,'OTP':otp})
 
 def get_token(user):
     refresh = RefreshToken.for_user(user)
@@ -60,11 +44,11 @@ class RegisterApi(APIView):
         phone=request.data.get('phone')
         mohalla=request.data.get('mohalla')
         village=request.data.get('village')
-        status=request.data.get('status')
+        user_type=request.data.get('user_type')
         state=request.data.get('state')
         district=request.data.get('district')
 
-        if not name or not gender or not phone or not mohalla or not village or not status or not state or not district:
+        if not name or not gender or not phone or not mohalla or not village or not user_type or not state or not district:
             return Response({'error':'all fields are required !'})
         #check if user is exists or not 
         if User.objects.filter(mobile_no=phone).exists():
@@ -74,7 +58,7 @@ class RegisterApi(APIView):
             user=User.objects.create(
                 username=phone,
                 mobile_no=phone,
-                status=status,
+                user_type=user_type,
                 is_active=False,
                 is_verified=False,
             )
@@ -216,7 +200,7 @@ class chartJsonListViewAdmin(View):
             #     order_count_list.append(order_count)
 
             return JsonResponse({"product_count_list": 12, "order_count_list": 12, }, safe=False)
-
+###-------------------------------------------------------------------------------------------####
 
 
 
@@ -247,3 +231,8 @@ class ProfileApi(APIView):
         profile=Profile.objects.get(user=request.user)
         serializers=ProfileSerializers(profile)
         return Response(serializers.data)
+
+def logout_view(request):
+    logout(request)
+    admin_login_url = reverse('admin:login') # generate URL for admin login page
+    return redirect(admin_login_url)

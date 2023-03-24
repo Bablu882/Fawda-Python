@@ -25,7 +25,7 @@ class User(AbstractUser):
     )
     mobile_no = models.CharField(validators=[mobile_regex], max_length=17, blank=True) # validators should be a list
     is_verified = models.BooleanField(default=False)
-    status = models.CharField(max_length=100, choices=USER_STATUS_CHOICES)
+    user_type = models.CharField(max_length=100, choices=USER_STATUS_CHOICES)
 
 
 

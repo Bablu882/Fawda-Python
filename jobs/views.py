@@ -12,7 +12,7 @@ import uuid
 class BookingThekePeKam(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
-        if request.user.status == 'Grahak':
+        if request.user.user_type == 'Grahak':
             serializers=PostJobThekePeKamSerializer(data=request.data)
             if serializers.is_valid(raise_exception=True):
                 datetime=serializers.data.get('datetime')
@@ -53,7 +53,7 @@ class BookingThekePeKam(APIView):
 class BookingSahayakIndividuals(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
-        if request.user.status == 'Grahak':
+        if request.user.user_type == 'Grahak':
             serializer = PostJobIndividualSerializer(data=request.data) 
             if serializer.is_valid(raise_exception=True):
                 data = serializer.validated_data
@@ -73,7 +73,7 @@ class BookingSahayakIndividuals(APIView):
                     # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
                 if existing_jobs.exists():
-                    return Response({'status': 'error', 'message': 'A job with the same details already exists.'})
+                    return Response({'message': 'error', 'message': 'A job with the same details already exists.'})
                 
                 # create a new job if it doesn't already exist
                 unique_id = int(uuid.uuid4().hex[:6], 16)
@@ -95,14 +95,14 @@ class BookingSahayakIndividuals(APIView):
                 )
                 job.save()
                 serial=GetJobIndividualsSerializer(job)
-                return Response({'status': 'success','data':serial.data})
-        return Response({'status': 'error'})
+                return Response({'message': 'success','data':serial.data})
+        return Response({'message': 'You are not Grahak'})
 
         
 class BookingJobMachine(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
-        if request.user.status == 'Grahak':
+        if request.user.user_type == 'Grahak':
             serializers=JobMachineSerializers(data=request.data)
             if serializers.is_valid(raise_exception=True):
                 landprepare=serializers.data.get('landpreparation')
@@ -159,7 +159,7 @@ class BookingJobMachine(APIView):
 class GetSahayakJobDetails(APIView):
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
-        if request.user.status == 'Sahayak':
+        if request.user.user_type == 'Sahayak':
             jobid=request.data.get('job_id')
             if not jobid:
                 return Response({'error':'jobid required !'})            
@@ -174,7 +174,7 @@ class GetSahayakJobDetails(APIView):
 class GetMachineJobDetails(APIView):
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
-        if request.user.status == 'MachineMalik':
+        if request.user.user_type == 'MachineMalik':
             jobid=request.data.get('job_id')
             if not jobid:
                 return Response({'error':'jobid required !'})            
@@ -210,7 +210,7 @@ class GetAllJob(APIView):
         sahayak_profile = sahayak.profile
         sahayak_lat = sahayak_profile.latitude
         sahayak_lon = sahayak_profile.longitude
-        if sahayak.status == 'Sahayak':
+        if sahayak.user_type == 'Sahayak':
             job_posts = JobSahayak.objects.all().filter(status='Pending')
             for job_post in job_posts:
                 grahak_profile = job_post.grahak.profile
@@ -222,7 +222,7 @@ class GetAllJob(APIView):
                 if distance <= 5:
                     serial=GetJobIndividualsSerializer(job_post)
                     result.append(serial.data)
-        elif sahayak.status == 'MachineMalik':
+        elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending')
             for job_post in job_posts_machin:
                 grahak_profile = job_post.grahak.profile
@@ -261,7 +261,7 @@ class GetMachineDetails(APIView):
 class Requestuser(APIView):
     def get(self,request):
         user=request.user
-        return Response({'user':user.mobile_no,'status':user.status})
+        return Response({'user':user.mobile_no,'user_type':user.user_type})
     
 
 
