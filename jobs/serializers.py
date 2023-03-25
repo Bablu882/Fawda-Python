@@ -36,16 +36,11 @@ class GetJobIndividualsSerializer(serializers.ModelSerializer):
         fields='__all__'        
 
 class JobMachineSerializers(serializers.ModelSerializer):
-    landpreparation = serializers.CharField(source='LandPreparation.name')
-    harvesting = serializers.CharField(source='Harvesting.name')
-    sowing = serializers.CharField(source='Sowing.name')
-
     class Meta:
         model=JobMachine
         fields= [
-            'landpreparation',
-            'harvesting',
-            'sowing',
+            'work_type',
+            'machine',
             'others',
             'datetime',
             'land_area',
@@ -61,17 +56,9 @@ class JobSahaykSerialiser(serializers.ModelSerializer):
         model=JobSahayak
         fields='__all__'        
 
-class HarvestingSerializers(serializers.ModelSerializer):
+class MachineSerializers(serializers.ModelSerializer):
     class Meta:
-        model=Harvesting
+        model=MachineType
         fields='__all__'        
 
-class LandSerializers(serializers.ModelSerializer):
-    class Meta:
-        model=LandPreparation
-        fields='__all__'  
-
-class SowingSerializers(serializers.ModelSerializer):
-    class Meta:
-        model=Sowing
-        fields='__all__'  
+ 

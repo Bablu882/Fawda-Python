@@ -337,3 +337,8 @@ class AdminPaymentStatus(APIView):
                     machine_malik_mobile_no=get.booking_user.mobile_no
                 )  
         return Response({'msg':'Payment status updated successfully !'})    
+
+
+
+
+

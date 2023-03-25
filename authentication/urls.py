@@ -18,6 +18,8 @@ urlpatterns = [
     # path('api/profile/',profile_view,name='profile'),
     path('chart-ajax/', views.chartJsonListView.as_view(), name="chart-ajax"),
     path('chart-ajax-admin/', views.chartJsonListViewAdmin.as_view(), name="chart-ajax-admin"),
-    path('logout/',logout_view,name='logout')
+    path('logout/',logout_view,name='logout'),
+   
+
 
 ]

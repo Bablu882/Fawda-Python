@@ -236,3 +236,7 @@ def logout_view(request):
     logout(request)
     admin_login_url = reverse('admin:login') # generate URL for admin login page
     return redirect(admin_login_url)
+
+
+
+
