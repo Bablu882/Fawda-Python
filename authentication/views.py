@@ -17,6 +17,7 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.urls import reverse
+import re
 
 
 
@@ -37,68 +38,92 @@ def get_token(user):
     }
 
 class RegisterApi(APIView):
-    permission_classes=[AllowAny,]
-    def post(self,request,format=None):
-        name=request.data.get('name')
-        gender=request.data.get('gender')
-        phone=request.data.get('phone')
-        mohalla=request.data.get('mohalla')
-        village=request.data.get('village')
-        user_type=request.data.get('user_type')
-        state=request.data.get('state')
-        district=request.data.get('district')
+    permission_classes = [AllowAny]
 
-        if not name or not gender or not phone or not mohalla or not village or not user_type or not state or not district:
-            return Response({'error':'all fields are required !'})
-        #check if user is exists or not 
-        if User.objects.filter(mobile_no=phone).exists():
-            return Response({'error':'User already exists'})
-        else:
-            otp=random.randint(100000, 999999)
-            user=User.objects.create(
-                username=phone,
-                mobile_no=phone,
-                user_type=user_type,
-                is_active=False,
-                is_verified=False,
-            )
-            profile=Profile.objects.create(
-                user=user,
-                name=name,
-                gender=gender,
-                mohalla=mohalla,
-                village=village,
-                state=state,
-                district=district
-            )
-            otps=OTP.objects.create(
-                otp=otp,
-                user=user
-            )
-            # tokens=get_token(user)
-            token= RefreshToken.for_user(user)
-            key=({
+    def post(self, request, format=None):
+        # Get data from request
+        name = request.data.get('name')
+        gender = request.data.get('gender')
+        phone_number = request.data.get('phone')
+        mohalla = request.data.get('mohalla')
+        village = request.data.get('village')
+        user_type = request.data.get('user_type')
+        state = request.data.get('state')
+        district = request.data.get('district')
+
+        # Validate phone number
+        if not phone_number:
+            return Response({'error': 'Phone number is required.'})
+        if not re.match(r'^\d{10}$', phone_number):
+            return Response({'error': 'Phone number should be 10 digits.'})
+
+        # Validate user_type
+        if not user_type:
+            return Response({'error': 'User type is required.'})
+        if user_type not in ["Grahak", "Sahayak", "MachineMalik"]:
+            return Response({'error': 'User type should be one of the following: Grahak, Sahayak, MachineMalik.'})
+
+        # Validate other fields
+        if not name:
+            return Response({'error': 'Name is required.'})
+        if not gender:
+            return Response({'error': 'Gender is required.'})
+        if gender not in ["Male", "Female"]:
+            return Response({'error': 'Gender should be Male or Female'})    
+        if not mohalla:
+            return Response({'error': 'Mohalla is required.'})
+        if not village:
+            return Response({'error': 'Village is required.'})
+        if not state:
+            return Response({'error': 'State is required.'})
+        if not district:
+            return Response({'error': 'District is required.'})
+
+        # Check if user already exists
+        if User.objects.filter(mobile_no=phone_number).exists():
+            return Response({'error': 'User already exists'})
+
+        # Generate OTP and create user, profile, and OTP objects
+        otp = random.randint(100000, 999999)
+        user = User.objects.create(
+            username=phone_number,
+            mobile_no=phone_number,
+            user_type=user_type,
+            is_active=False,
+            is_verified=False,
+        )
+        profile = Profile.objects.create(
+            user=user,
+            name=name,
+            gender=gender,
+            mohalla=mohalla,
+            village=village,
+            state=state,
+            district=district
+        )
+        otp_obj = OTP.objects.create(
+            otp=otp,
+            user=user
+        )
+
+        # Generate JWT tokens for the user
+        token = RefreshToken.for_user(user)
+        key = {
             'refresh': str(token),
             'access': str(token.access_token),
-             })
-            #send here otp to user mobile no.
-            # account_sid = 'your_account_sid'
-            # auth_token = 'your_auth_token'
-            # client = Client(account_sid, auth_token)
+        }
 
-            # # send OTP via SMS using Twilio
-            # message = client.messages.create(
-            #     body=f'Your OTP is: {otp}',
-            #     from_='your_twilio_phone_number',
-            #     to=mobile_no
-            # )
+        # Send OTP to user's phone number (use your own SMS gateway or API)
+        # TODO: Implement SMS gateway/API integration to send OTP to user's phone number
+        # ...
 
-            # # check if message was sent successfully
-            # if message.sid:
-            #     return Response({'message':True,'otp':otp})
-            # else:
-            #     return Response({'error': 'Failed to send OTP'})
-            return Response({'success':True,'otp':otps.otp,'token':key})
+        # Return success response with OTP and tokens
+        return Response({
+            'success': True,
+            'otp': otp_obj.otp,
+            'token': key,
+        })
+    
 
 class VerifyMobile(APIView):
     permission_classes=[AllowAny,]
