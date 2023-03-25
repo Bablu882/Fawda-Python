@@ -6,5 +6,6 @@ urlpatterns=[
     path('job_details/',JobDetailsAdmin.as_view()),
     path('job_details_admin/',JobDetailsAdminPanel.as_view()),
     path('payment_status/',AdminPaymentStatus.as_view()),
+        
 
-]
+]   

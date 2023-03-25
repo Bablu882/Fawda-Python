@@ -105,25 +105,17 @@ class BookingJobMachine(APIView):
         if request.user.user_type == 'Grahak':
             serializers=JobMachineSerializers(data=request.data)
             if serializers.is_valid(raise_exception=True):
-                landprepare=serializers.data.get('landpreparation')
-                harvesting=serializers.data.get('harvesting')
-                sowing=serializers.data.get('sowing')
+                worktype=serializers.data.get('work_type')
+                machine=serializers.data.get('machine')
                 others=serializers.data.get('others')
                 datetime=serializers.data.get('datetime')
                 landarea=serializers.data.get('land_area')
                 landtype=serializers.data.get('land_type')
                 amount=serializers.data.get('total_amount_machine')
-                grahak=request.user
-                if landprepare is not None and harvesting is not None and sowing is not None:
-                    lnd=LandPreparation.objects.get(name=landprepare)
-                    harv=Harvesting.objects.get(name=harvesting)
-                    sow=Sowing.objects.get(name=sowing)
-                else:
-                    return Response({"error":"provide valid creadientials"})    
+                grahak=request.user  
                 existing_job=JobMachine.objects.filter(
-                    landpreparation=lnd,
-                    harvesting=harv,
-                    sowing=sow,
+                    work_type=worktype,
+                    machine=machine,
                     others=others,
                     datetime=datetime,
                     land_area=landarea,
@@ -138,9 +130,8 @@ class BookingJobMachine(APIView):
                 unique_id = int(uuid.uuid4().hex[:6], 16)
                 job_number='M-'+str(unique_id)
                 job=JobMachine.objects.create(
-                    landpreparation=lnd,
-                    harvesting=harv,
-                    sowing=sow,
+                    work_type=worktype,
+                    machine=machine,
                     others=others,
                     datetime=datetime,
                     land_area=landarea,
@@ -241,19 +232,38 @@ class GetAllJob(APIView):
 
 
 
-
-
 class GetMachineDetails(APIView):
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
-        harvesting=Harvesting.objects.all()
-        landpreparation=LandPreparation.objects.all()
-        sowing=Sowing.objects.all()
-        serial1=LandSerializers(landpreparation,many=True)
-        print(serial1.data)
-        serial2=HarvestingSerializers(harvesting,many=True)
-        serial3=SowingSerializers(sowing,many=True)
-        return Response({'landpreparation':serial1.data,'haevesting':serial2.data,'sowing':serial3.data})
+        work_type_id=request.data.get('id')
+        if work_type_id:
+            data=MachineType.objects.filter(worktype=work_type_id)
+            serializers=MachineSerializers(data, many=True)
+            return Response(serializers.data)
+        else:
+            data=MachineType.objects.all()    
+            machines_by_work_type = {}
+            for machine in data:
+                work_type_str = str(machine.worktype)
+                machine_dict = {"id": machine.id, "machine": machine.machine}
+                if work_type_str in machines_by_work_type:
+                    machines_by_work_type[work_type_str].append(machine_dict)
+                else:
+                    machines_by_work_type[work_type_str] = [machine_dict]
+            return Response(machines_by_work_type)
+
+
+# class GetMachineDetails(APIView):
+#     permission_classes=[AllowAny,]
+#     def get(self,request,format=None):
+#         harvesting=Harvesting.objects.all()
+#         landpreparation=LandPreparation.objects.all()
+#         sowing=Sowing.objects.all()
+#         serial1=LandSerializers(landpreparation,many=True)
+#         print(serial1.data)
+#         serial2=HarvestingSerializers(harvesting,many=True)
+#         serial3=SowingSerializers(sowing,many=True)
+#         return Response({'landpreparation':serial1.data,'haevesting':serial2.data,'sowing':serial3.data})
 
 
 

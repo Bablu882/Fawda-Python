@@ -257,9 +257,8 @@ class MyBookingDetailsMachine(APIView):
         for booking in bookings1:
             booking_data1.append({
                 'booking_id':booking.id,
-                'landprepaation':booking.jobmachine.landpreparation.name,
-                'harvesting':booking.jobmachine.harvesting.name,
-                'sowing':booking.jobmachine.sowing.name,
+                'work_type':booking.jobmachine.work_type,
+                'machine':booking.jobmachine.machine,
                 'datetime':booking.jobmachine.datetime,
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.jobmachine.total_amount,
@@ -367,9 +366,8 @@ class MyBookingDetails(APIView):
             booking_data1.append({
                 'booking_id':booking.id,
                 'id':booking.jobmachine.id,
-                'landprepaation':booking.jobmachine.landpreparation.name,
-                'harvesting':booking.jobmachine.harvesting.name,
-                'sowing':booking.jobmachine.sowing.name,
+                'work_type':booking.jobmachine.work_type,
+                'machine':booking.jobmachine.machine,
                 'datetime':booking.jobmachine.datetime,
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.jobmachine.total_amount,

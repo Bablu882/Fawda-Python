@@ -1,20 +1,31 @@
 from django.db import models
 from authentication.models import User
 
-class LandPreparation(models.Model):
-    name=models.CharField(max_length=500,null=True,blank=True)
-    def __str__(self):
+# class LandPreparation(models.Model):
+#     name=models.CharField(max_length=500,null=True,blank=True)
+#     def __str__(self):
+#         return self.name
+
+# class Harvesting(models.Model):
+#     name=models.CharField(max_length=500,null=True,blank=True)
+#     def __str__(self):
+#         return self.name
+
+# class Sowing(models.Model):
+#     name=models.CharField(max_length=500,null=True,blank=True)
+#     def __str__(self):
+#         return self.name    
+class WorkType(models.Model):
+    name=models.CharField(max_length=100,null=True,blank=True)
+    def __str__(self) -> str:
         return self.name
 
-class Harvesting(models.Model):
-    name=models.CharField(max_length=500,null=True,blank=True)
-    def __str__(self):
-        return self.name
+class MachineType(models.Model):
+    worktype=models.ForeignKey(WorkType,on_delete=models.CASCADE)
+    machine=models.CharField(max_length=100,null=True,blank=True) 
+    def __str__(self) -> str:
+        return f"{self.machine}:work for:{self.worktype}"   
 
-class Sowing(models.Model):
-    name=models.CharField(max_length=500,null=True,blank=True)
-    def __str__(self):
-        return self.name    
 class FawdaFee(models.Model):
     fawda_fee_percentage = models.CharField(max_length=100,default='2.5%')
 
@@ -139,9 +150,9 @@ class JobMachine(models.Model):
     fawda_fee_percentage = models.ForeignKey(FawdaFee, on_delete=models.CASCADE, null=True, blank=True, default=1)
     total_amount_machine=models.CharField(max_length=100, blank=True, null=True)
     payment_your=models.CharField(max_length=100,blank=True,null=True)
-    landpreparation=models.ForeignKey(LandPreparation,on_delete=models.CASCADE)
-    harvesting=models.ForeignKey(Harvesting,on_delete=models.CASCADE)
-    sowing=models.ForeignKey(Sowing,on_delete=models.CASCADE)
+    work_type=models.CharField(max_length=100,null=True,blank=True)
+    machine=models.CharField(max_length=100,null=True,blank=True)
+    # sowing=models.ForeignKey(Sowing,on_delete=models.CASCADE)
     others=models.CharField(max_length=500,null=True,blank=True)
     job_number=models.CharField(max_length=50,null=True,blank=True)
 
