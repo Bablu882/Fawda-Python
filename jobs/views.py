@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import *
 import math
+from decimal import Decimal
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated,AllowAny
 import uuid
 # Create your views here.
@@ -49,6 +51,35 @@ class BookingThekePeKam(APIView):
                 return Response({'success':'Booking created !','data':serial.data})
         else:
             return Response({'error':'You are not Grahak'})  
+class EditThekePeKam(APIView):
+    def post(self, request, format=None):
+        job_id = request.data.get('job_id')
+        amount = request.data.get('amount')
+        if not job_id or not amount:
+            return Response({'error':'both field is required !'})
+        
+        if not job_id.isdigit():
+            # return a validation error response if the job_id is not a number
+            return Response({'error': 'job_id should be a number'})
+        if not all(char.isdigit() or char == '.' for char in amount) or amount.count('.') > 1:
+            return Response({'error': 'amount should contain only digits and a single dot (".") as the decimal separator'})
+
+        try:
+            amount_decimal = Decimal(amount)
+        except (TypeError, ValueError):
+            amount_decimal = None
+
+        # If the amount value is not a valid decimal, use the original value
+        if amount_decimal is None:
+            amount_decimal = amount
+
+        # Get the JobSahayak object or return a 404 error response
+        job = get_object_or_404(JobSahayak, pk=job_id, job_type='theke_pe_kam')
+        job.total_amount_theka = amount_decimal
+        job.save()
+
+        return Response({'success': 'Amount updated successfully!'})
+ 
 
 class BookingSahayakIndividuals(APIView):
     permission_classes=[IsAuthenticated,]
@@ -98,6 +129,44 @@ class BookingSahayakIndividuals(APIView):
                 return Response({'message': 'success','data':serial.data})
         return Response({'message': 'You are not Grahak'})
 
+
+class EditIndividualSahayak(APIView):
+    def post(self, request, format=None):
+        job_id = request.data.get('job_id')
+        pay_amount_female = request.data.get('pay_amount_female')
+        pay_amount_male =request.data.get('pay_amount_male')
+
+        if not job_id or not pay_amount_female or not pay_amount_male:
+            return Response({'error':'all field is required !'})
+        
+        if not job_id.isdigit():
+            # return a validation error response if the job_id is not a number
+            return Response({'error': 'job_id should be a number'})
+        if not all(char.isdigit() or char == '.' for char in pay_amount_female) or pay_amount_female.count('.') > 1:
+            return Response({'error': 'pay_amount_female should contain only digits and a single dot (".") as the decimal separator'})
+        if not all(char.isdigit() or char == '.' for char in pay_amount_male) or pay_amount_male.count('.') > 1:
+            return Response({'error': 'pay_amount_male should contain only digits and a single dot (".") as the decimal separator'})
+        try:
+            amount_female = Decimal(pay_amount_female)
+            amount_male = Decimal(pay_amount_male)
+        except (TypeError, ValueError):
+            amount_female = None
+            amount_male=None
+
+        # If the amount value is not a valid decimal, use the original value
+        if amount_male is None or amount_female is None:
+            amount_female=pay_amount_female
+            amount_male = pay_amount_male
+
+        # Get the JobSahayak object or return a 404 error response
+        job = get_object_or_404(JobSahayak, pk=job_id, job_type='individuals_sahayak')
+        job.pay_amount_male = amount_male
+        job.pay_amount_female=amount_female
+        job.save()
+
+        return Response({'success': 'Amount updated successfully!'})
+ 
+
         
 class BookingJobMachine(APIView):
     permission_classes=[IsAuthenticated,]
@@ -145,6 +214,35 @@ class BookingJobMachine(APIView):
         else:
             return Response({'error':'You are not Grahak !'})        
 
+class EditJobMachine(APIView):
+    def post(self, request, format=None):
+        job_id = request.data.get('job_id')
+        amount = request.data.get('amount')
+        if not job_id or not amount:
+            return Response({'error':'both field is required !'})
+        
+        if not job_id.isdigit():
+            # return a validation error response if the job_id is not a number
+            return Response({'error': 'job_id should be a number'})
+        if not all(char.isdigit() or char == '.' for char in amount) or amount.count('.') > 1:
+            return Response({'error': 'amount should contain only digits and a single dot (".") as the decimal separator'})
+
+        try:
+            amount_decimal = Decimal(amount)
+        except (TypeError, ValueError):
+            amount_decimal = None
+
+        # If the amount value is not a valid decimal, use the original value
+        if amount_decimal is None:
+            amount_decimal = amount
+
+        # Get the JobSahayak object or return a 404 error response
+        job = get_object_or_404(JobMachine, pk=job_id, job_type='machine_malik')
+        job.total_amount_machine = amount_decimal
+        job.save()
+
+        return Response({'success': 'Amount updated successfully!'})
+ 
 
 ###---------------------------------------------------------------------------###
 class GetSahayakJobDetails(APIView):
