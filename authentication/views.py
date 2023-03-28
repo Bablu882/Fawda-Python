@@ -174,7 +174,7 @@ class LoginApi(APIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             }
-            return Response({'success':True,'otp':otps.otp,'token':tokens})
+            return Response({'success':True,'otp':otps.otp,'user_type':user.user_type,'token':tokens})
         return Response({'message':'User not registered','success': False})
     
 

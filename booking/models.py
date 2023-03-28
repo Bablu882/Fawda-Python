@@ -70,3 +70,7 @@ class JobBooking(models.Model):
     #         # self.fawda_fee_percentage = self.fawda_fee_percentage
     #     super(JobSahayak, self).save(*args, **kwargs)
     
+class Rating(models.Model):
+    booking_job=models.ForeignKey(JobBooking,on_delete=models.CASCADE)
+    rating=models.IntegerField(null=True,blank=True)
+    comment=models.TextField()
