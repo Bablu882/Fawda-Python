@@ -339,6 +339,24 @@ class AdminPaymentStatus(APIView):
         return Response({'msg':'Payment status updated successfully !'})    
 
 
+def booking_history_sahayak(request):
+    bookings = BookingHistorySahayak.objects.all()
+    return render(request, 'booking_history.html', {'bookings': bookings})
 
 
+from django.shortcuts import render
 
+def custom_admin(request):
+    return render(request, 'adminlte/custom.html')
+
+
+def custom_view(request):
+    return render(request, 'adminlte/custom.html')
+
+
+from django.shortcuts import render
+
+def home2(request):
+    bookings=BookingHistorySahayak.objects.all()
+    bookings2=BookingHistoryMachine.objects.all()
+    return render(request, 'admin/custom_home.html',{'bookings':bookings,'bookings2':bookings2})

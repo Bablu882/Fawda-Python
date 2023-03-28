@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+from django.http import Http404
 # Create your views here.
 from .models import *
 from jobs.models import *
@@ -392,9 +392,27 @@ class MyBookingDetails(APIView):
         })
 
 
+class RatingDetail(APIView):
+    permission_classes=[IsAuthenticated,]
+    def get_object(self, pk):
+        try:
+            return Rating.objects.get(pk=pk)
+        except Rating.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        rating = self.get_object(pk)
+        serializer = RatingSerializer(rating)
+        return Response(serializer.data)
 
 
-
+class RatingCreate(APIView):
+    def post(self, request):
+        serializer = RatingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
 # class AcceptedJobs(APIView):
 #     permission_classes=[IsAuthenticated,]
 #     def get(self,request,format=None):
