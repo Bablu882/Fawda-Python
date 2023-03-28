@@ -50,6 +50,9 @@ class RegisterApi(APIView):
         user_type = request.data.get('user_type')
         state = request.data.get('state')
         district = request.data.get('district')
+        latitude= request.data.get('latitude')
+        longitude=request.data.get('longitude')
+
 
         # Validate phone number
         if not phone_number:
@@ -78,7 +81,13 @@ class RegisterApi(APIView):
             return Response({'error': 'State is required.'})
         if not district:
             return Response({'error': 'District is required.'})
+        if not latitude or not longitude:
+            return Response({'error':'lattitude and longitude can not null'})
+        if not re.match(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$', str(latitude)):
+            return Response({'error': 'Invalid latitude format.'})
 
+        if not re.match(r'^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$', str(longitude)):
+            return Response({'error': 'Invalid longitude format.'})
         # Check if user already exists
         if User.objects.filter(mobile_no=phone_number).exists():
             return Response({'error': 'User already exists'})
@@ -99,7 +108,9 @@ class RegisterApi(APIView):
             mohalla=mohalla,
             village=village,
             state=state,
-            district=district
+            district=district,
+            latitude=latitude,
+            longitude=longitude
         )
         otp_obj = OTP.objects.create(
             otp=otp,
@@ -245,7 +256,7 @@ class StateViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class DistrictViewSet(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated,]
+    permission_classes=[AllowAny,]
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
     lookup_field = 'slug'
