@@ -74,3 +74,5 @@ class Rating(models.Model):
     booking_job=models.ForeignKey(JobBooking,on_delete=models.CASCADE)
     rating=models.IntegerField(null=True,blank=True)
     comment=models.TextField()
+    def __str__(self) -> str:
+        return f"{self.booking_job} rating +{self.rating}"
