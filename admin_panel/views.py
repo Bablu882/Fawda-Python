@@ -346,17 +346,17 @@ def booking_history_sahayak(request):
 
 from django.shortcuts import render
 
-def custom_admin(request):
-    return render(request, 'adminlte/custom.html')
+from django.contrib.admin.views.decorators import staff_member_required
 
-
-def custom_view(request):
-    return render(request, 'adminlte/custom.html')
-
-
-from django.shortcuts import render
-
-def home2(request):
+@staff_member_required
+def my_custom_view(request):
     bookings=BookingHistorySahayak.objects.all()
     bookings2=BookingHistoryMachine.objects.all()
-    return render(request, 'admin/custom_home.html',{'bookings':bookings,'bookings2':bookings2})
+    return render(request, 'admin/custom_home.html', {'bookings':bookings,'bookings2':bookings2})
+
+
+
+# def home2(request):
+#     bookings=BookingHistorySahayak.objects.all()
+#     bookings2=BookingHistoryMachine.objects.all()
+#     return render(request, 'admin/custom_home.html',{'bookings':bookings,'bookings2':bookings2})

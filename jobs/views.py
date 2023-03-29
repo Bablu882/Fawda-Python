@@ -9,6 +9,9 @@ from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated,AllowAny
 import uuid
+import re
+from dateutil import parser
+
 # Create your views here.
 
 class BookingThekePeKam(APIView):
@@ -21,8 +24,25 @@ class BookingThekePeKam(APIView):
                 description=serializers.data.get('description')
                 landtype=serializers.data.get('land_type')
                 landarea=serializers.data.get('land_area')
-                amount=serializers.data.get('total_amount_theka')
+                amount=request.data.get('total_amount_theka')
                 grahak=request.user
+                if not datetime or not description or not landarea or not landtype or not amount:
+                    return Response({'error':'all fields are required !'})
+                try:
+                    # Check if the datetime string is in the correct format
+                    datetime_obj = parser.isoparse(datetime)
+                except ValueError:
+                    # Return a 400 Bad Request response if the datetime is in an invalid format
+                    return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})
+                if not landarea.isdigit():
+                    return Response({'error':'land area should be number type !'})
+                try:
+                    amount = int(amount)
+                except ValueError:
+                    try:
+                        amount = float(amount)
+                    except ValueError:
+                        return Response({'error': 'total_amount_theka should be numeric!'})
                 existing_job = JobSahayak.objects.filter(
                     datetime=datetime,
                     description=description,
@@ -51,6 +71,7 @@ class BookingThekePeKam(APIView):
                 return Response({'success':'Booking created !','data':serial.data})
         else:
             return Response({'error':'You are not Grahak'})  
+
 class EditThekePeKam(APIView):
     def post(self, request, format=None):
         job_id = request.data.get('job_id')
@@ -88,6 +109,39 @@ class BookingSahayakIndividuals(APIView):
             serializer = PostJobIndividualSerializer(data=request.data) 
             if serializer.is_valid(raise_exception=True):
                 data = serializer.validated_data
+                datetime=serializer.data.get('datetime')
+                pay_amount_male=serializer.data.get('pay_amount_male')
+                pay_amount_female=serializer.data.get('pay_amount_female')
+                if not data['datetime'] or not data['description'] or not data['land_type'] or not data['land_area'] or not data['count_male'] or not data['count_female'] or not data['pay_amount_male'] or not data['pay_amount_female'] or not data['num_days']:
+                    return Response({'error':'all fields are required !'})
+                try:
+                    # Check if the datetime string is in the correct format
+                    datetime_obj = parser.isoparse(datetime)
+                except ValueError:
+                    return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})
+                if not data['land_area'].isdigit():
+                    return Response({'error':'land_area should be number integer !'})   
+                if not data['count_male'].isdigit():
+                    return Response({'error':'count_male should be integer !'})    
+                if not data['count_female'].isdigit():
+                    return Response({'error':'count_female should be integer !'})    
+                if not data['num_days'].isdigit():
+                    return Response({'error':'num_days should be integer !'})    
+                try:
+                    pay_amount_male = int(pay_amount_male)
+                except ValueError:
+                    try:
+                        pay_amount_male = float(pay_amount_male)
+                    except ValueError:
+                        return Response({'error': 'pay_amount_male should be integer!'})
+
+                try:
+                    pay_amount_female = int(pay_amount_female)
+                except ValueError:
+                    try:
+                        pay_amount_female = float(pay_amount_female)
+                    except ValueError:
+                        return Response({'error': 'pay_amount_male should be integer!'})         
                 # check if a job with the same details already exists
                 existing_jobs = JobSahayak.objects.filter(
                     grahak=request.user,
@@ -98,8 +152,8 @@ class BookingSahayakIndividuals(APIView):
                     land_area=data['land_area'],
                     count_male=data['count_male'],
                     count_female=data['count_female'],
-                    pay_amount_male=data['pay_amount_male'],
-                    pay_amount_female=data['pay_amount_female'],
+                    pay_amount_male=pay_amount_male,
+                    pay_amount_female=pay_amount_female,
                     num_days=data['num_days'],
                     # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
@@ -118,8 +172,8 @@ class BookingSahayakIndividuals(APIView):
                     land_area=data['land_area'],
                     count_male=data['count_male'],
                     count_female=data['count_female'],
-                    pay_amount_male=data['pay_amount_male'],
-                    pay_amount_female=data['pay_amount_female'],
+                    pay_amount_male=pay_amount_male,
+                    pay_amount_female=pay_amount_female,
                     num_days=data['num_days'],
                     job_number=job_number
                     # fawda_fee_percentage=data['fawda_fee_percentage']
@@ -141,7 +195,7 @@ class EditIndividualSahayak(APIView):
         
         if not job_id.isdigit():
             # return a validation error response if the job_id is not a number
-            return Response({'error': 'job_id should be a number'})
+            return Response({'error': 'job_id should be a integer !'})
         if not all(char.isdigit() or char == '.' for char in pay_amount_female) or pay_amount_female.count('.') > 1:
             return Response({'error': 'pay_amount_female should contain only digits and a single dot (".") as the decimal separator'})
         if not all(char.isdigit() or char == '.' for char in pay_amount_male) or pay_amount_male.count('.') > 1:
@@ -181,7 +235,28 @@ class BookingJobMachine(APIView):
                 landarea=serializers.data.get('land_area')
                 landtype=serializers.data.get('land_type')
                 amount=serializers.data.get('total_amount_machine')
-                grahak=request.user  
+                grahak=request.user
+                if not worktype or not machine or not datetime or not landarea or not landtype or not amount:
+                    return Response({'all fields are required instead of others !'})  
+                if not landarea.isdigit():
+                    return Response({'error':'land_area should be integer !'}) 
+                if not re.match(r'^[a-zA-Z\s]+$', worktype):
+                    return Response({'error': 'Invalid work_type, only letters and spaces allowed'})
+                if not re.match(r'^[a-zA-Z\s]+$', machine):
+                    return Response({'error': 'Invalid machine, only letters and spaces allowed'})
+                try:
+                    # Check if the datetime string is in the correct format
+                    datetime_obj = parser.isoparse(datetime)
+                except ValueError:
+                    return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})    
+                try:
+                    amount = int(amount)
+                except ValueError:
+                    try:
+                        amount = float(amount)
+                    except ValueError:
+                        return Response({'error': 'total_amount_theka should be numeric!'}) 
+                    
                 existing_job=JobMachine.objects.filter(
                     work_type=worktype,
                     machine=machine,
@@ -252,6 +327,8 @@ class GetSahayakJobDetails(APIView):
             jobid=request.data.get('job_id')
             if not jobid:
                 return Response({'error':'jobid required !'})            
+            if not jobid.isdigit():
+                return Response({'error':'job_id should be numeric !'})    
             try:
                getjob = JobSahayak.objects.get(pk=jobid)
             except JobSahayak.DoesNotExist:
@@ -266,7 +343,9 @@ class GetMachineJobDetails(APIView):
         if request.user.user_type == 'MachineMalik':
             jobid=request.data.get('job_id')
             if not jobid:
-                return Response({'error':'jobid required !'})            
+                return Response({'error':'jobid required !'})  
+            if not jobid.isdigit():
+                return Response({'error':'job_id should be numeric !'})          
             try:
                getjob = JobMachine.objects.get(pk=jobid)
             except JobMachine.DoesNotExist:
@@ -350,18 +429,23 @@ class GetMachineDetails(APIView):
                     machines_by_work_type[work_type_str] = [machine_dict]
             return Response(machines_by_work_type)
 
+class GetMachineDetailArray(APIView):
+    permission_classes=[AllowAny,]
+    def post(self,request,format=None):
+        worktype=request.data.get('work_type')
+        if worktype:
+            get_machine=MachineType.objects.filter(worktype__name=worktype)    
+            serializer=MachineSerializers(get_machine,many=True)
+            return Response(serializer.data)
+        else:
+            return Response({'error':'work_type required !'})    
 
-# class GetMachineDetails(APIView):
-#     permission_classes=[AllowAny,]
-#     def get(self,request,format=None):
-#         harvesting=Harvesting.objects.all()
-#         landpreparation=LandPreparation.objects.all()
-#         sowing=Sowing.objects.all()
-#         serial1=LandSerializers(landpreparation,many=True)
-#         print(serial1.data)
-#         serial2=HarvestingSerializers(harvesting,many=True)
-#         serial3=SowingSerializers(sowing,many=True)
-#         return Response({'landpreparation':serial1.data,'haevesting':serial2.data,'sowing':serial3.data})
+class GetWorkType(APIView):
+    permission_classes=[AllowAny,]
+    def get(self,request,format=None):
+        data=WorkType.objects.all()
+        serializer=WorkTypeSerialiser(data,many=True)
+        return Response(serializer.data)
 
 
 

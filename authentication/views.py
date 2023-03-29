@@ -59,7 +59,6 @@ class RegisterApi(APIView):
             return Response({'error': 'Phone number is required.'})
         if not re.match(r'^\d{10}$', phone_number):
             return Response({'error': 'Phone number should be 10 digits.'})
-
         # Validate user_type
         if not user_type:
             return Response({'error': 'User type is required.'})
@@ -82,12 +81,21 @@ class RegisterApi(APIView):
         if not district:
             return Response({'error': 'District is required.'})
         if not latitude or not longitude:
-            return Response({'error':'lattitude and longitude can not null'})
+            return Response({'error':'latitude and longitude can not null'})
         if not re.match(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$', str(latitude)):
             return Response({'error': 'Invalid latitude format.'})
-
         if not re.match(r'^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$', str(longitude)):
             return Response({'error': 'Invalid longitude format.'})
+        try:
+            state = State.objects.get(name=state)
+        except State.DoesNotExist:
+            return Response({'error': f'State with name {state} does not exist in the database.'})
+        
+        # Check if district exists within the state
+        try:
+            district = District.objects.get(name=district, state=state)
+        except District.DoesNotExist:
+            return Response({'error': f'District with name {district} does not exist within the state {state}.'})
         # Check if user already exists
         if User.objects.filter(mobile_no=phone_number).exists():
             return Response({'error': 'User already exists'})
@@ -141,6 +149,8 @@ class VerifyMobile(APIView):
     def post(self, request, format=None):
         otp_input = request.data.get('otp')
         # get the user associated with the OTP
+        if not otp_input.isdigit():
+            return Response({'error':'otp should be number'})
         try:
             otp = OTP.objects.get(otp=otp_input)
             user =otp.user
@@ -160,6 +170,8 @@ class LoginApi(APIView):
         phone = request.data.get('phone')
         if not phone:
             return Response({'error':'enter valid phone number !'})
+        if not re.match(r'^\d{10}$', phone):
+            return Response({'error': 'Phone number should be 10 digits.'})   
         user = authenticate(request, mobile_no=phone)
         if user is not None:
             login(request, user)

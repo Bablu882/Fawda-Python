@@ -55,7 +55,10 @@ class JobSahaykSerialiser(serializers.ModelSerializer):
     class Meta:
         model=JobSahayak
         fields='__all__'        
-
+class WorkTypeSerialiser(serializers.ModelSerializer):
+    class Meta:
+        model=WorkType
+        fields='__all__'
 class MachineSerializers(serializers.ModelSerializer):
     class Meta:
         model=MachineType
