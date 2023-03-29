@@ -15,6 +15,8 @@ urlpatterns=[
     path('api/edit_thekepekam/',EditThekePeKam.as_view()),
     path('api/edit_individuals/',EditIndividualSahayak.as_view()),
     path('api/edit_machine/',EditJobMachine.as_view()),
+    path('api/machine_detail/',GetMachineDetailArray.as_view()),
+    path('api/get_worktype/',GetWorkType.as_view()),
     
     
 

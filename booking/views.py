@@ -392,21 +392,9 @@ class MyBookingDetails(APIView):
         })
 
 
-class RatingDetail(APIView):
-    permission_classes=[IsAuthenticated,]
-    def get_object(self, pk):
-        try:
-            return Rating.objects.get(pk=pk)
-        except Rating.DoesNotExist:
-            raise Http404
-
-    def get(self, request, pk):
-        rating = self.get_object(pk)
-        serializer = RatingSerializer(rating)
-        return Response(serializer.data)
-
 
 class RatingCreate(APIView):
+    permission_classes=[IsAuthenticated,]
     def get(self, request,format=None):
         booking_job_id=request.data.get('booking_job')
         if not booking_job_id:
@@ -419,11 +407,14 @@ class RatingCreate(APIView):
             return Response({'error': f'No rating found for booking_job with id {booking_job_id}'})
     
     def post(self, request):
-        serializer = RatingSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
+        if request.user.user_type == 'Grahak':
+            serializer = RatingSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors)
+        else:
+            return Response({'error':'only Grahak can post rating'})
 # class AcceptedJobs(APIView):
 #     permission_classes=[IsAuthenticated,]
 #     def get(self,request,format=None):
