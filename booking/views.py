@@ -407,6 +407,17 @@ class RatingDetail(APIView):
 
 
 class RatingCreate(APIView):
+    def get(self, request,format=None):
+        booking_job_id=request.data.get('booking_job')
+        if not booking_job_id:
+            return Response({'error':'booking_id required !'})
+        try:
+            rating = Rating.objects.get(booking_job_id=booking_job_id)
+            serializer = RatingSerializer(rating)
+            return Response(serializer.data)
+        except Rating.DoesNotExist:
+            return Response({'error': f'No rating found for booking_job with id {booking_job_id}'})
+    
     def post(self, request):
         serializer = RatingSerializer(data=request.data)
         if serializer.is_valid():

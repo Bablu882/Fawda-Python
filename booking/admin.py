@@ -13,3 +13,4 @@ class BookingJobAdmin(admin.ModelAdmin):
 
 
 admin.site.register(JobBooking,BookingJobAdmin)
+admin.site.register(Rating)
