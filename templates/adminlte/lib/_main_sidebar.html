@@ -32,8 +32,12 @@
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
             {% block nav_links_outer %}
             <li class="nav-header">{% block nav_heading %}MAIN NAVIGATION{% endblock %}</li>
-            <li class="nav-header"><a href="{% url 'admin_custom' %}">Booking History</a></li>
-            <li class="nav-header"><a href="#">Registration History</a></li>
+            <li class="nav-header" style="padding: 2px;">
+              <a href="{% url 'admin_custom' %}" class="btn btn-primary nav-link active">Booking History</a>
+            </li>
+            <li class="nav-header" style="padding: 2px; margin-bottom: 3px;">
+              <a href="{% url 'user_list' %}" class="btn btn-primary nav-link active">Registration History</a>
+            </li>
 
             {% block nav_links %}
             {% endblock nav_links %}
