@@ -6,110 +6,15 @@ from jobs.models import JobMachine,JobSahayak
 from rest_framework.response import Response
 from .models import BookingHistoryMachine,BookingHistorySahayak
 import uuid
-
-# Create your views here.
-# def job_booking_list(request):
-#     status_filter = request.GET.get('status', 'All')
-#     jobs = JobBooking.objects.all()
-#     if status_filter != 'All':
-#         jobs = jobs.filter(status=status_filter)
-#     context = {'jobs': jobs, 'status_filter': status_filter}
-#     return render(request, 'job_booking_list.html', context)
-
-
-
-
-
-
-# def job_booking_list(request):
-#     # job_bookings = JobBooking.objects.filter(status=status)
-#     # job_bookings = JobBooking.objects.all()
-#     data = []
-#     if request.method == 'GET':
-#         status = request.GET.get('status')
-#         if status == 'Pending':
-#             job_sahayak=JobSahayak.objects.filter(status=status)
-#             job_machine=JobMachine.objects.filter(status=status)
-#             print(job_sahayak,job_machine)
-#             for jobs in job_sahayak:
-#                 if jobs.job_type == 'theke_pe_kam':
-#                     job_number='T-123456'
-#                 else:
-#                     job_number='S-123456'    
-#                 data.append({
-#                     'id':jobs.id,
-#                     'job_number':job_number,
-#                     'Job_type':jobs.job_type,
-#                     'Job_posting_date':jobs.date,
-#                     'Job_booking_date':'Null',
-#                     'Job_satatus':jobs.status,
-#                     'payment_to_service_provider':jobs.payment_your,
-#                     'mobile_no_for_payment':'Null',
-#                     'Payment_status':jobs.status
-#                 })
-#             for jobs in job_machine:
-#                 data.append({
-#                     'id':jobs.id,
-#                     'job_number':'M-123456',
-#                     'Job_type':jobs.job_type,
-#                     'Job_posting_date':jobs.date,
-#                     'Job_booking_date':'Null',
-#                     'Job_satatus':jobs.status,
-#                     'payment_to_service_provider':jobs.payment_your,
-#                     'mobile_no_for_payment':'Null',
-#                     'Payment_status':jobs.status
-
-#                 })
-#         else:
-#             job_booking=JobBooking.objects.filter(status=status)
-#             for jobs in job_booking:
-#                 if jobs.jobsahayak.job_type == 'theke_pe_kam':
-#                     data.append({
-#                         'id':jobs.id,
-#                         'job_number':'t-123456',
-#                         'Job_type':jobs.jobsahayak.job_type,
-#                         'Job_posting_date':jobs.jobsahayak.date,
-#                         'Job_booking_date':jobs.date_booked,
-#                         'Job_satatus':jobs.status,
-#                         'payment_to_service_provider':jobs.payment_your,
-#                         'mobile_no_for_payment':'Null',
-#                         'Payment_status':jobs.status
-
-#                     })
-#                 elif jobs.jobsahayak.job_type == 'individuals_sahayak':
-#                     data.append({
-#                         'id':jobs.id,
-#                         'job_number':'t-123456',
-#                         'Job_type':jobs.jobsahayak.job,
-#                         'Job_posting_date':jobs.jobsahayak.date,
-#                         'Job_booking_date':jobs.date_booked,
-#                         'Job_satatus':jobs.status,
-#                         'payment_to_service_provider':jobs.payment_your,
-#                         'mobile_no_for_payment':'Null',
-#                         'Payment_status':jobs.status
-
-#                     })
-#                 else:
-#                     data.append({
-#                         {
-#                         'id':jobs.id,
-#                         'job_number':'t-123456',
-#                         'Job_type':jobs.jobmachine.job,
-#                         'Job_posting_date':jobs.jobmachine.date,
-#                         'Job_booking_date':jobs.date_booked,
-#                         'Job_satatus':jobs.status,
-#                         'payment_to_service_provider':jobs.payment_your,
-#                         'mobile_no_for_payment':'Null',
-#                         'Payment_status':jobs.status
-
-#                     }
-
-#                     })    
-
-#     return JsonResponse({'data': data})
-
+import openpyxl
+from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.shortcuts import render
+from django.contrib.admin.views.decorators import staff_member_required
+
+
+
 class JobDetailsAdmin(APIView):
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
@@ -344,10 +249,6 @@ def booking_history_sahayak(request):
     return render(request, 'booking_history.html', {'bookings': bookings})
 
 
-from django.shortcuts import render
-
-from django.contrib.admin.views.decorators import staff_member_required
-
 @staff_member_required
 def my_custom_view(request):
     bookings=BookingHistorySahayak.objects.all()
@@ -355,8 +256,172 @@ def my_custom_view(request):
     return render(request, 'admin/custom_home.html', {'bookings':bookings,'bookings2':bookings2})
 
 
+@staff_member_required
+def custom_users_view(request):
+    user_list=[]
+    users=User.objects.all()
+    for user in users:
+        user_list.append({
+            'name':user.profile.name,
+            'address':user.profile.village + ", " + user.profile.mohalla + ", " + user.profile.district + ", " + user.profile.state,
+            'gender':user.profile.gender,
+            'phone':user.mobile_no,
+            'user_type':user.user_type
+        })
+    print(user_list)    
+    return render(request, 'admin/user_history.html', {'users':user_list})
 
-# def home2(request):
-#     bookings=BookingHistorySahayak.objects.all()
-#     bookings2=BookingHistoryMachine.objects.all()
-#     return render(request, 'admin/custom_home.html',{'bookings':bookings,'bookings2':bookings2})
+
+def export_users_excel(request):
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="users.xlsx"'
+
+    # Create a new Excel workbook
+    workbook = openpyxl.Workbook()
+
+    # Select the active worksheet
+    worksheet = workbook.active
+
+    # Add column headings
+    columns = ['Name', 'Address', 'Gender', 'Phone', 'User Type']
+    row_num = 1
+    for col_num, column_title in enumerate(columns, 1):
+        cell = worksheet.cell(row=row_num, column=col_num)
+        cell.value = column_title
+
+    # Add data rows
+    users = User.objects.all()
+    for user in users:
+        row_num += 1
+        row = [
+            user.profile.name,
+            f"{user.profile.village}, {user.profile.mohalla}, {user.profile.district}, {user.profile.state}",
+            user.profile.gender,
+            user.mobile_no,
+            user.user_type,
+        ]
+        for col_num, cell_value in enumerate(row, 1):
+            cell = worksheet.cell(row=row_num, column=col_num)
+            cell.value = cell_value
+
+    # Save the Excel file
+    workbook.save(response)
+
+    return response
+
+
+def export_booking_history_sahayak_excel(request):
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="booking_history.xlsx"'
+
+    # Create a new Excel workbook
+    workbook = openpyxl.Workbook()
+
+    # Select the active worksheet
+    worksheet = workbook.active
+
+    # Add column headings
+    columns = [
+        'Grahak Name',
+        'Grahak Mobile No',
+        'Job Type',
+        'Job Number',
+        'Job Posting Date',
+        'Job Booking Date',
+        'Job Status',
+        'Payment Status By Admin',
+        'Paid To Service Provider',
+        'Paid By Grahak',
+        'Sahayak Name',
+        'Sahayak Mobile No',
+    ]
+    row_num = 1
+    for col_num, column_title in enumerate(columns, 1):
+        cell = worksheet.cell(row=row_num, column=col_num)
+        cell.value = column_title
+
+    # Add data rows
+    booking_history = BookingHistorySahayak.objects.all()
+    for booking in booking_history:
+        row_num += 1
+        row = [
+            booking.grahak_name,
+            booking.grahak_mobile_no,
+            booking.job_type,
+            booking.job_number,
+            booking.job_posting_date,
+            booking.job_booking_date,
+            booking.job_status,
+            booking.payment_status_by_admin,
+            booking.paid_to_service_provider,
+            booking.paid_by_grahak,
+            booking.sahayak_name,
+            booking.sahayak_mobile_no,
+        ]
+        for col_num, cell_value in enumerate(row, 1):
+            cell = worksheet.cell(row=row_num, column=col_num)
+            cell.value = cell_value
+
+    # Save the Excel file
+    workbook.save(response)
+
+    return response
+
+
+
+def export_booking_history_machine_excel(request):
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="booking_history_machine.xlsx"'
+
+    # Create a new Excel workbook
+    workbook = openpyxl.Workbook()
+
+    # Select the active worksheet
+    worksheet = workbook.active
+
+    # Add column headings
+    columns = [
+        'Grahak Name',
+        'Grahak Mobile No',
+        'Job Type',
+        'Job Number',
+        'Job Posting Date',
+        'Job Booking Date',
+        'Job Status',
+        'Payment Status By Admin',
+        'Paid To Service Provider',
+        'Paid By Grahak',
+        'Machine Malik Name',
+        'Machine Malik Mobile No',
+    ]
+    row_num = 1
+    for col_num, column_title in enumerate(columns, 1):
+        cell = worksheet.cell(row=row_num, column=col_num)
+        cell.value = column_title
+
+    # Add data rows
+    booking_history = BookingHistoryMachine.objects.all()
+    for booking in booking_history:
+        row_num += 1
+        row = [
+            booking.grahak_name,
+            booking.grahak_mobile_no,
+            booking.job_type,
+            booking.job_number,
+            booking.job_posting_date,
+            booking.job_booking_date,
+            booking.job_status,
+            booking.payment_status_by_admin,
+            booking.paid_to_service_provider,
+            booking.paid_by_grahak,
+            booking.machine_malik_name,
+            booking.machine_malik_mobile_no,
+        ]
+        for col_num, cell_value in enumerate(row, 1):
+            cell = worksheet.cell(row=row_num, column=col_num)
+            cell.value = cell_value
+
+    # Save the Excel file
+    workbook.save(response)
+
+    return response

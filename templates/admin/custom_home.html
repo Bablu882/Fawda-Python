@@ -18,6 +18,22 @@
 
     {% block extra_head %}{% endblock %}
 </head>
+<style>
+  table {
+  font-size: 14px;
+}
+
+th {
+  background-color: #717579;
+  color: white;
+}
+
+td {
+  background-color: #f2f2f2;
+  color: black;
+}
+
+</style>
 <body class="hold-transition sidebar-mini {% block body_class %}{% block bodyclass %}{% endblock %}{% endblock %}">
 
 {% block body %}
@@ -54,11 +70,15 @@
             {% block content_outer %}
             <section class="content">
 
-                <h1>Booking History Sahayak</h1>
+              <div class="justify-content-between d-flex align-items-center">
+                <h1>Sahayak Booking History</h1>
+                <a href="{% url 'history_sahayak' %}" class="btn btn-primary">Download</a>
+              </div>
 
-                <table class="table table-bordered table-striped border-dark">
-                  <thead>
+                <table class="table table-bordered table-striped table-hover table-sm table-dark border-dark">
+                  <thead class="bg-primary text-white">
                     <tr>
+                      <th>Sr.No.</th>
                       <th>Grahak Name</th>
                       <th>Grahak Mobile No</th>
                       <th>Job Type</th>
@@ -76,6 +96,7 @@
                   <tbody>
                     {% for booking in bookings %}
                     <tr>
+                      <td>{{forloop.counter}}</td>
                       <td>{{ booking.grahak_name }}</td>
                       <td>{{ booking.grahak_mobile_no }}</td>
                       <td>{{ booking.job_type }}</td>
@@ -93,11 +114,14 @@
                   </tbody>
                 </table>
 
-                <h1>Booking History Machine</h1>
-
-                <table class="table table-bordered table-striped border-dark">
-                  <thead>
+                <div class=" justify-content-between d-flex align-items-center">
+                  <h1>Machine Booking History</h1>
+                  <a href="{% url 'history_machine' %}" class="btn btn-primary">Download</a>
+                </div>
+                <table class="table table-bordered table-striped table-hover table-sm table-dark border-dark">
+                  <thead class="bg-primary text-white">
                     <tr>
+                      <th>Sr.No.</th>
                       <th>Grahak Name</th>
                       <th>Grahak Mobile No</th>
                       <th>Job Type</th>
@@ -115,6 +139,7 @@
                   <tbody>
                     {% for booking in bookings2 %}
                     <tr>
+                      <td>{{forloop.counter}}</td>
                       <td>{{ booking.grahak_name }}</td>
                       <td>{{ booking.grahak_mobile_no }}</td>
                       <td>{{ booking.job_type }}</td>
@@ -131,7 +156,6 @@
                     {% endfor %}
                   </tbody>
                 </table>
-                
             </section>
             {% endblock %}
 
