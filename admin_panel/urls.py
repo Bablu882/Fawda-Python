@@ -12,6 +12,7 @@ urlpatterns=[
     path('payment_status/',AdminPaymentStatus.as_view()),
     path('export-users-excel/', export_users_excel, name='export_users_excel'),
     path('export-history-sahayak/',export_booking_history_sahayak_excel, name='history_sahayak'),
-    path('export-history-machine/',export_booking_history_machine_excel, name='history_machine')
+    path('export-history-machine/',export_booking_history_machine_excel, name='history_machine'),
+    path('api/terms_and_conditions/',TermsAndCondition.as_view()),
 
 ]   

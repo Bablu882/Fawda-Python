@@ -10,6 +10,7 @@ from django.utils.html import format_html
 from .models import *
 admin.site.register(BookingHistoryMachine)
 admin.site.register(BookingHistorySahayak)
+admin.site.register(TermsCondition)
 from .views import my_custom_view,custom_users_view
 
 class MyModelAdmin(admin.ModelAdmin):
