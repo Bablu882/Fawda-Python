@@ -36,3 +36,6 @@ class BookingHistoryMachine(models.Model):
         return f"{self.grahak_name}+{self.machine_malik_name}+{self.job_type} success {self.payment_status_by_admin}"
 
  
+class TermsCondition(models.Model):
+    privacy_policy=models.TextField()
+    terms_condition=models.TextField()

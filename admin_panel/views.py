@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
+from .serializers import *
 
 
 
@@ -268,7 +269,6 @@ def custom_users_view(request):
             'phone':user.mobile_no,
             'user_type':user.user_type
         })
-    print(user_list)    
     return render(request, 'admin/user_history.html', {'users':user_list})
 
 
@@ -425,3 +425,11 @@ def export_booking_history_machine_excel(request):
     workbook.save(response)
 
     return response
+
+
+class TermsAndCondition(APIView):
+    permission_classes=[AllowAny,]
+    def get(self,request,format=None):
+        terms=TermsCondition.objects.all()
+        serializer=TermsAndConditionSerializer(terms,many=True)
+        return Response(serializer.data)
