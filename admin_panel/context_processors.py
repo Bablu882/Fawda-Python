@@ -1,6 +1,7 @@
 from authentication.models import User
 from datetime import date,datetime
 from booking.models import JobBooking
+from django.db.models import Sum,Q
 # Create your views here.
 
 def registration_status(request):
@@ -19,6 +20,9 @@ def registration_status(request):
     job_booking_total = JobBooking.objects.filter(status='Booked').count()
     job_booking_today = JobBooking.objects.filter(date_booked__startswith=today_str, status='Booked').count()
 
+    total_revenue = JobBooking.objects.filter(status='Booked').aggregate(Sum('admin_commission'))['admin_commission__sum']
+    today_revenue = JobBooking.objects.filter(Q(date_booked__startswith=today_str) & Q(status='Booked')).aggregate(Sum('admin_commission'))['admin_commission__sum']
+
     return {
         'total_registrations_sahayak': total_registrations_sahayak,
         'today_registrations_sahayak': today_registrations_sahayak,
@@ -27,5 +31,7 @@ def registration_status(request):
         'total_registrations_machine': total_registrations_machine,
         'today_registrations_machine': today_registrations_machine,
         'total_booking': job_booking_total,
-        'today_booking': job_booking_today
+        'today_booking': job_booking_today,
+        'total_revenue': total_revenue,
+        'today_revenue': today_revenue
     }
