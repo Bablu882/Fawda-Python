@@ -22,7 +22,7 @@ class JobAcceptMachin(APIView):
                 return Response({'error': 'Job does not exist !'})
             if JobBooking.objects.filter(jobmachine=job, booking_user=machin_user).exists():
                 return Response({'error': 'Job is already accepted !'})
-            booking=JobBooking.objects.create(jobmachine=job,booking_user=machin_user,job_type=job.job_type,status='Accepted')
+            booking=JobBooking.objects.create(jobmachine=job,booking_user=machin_user,status='Accepted')
             update_booking_amount_machine(booking)
             get_job=JobMachine.objects.get(pk=job_id)
             get_job.status= 'Accepted'
@@ -39,7 +39,7 @@ class JobAcceptedSahayakTheka(APIView):
         sahayak_user=request.user
         #check if job is exists or not 
         try:
-            job = JobSahayak.objects.get(pk=job_id)
+            job = JobSahayak.objects.get(pk=job_id,job_type='theke_pe_kam')
         except JobSahayak.DoesNotExist:
             return Response({'error': 'Job does not exist !'})
 
@@ -48,7 +48,6 @@ class JobAcceptedSahayakTheka(APIView):
         booking=JobBooking.objects.create(
             jobsahayak=job,
             booking_user=sahayak_user,
-            job_type=job.job_type,
             status='Accepted',
         )
         # booking.jobsahayak.add(job)
@@ -69,7 +68,7 @@ class JobAcceptIndividuals(APIView):
 
         # Check if job exists
         try:
-            job = JobSahayak.objects.get(pk=job_id)
+            job = JobSahayak.objects.get(pk=job_id,job_type='individuals_sahayak')
         except JobSahayak.DoesNotExist:
             return Response({'error': 'Job does not exist !'})
 
@@ -95,7 +94,8 @@ class JobAcceptIndividuals(APIView):
                                             count_female=count_female,
                                             status='Accepted',
                                             jobsahayak=job,
-                                            job_type=job.job_type,
+                                            pay_amount_male=job.pay_amount_male,
+                                            pay_amount_female=job.pay_amount_female
                                             )
         # booking.jobsahayak.add(job)
         update_booking_amounts(booking)
@@ -138,6 +138,7 @@ def update_booking_amounts(booking):
         booking.total_amount = str(total_amount)
         booking.payment_your = str(payment_your)
         booking.total_amount_sahayak = str(total_amount_without_fawda)
+        booking.admin_commission=str(fawda_fee_amount *2)
         # booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
         total_amount_theka = int(job_sahayak.total_amount_theka) if job_sahayak.total_amount_theka else 0
@@ -151,6 +152,7 @@ def update_booking_amounts(booking):
         booking.total_amount = str(total_amount)
         booking.payment_your = str(payment_your)
         booking.total_amount_theka = str(total_amount_without_fawda)
+        booking.admin_commission=str(fawda_fee_amount *2)
         # booking.fawda_fee_percentage = booking.fawda_fee_percentage  # update the original field value without percentage symbol 
     booking.save()    
 
@@ -166,7 +168,8 @@ def update_booking_amount_machine(booking):
     booking.fawda_fee = str(fawda_fee_amount)
     booking.total_amount = str(total_amount)
     booking.payment_your = str(payment_your)
-    booking.total_amount_machine = str(total_amount_without_fawda)   
+    booking.total_amount_machine = str(total_amount_without_fawda)
+    booking.admin_commission=str(fawda_fee_amount *2)   
     booking.save()
 
 
@@ -174,9 +177,62 @@ class MyJobsDetais(APIView):
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
+            myjob_list=[]
             bookedjob=JobBooking.objects.all().filter(booking_user=request.user)
-            serial=JobBookingSerializers(bookedjob,many=True)
-            return Response({'success':True,'data':serial.data})
+            for job in bookedjob:
+                if job.jobsahayak:
+                    if job.jobsahayak.job_type =='individuals_sahayak':
+                        myjob_list.append({
+                            "job_type":job.jobsahayak.job_type,
+                            "description":job.jobsahayak.description,
+                            "village":job.jobsahayak.grahak.profile.village,
+                            "land_area":job.jobsahayak.land_area,
+                            "land_type":job.jobsahayak.land_type,
+                            "pay_amount_male":job.pay_amount_male,
+                            "pay_amount_female":job.pay_amount_female,
+                            "fawda_fee":job.fawda_fee,
+                            "count_male":job.count_male,
+                            "count_female":job.count_female,
+                            "payment_your":job.payment_your,
+                            "total_amount_sahayak":job.total_amount_sahayak,
+                            "num_days":job.jobsahayak.num_days,
+                            "datetime":job.jobsahayak.datetime,
+                            "grahak_name":job.jobsahayak.grahak.profile.name,
+                            "grahak_phone":job.jobsahayak.grahak.mobile_no,
+                            "status":job.status
+                        })
+                    else:
+                        myjob_list.append({
+                            "job_type":job.jobsahayak.job_type,
+                            "description":job.jobsahayak.description,
+                            "village":job.jobsahayak.grahak.profile.village,
+                            "datetime":job.jobsahayak.datetime,
+                            "land_area":job.jobsahayak.land_area,
+                            "land_type":job.jobsahayak.land_type,
+                            "fawda_fee":job.fawda_fee,
+                            "payment_your":job.payment_your,
+                            "total_amount_theka":job.total_amount_theka,
+                            "grahak_name":job.jobsahayak.grahak.profile.name,
+                            "grahak_phone":job.jobsahayak.grahak.mobile_no,
+                            "status":job.status
+                        })
+                else:
+                    myjob_list.append({
+                        "job_type":job.jobmachine.job_type,
+                        "description":job.jobmachine.description,
+                        "village":job.jobmachine.grahak.profile.village,
+                        "datetime":job.jobmachine.datetime,
+                        "land_area":job.jobmachine.land_area,
+                        "land_type":job.jobmachine.land_type,
+                        "fawda_fee":job.fawda_fee,
+                        "payment_your":job.payment_your,
+                        "total_amount_machine":job.total_amount_machine,
+                        "grahak_name":job.jobmachine.grahak.profile.name,
+                        "grahak_phone":job.jobmachine.grahak.mobile_no,
+                        "status":job.status 
+                    })            
+            
+            return Response({'success':True,'data':myjob_list})
         return Response({'error':'you are not Sahayak or MachineMalik !'})    
 
 
@@ -325,8 +381,8 @@ class MyBookingDetails(APIView):
                     'datetime':booking.jobsahayak.datetime,
                     'discription':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
-                    'pay_for_male':booking.jobsahayak.pay_amount_male,
-                    'pay_for_female':booking.jobsahayak.pay_amount_female,
+                    'pay_for_male':booking.pay_amount_male,
+                    'pay_for_female':booking.pay_amount_female,
                     'num_days':booking.jobsahayak.num_days,
                     'job_type':booking.jobsahayak.job_type,
                     'user_status':booking.booking_user.user_type,
@@ -450,3 +506,7 @@ class RatingCreate(APIView):
 #         }
 #         jobs.append(job)
 #     return Response({'jobs': jobs})
+
+
+
+
