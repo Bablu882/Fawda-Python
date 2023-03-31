@@ -22,7 +22,7 @@ class JobAcceptMachin(APIView):
                 return Response({'error': 'Job does not exist !'})
             if JobBooking.objects.filter(jobmachine=job, booking_user=machin_user).exists():
                 return Response({'error': 'Job is already accepted !'})
-            booking=JobBooking.objects.create(jobmachine=job,booking_user=machin_user,status='Accepted')
+            booking=JobBooking.objects.create(jobmachine=job,booking_user=machin_user,job_type=job.job_type,status='Accepted')
             update_booking_amount_machine(booking)
             get_job=JobMachine.objects.get(pk=job_id)
             get_job.status= 'Accepted'
@@ -48,6 +48,7 @@ class JobAcceptedSahayakTheka(APIView):
         booking=JobBooking.objects.create(
             jobsahayak=job,
             booking_user=sahayak_user,
+            job_type=job.job_type,
             status='Accepted',
         )
         # booking.jobsahayak.add(job)
@@ -93,7 +94,8 @@ class JobAcceptIndividuals(APIView):
                                             count_male=count_male,
                                             count_female=count_female,
                                             status='Accepted',
-                                            jobsahayak=job
+                                            jobsahayak=job,
+                                            job_type=job.job_type,
                                             )
         # booking.jobsahayak.add(job)
         update_booking_amounts(booking)
