@@ -5,7 +5,7 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 router.register(r'states', StateViewSet, basename='state')
-router.register(r'districts', DistrictViewSet, basename='district')
+# router.register(r'districts', DistrictViewSet, basename='district')
 
 
 urlpatterns = [
@@ -19,6 +19,7 @@ urlpatterns = [
     path('chart-ajax/', views.chartJsonListView.as_view(), name="chart-ajax"),
     path('chart-ajax-admin/', views.chartJsonListViewAdmin.as_view(), name="chart-ajax-admin"),
     path('logout/',logout_view,name='logout'),
+    path('api/districts/',DistrictApiView.as_view()),
    
 
 

@@ -267,11 +267,22 @@ class StateViewSet(viewsets.ModelViewSet):
         serializer = DistrictSerializer(districts, many=True)
         return Response(serializer.data)
 
-class DistrictViewSet(viewsets.ModelViewSet):
+class DistrictApiView(APIView):
     permission_classes=[AllowAny,]
-    queryset = District.objects.all()
-    serializer_class = DistrictSerializer
-    lookup_field = 'slug'
+    def get(self,request,format=None):
+        state=request.data.get('state')
+        if state:
+            get_district=District.objects.filter(state__name=state)
+            district_list=[]
+            for district in get_district:
+                district_list.append({
+                    'district':district.name
+                })
+
+            # serializer=DistrictSerializer(get_district,many=True)
+            return Response(district_list)
+        else:
+            return Response({'error':'state required !'})  
 
 class ProfileApi(APIView):
     permission_classes=[IsOwnerOrReadOnly]
