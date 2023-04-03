@@ -488,7 +488,7 @@ class OngoingStatusApi(APIView):
                 job=JobBooking.objects.get(pk=bookingid)   
                 job.status='Ongoing'
                 job.save()
-                return Response({'success':'changed status to Ongoing successfully !'})
+                return Response({'success':'changed status to Ongoing successfully !','status':job.status})
             except JobBooking.DoesNotExist:
                 return Response({'error':'Booking does not exist !'})
         else:
@@ -507,8 +507,35 @@ class CompletedStatusApi(APIView):
                 job=JobBooking.objects.get(pk=bookingid)   
                 job.status='Completed'
                 job.save()
-                return Response({'success':'changed status to Completed successfully !'})
+                return Response({'success':'changed status to Completed successfully !','status':job.status})
             except JobBooking.DoesNotExist:
                 return Response({'error':'Booking does not exist !'})
         else:
             return Response({'error':'you are not Grahak,only Grahak can change status !'})        
+        
+
+
+
+# class RejectedBooking(APIView):
+#     permission_classes=[IsAuthenticated,]
+#     def post(self,request,format=None):
+
+#         if request.user.user_type == 'Sahayak':
+            
+
+# class RejectedThekePeKam(APIView):
+#     def post(self,request,format=None):
+#         pass 
+
+# class RejectedMachineMalik(APIView):
+#     def post(self,request,format=None):
+#         pass 
+
+
+# class CancelledPending(APIView):
+#     def post(self,request,format=None):
+#         pass
+
+# class CancelledBooking(APIView):
+#     def post(self,request,format=None):
+#         pass        
