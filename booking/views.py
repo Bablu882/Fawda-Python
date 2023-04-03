@@ -6,7 +6,7 @@ from jobs.models import *
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .serializers import *
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from jobs.serializers import JobSahaykSerialiser,GetJobMachineSerializer
 
 class JobAcceptMachin(APIView):
@@ -477,6 +477,20 @@ class RatingCreate(APIView):
         else:
             return Response({'error':'only Grahak can post rating'})
         
+class RatingGet(APIView):
+    permission_classes=[AllowAny,]
+    def post(self, request,format=None):
+        booking_job_id=request.data.get('booking_job')
+        if not booking_job_id:
+            return Response({'error':'booking_id required !'})
+        try:
+            rating = Rating.objects.get(booking_job_id=booking_job_id)
+            serializer = RatingSerializer(rating)
+            return Response(serializer.data)
+        except Rating.DoesNotExist:
+            return Response({'error': f'No rating found for booking_job with id {booking_job_id}'})
+
+        
 
 class OngoingStatusApi(APIView):
     permission_classes=[IsAuthenticated,]
@@ -526,22 +540,21 @@ class CompletedStatusApi(APIView):
 #         count_male=request.data.get('count_male')
 #         count_female=request.data.get('count_female')
 #         status=request.data.get('status')
-
 #         if not bookingid:
 #             return Response({'error':'booking_id required !'})
 #         if not bookingid.isdigit():
 #             return Response({'error':'booking_id must be numeric !'})   
 #         if not status:
 #             return Response({'error':'status required !'}) 
-#         if not status in ['Cancelled','Rejected','Cancelled-After-Payment','Rejected-After-Payment','Admin-Refunded']:
+#         if not status in ['Rejected','Rejected-After-Payment']:
 #             return Response({'error':'invilid status'})
-#         if request.user.user_type == 'Sahayak':
+#         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
 #             try:
 #                 job=JobBooking.objects.get(pk=bookingid)   
 #             except JobBooking.DoesNotExist:
 #                 return Response({'error':'Booking does not exist !'})
 #             if job.jobsahayak:
-#                 if job.jobsahayak.job_type == 'individual_sahayak':
+#                 if job.jobsahayak.job_type == 'individuals_sahayak':
 #                     if not count_male and not count_female:
 #                         return Response({'error':'count_male and count_female required !'})
 #                     if not count_male.isdigit() and not count_female.isdigit():
@@ -564,29 +577,93 @@ class CompletedStatusApi(APIView):
 #                     job.jobsahayak.save()
 #                     job.status=status
 #                     job.save()
+#             else:
+#                 job.jobmachine.status='Pending'
+#                 if job.jobmachine.status == status:
+#                     return Response({'msg':'status already up to date !'})
+#                 job.status=status
+#                 job.jobmachine.save()
+#                 job.save()
+#                 return Response({'success':'status updated !'})    
 #         else:
-#             return Response({'error':'you are not Sahayak'})
-#         if request.user.user_type == 'MachineMalik':
-#             pass     
-
-
- 
+#             return Response({'error':'you are not Sahayak or MachineMalik'})
+            
+#         # Add a return statement here
+#         return Response({'msg':'Booking rejected successfully.'})
 
             
-
-# class RejectedThekePeKam(APIView):
-#     def post(self,request,format=None):
-#         pass 
-
-# class RejectedMachineMalik(APIView):
-#     def post(self,request,format=None):
-#         pass 
-
-
-# class CancelledPending(APIView):
-#     def post(self,request,format=None):
-#         pass
-
 # class CancelledBooking(APIView):
+#     permission_classes=[IsAuthenticated,]
 #     def post(self,request,format=None):
-#         pass        
+#         bookingid=request.data.get('booking_id')
+#         count_male=request.data.get('count_male')
+#         count_female=request.data.get('count_female')
+#         status=request.data.get('status')
+#         if not bookingid:
+#             return Response({'error':'booking_id required !'})
+#         if not bookingid.isdigit():
+#             return Response({'error':'booking_id must be numeric !'})   
+#         if not status:
+#             return Response({'error':'status required !'}) 
+#         if not status in ['Cencelled','Cencelled-After-Payment']:
+#             return Response({'error':'invilid status'})
+#         if request.user.user_type == 'Grahak':
+#             try:
+#                 job=JobBooking.objects.get(pk=bookingid)   
+#             except JobBooking.DoesNotExist:
+#                 return Response({'error':'Booking does not exist !'})
+#             if job.jobsahayak:
+#                 if job.jobsahayak.job_type == 'individuals_sahayak':
+#                     if not count_male and not count_female:
+#                         return Response({'error':'count_male and count_female required !'})
+#                     if not count_male.isdigit() and not count_female.isdigit():
+#                         return Response({'error':'count_male and count_female should be numeric !'})
+#                     if job.status == status:
+#                         return Response({'msg':'status already up to date !'})    
+#                     job.status=status
+#                     job.save()
+#                     if job.jobsahayak.status == 'Pending':     
+#                         job.jobsahayak.count_male+=int(count_male)
+#                         job.jobsahayak.count_female+=int(count_female)
+#                         job.jobsahayak.status ='Cancelled'
+#                         job.jobsahayak.save()
+#                     else:
+#                         job.jobsahayak.count_male=int(count_male) 
+#                         job.jobsahayak.count_female=int(count_female)
+#                         job.jobsahayak.status='Cancelled'   
+#                         job.jobsahayak.save()
+#                 else:
+#                     job.jobsahayak.status='Cencelled'        
+#                     job.jobsahayak.save()
+#                     job.status=status
+#                     job.save()
+#             else:
+#                 job.jobmachine.status='Cancelled'
+#                 if job.jobmachine.status == status:
+#                     return Response({'msg':'status already up to date !'})
+#                 job.status=status
+#                 job.jobmachine.save()
+#                 job.save()
+#                 return Response({'error':'status updated !'})    
+#         else:
+#             return Response({'error':'you are not Grahak'})
+            
+#         # Add a return statement here
+#         return Response({'msg':'Booking Cancelled successfully.'})
+
+# # class RejectedThekePeKam(APIView):
+# #     def post(self,request,format=None):
+# #         pass 
+
+# # class RejectedMachineMalik(APIView):
+# #     def post(self,request,format=None):
+# #         pass 
+
+
+# # class CancelledPending(APIView):
+# #     def post(self,request,format=None):
+# #         pass
+
+# # class CancelledBooking(APIView):
+# #     def post(self,request,format=None):
+# #         pass        
