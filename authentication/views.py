@@ -269,7 +269,7 @@ class StateViewSet(viewsets.ModelViewSet):
 
 class DistrictApiView(APIView):
     permission_classes=[AllowAny,]
-    def get(self,request,format=None):
+    def post(self,request,format=None):
         state=request.data.get('state')
         if state:
             get_district=District.objects.filter(state__name=state)
@@ -279,7 +279,6 @@ class DistrictApiView(APIView):
                     'district':district.name
                 })
 
-            # serializer=DistrictSerializer(get_district,many=True)
             return Response(district_list)
         else:
             return Response({'error':'state required !'})  

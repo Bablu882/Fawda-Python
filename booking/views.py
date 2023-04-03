@@ -473,40 +473,42 @@ class RatingCreate(APIView):
             return Response(serializer.errors)
         else:
             return Response({'error':'only Grahak can post rating'})
-# class AcceptedJobs(APIView):
-#     permission_classes=[IsAuthenticated,]
-#     def get(self,request,format=None):
-#         bookings = JobBooking.objects.filter(booking_user=request.user, status='Accepted')
-#         jobs = []
-#         for booking in bookings:
-#             job = {
-#                 'id': booking.id,
-#                 'sahayak_name': booking.jobsahayak.name,
-#                 'machine_name': booking.jobmachine.name,
-#                 'date_booked': booking.date_booked,
-#                 'status': booking.status,
-#                 'description': f"Job to operate {booking.jobmachine.name} with {booking.jobsahayak.name} on {booking.date_booked.strftime('%d %B, %Y')}"
-#             }
-#             jobs.append(job)
-#         return Response({'jobs': jobs})
+        
 
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def my_accepted_jobs(request):
-#     bookings = JobBooking.objects.filter(booking_user=request.user, status='Accepted')
-#     jobs = []
-#     for booking in bookings:
-#         job = {
-#             'id': booking.id,
-#             'sahayak_name': booking.jobsahayak.name,
-#             'machine_name': booking.jobmachine.name,
-#             'date_booked': booking.date_booked,
-#             'status': booking.status,
-#             'description': f"Job to operate {booking.jobmachine.name} with {booking.jobsahayak.name} on {booking.date_booked.strftime('%d %B, %Y')}"
-#         }
-#         jobs.append(job)
-#     return Response({'jobs': jobs})
+class OngoingStatusApi(APIView):
+    permission_classes=[IsAuthenticated,]
+    def post(self,request,format=None):
+        bookingid=request.data.get('booking_id')
+        if not bookingid:
+            return Response({'error':'booking_id required !'})
+        if not bookingid.isdigit():
+            return Response({'error':'booking_id must be numeric !'}) 
+        if request.user.user_type == 'Grahak':
+            try:
+                job=JobBooking.objects.get(pk=bookingid)   
+                job.status='Ongoing'
+                job.save()
+                return Response({'success':'changed status to Ongoing successfully !'})
+            except JobBooking.DoesNotExist:
+                return Response({'error':'Booking does not exist !'})
+        else:
+            return Response({'error':'you are not Grahak,only Grahak can change status'})
 
-
-
-
+class CompletedStatusApi(APIView):
+    permission_classes=[IsAuthenticated,]
+    def post(self,request,format=None):
+        bookingid=request.data.get('booking_id')
+        if not bookingid:
+            return Response({'error':'booking_id required !'})
+        if not bookingid.isdigit():
+            return Response({'error':'booking_id must be numeric !'}) 
+        if request.user.user_type == 'Grahak':
+            try:
+                job=JobBooking.objects.get(pk=bookingid)   
+                job.status='Completed'
+                job.save()
+                return Response({'success':'changed status to Completed successfully !'})
+            except JobBooking.DoesNotExist:
+                return Response({'error':'Booking does not exist !'})
+        else:
+            return Response({'error':'you are not Grahak,only Grahak can change status !'})        

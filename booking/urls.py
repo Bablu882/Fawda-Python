@@ -12,5 +12,7 @@ urlpatterns=[
        path('api/mybooking_pending_machine_details/',MyBookingPendingDetailsMachine.as_view()),
        path('api/my_booking_details/',MyBookingDetails.as_view()),
        path('api/rating/create/',RatingCreate.as_view()),
+       path('api/booking_ongoing/',OngoingStatusApi.as_view()),
+       path('api/booking_completed/',CompletedStatusApi.as_view()),
 
 ]
