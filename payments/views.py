@@ -63,7 +63,10 @@ class TestPaymentAPIView(APIView):
             amount = request.data.get('amount')
             upi_id = 'upi_id'  # Replace with the actual UPI ID
             beneficiary_name = 'beneficiary_name'  # Replace with the actual beneficiary name
-
+            if not booking_id.isdigit():
+                return Response({'error':'booking_id should be numeric !'})
+            if not JobBooking.objects.filte(pk=booking_id).exists():
+                return Response({'error':'booking_id not exists !'})
             # Simulate a successful payment by returning a JSON response with a payment ID and status
             response_data = {
                 'booking_id': booking_id,
