@@ -183,6 +183,7 @@ class MyJobsDetais(APIView):
                 if job.jobsahayak:
                     if job.jobsahayak.job_type =='individuals_sahayak':
                         myjob_list.append({
+                            "booking_id":job.id,
                             "job_type":job.jobsahayak.job_type,
                             "description":job.jobsahayak.description,
                             "village":job.jobsahayak.grahak.profile.village,
@@ -203,6 +204,7 @@ class MyJobsDetais(APIView):
                         })
                     else:
                         myjob_list.append({
+                            "booking_id":job.id,
                             "job_type":job.jobsahayak.job_type,
                             "description":job.jobsahayak.description,
                             "village":job.jobsahayak.grahak.profile.village,
@@ -218,6 +220,7 @@ class MyJobsDetais(APIView):
                         })
                 else:
                     myjob_list.append({
+                        "booking_id":job.id,
                         "job_type":job.jobmachine.job_type,
                         "description":job.jobmachine.description,
                         "village":job.jobmachine.grahak.profile.village,
@@ -519,8 +522,56 @@ class CompletedStatusApi(APIView):
 # class RejectedBooking(APIView):
 #     permission_classes=[IsAuthenticated,]
 #     def post(self,request,format=None):
+#         bookingid=request.data.get('booking_id')
+#         count_male=request.data.get('count_male')
+#         count_female=request.data.get('count_female')
+#         status=request.data.get('status')
 
+#         if not bookingid:
+#             return Response({'error':'booking_id required !'})
+#         if not bookingid.isdigit():
+#             return Response({'error':'booking_id must be numeric !'})   
+#         if not status:
+#             return Response({'error':'status required !'}) 
+#         if not status in ['Cancelled','Rejected','Cancelled-After-Payment','Rejected-After-Payment','Admin-Refunded']:
+#             return Response({'error':'invilid status'})
 #         if request.user.user_type == 'Sahayak':
+#             try:
+#                 job=JobBooking.objects.get(pk=bookingid)   
+#             except JobBooking.DoesNotExist:
+#                 return Response({'error':'Booking does not exist !'})
+#             if job.jobsahayak:
+#                 if job.jobsahayak.job_type == 'individual_sahayak':
+#                     if not count_male and not count_female:
+#                         return Response({'error':'count_male and count_female required !'})
+#                     if not count_male.isdigit() and not count_female.isdigit():
+#                         return Response({'error':'count_male and count_female should be numeric !'})
+#                     if job.status == status:
+#                         return Response({'msg':'status already up to date !'})    
+#                     job.status=status
+#                     job.save()
+#                     if job.jobsahayak.status == 'Pending':     
+#                         job.jobsahayak.count_male+=int(count_male)
+#                         job.jobsahayak.count_female+=int(count_female)
+#                         job.jobsahayak.save()
+#                     else:
+#                         job.jobsahayak.count_male=int(count_male) 
+#                         job.jobsahayak.count_female=int(count_female)
+#                         job.jobsahayak.status='Pending'   
+#                         job.jobsahayak.save()
+#                 else:
+#                     job.jobsahayak.status='Pending'        
+#                     job.jobsahayak.save()
+#                     job.status=status
+#                     job.save()
+#         else:
+#             return Response({'error':'you are not Sahayak'})
+#         if request.user.user_type == 'MachineMalik':
+#             pass     
+
+
+ 
+
             
 
 # class RejectedThekePeKam(APIView):
