@@ -22,7 +22,7 @@ class JobDetailsAdmin(APIView):
         status = request.GET.get('status')
         print(status)
         data=[]
-        if status == 'Pending':
+        if status == 'Pending' or status == 'Cancelled' or status == 'Timeout':
             job_sahayak=JobSahayak.objects.filter(status=status)
             job_machine=JobMachine.objects.filter(status=status)
             for jobs in job_sahayak:
