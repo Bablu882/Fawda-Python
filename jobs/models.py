@@ -36,6 +36,8 @@ class JobSahayak(models.Model):
         ('Booked', 'Booked'),
         ('Ongoing','Ongoing'),
         ('Completed','Completed'),
+        ('Cancelled','Cancelled'),
+        ('Timeout','Timeout')
     )
     JOB_TYPE_CHOICES = (
         ('theke_pe_kam', 'theke_pe_kam'),
@@ -131,6 +133,10 @@ class JobMachine(models.Model):
         ('Booked', 'Booked'),
         ('Ongoing','Ongoing'),
         ('Completed','Completed'),
+        ('Cancelled','Cancelled'),
+        ('Timeout','Timeout')
+
+
     )
     LAND_TYPE_CHOICES=(
         ('Killa','Killa'),

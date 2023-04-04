@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'payments',
     'rest_framework',
     'rest_framework_simplejwt',
-    'admin_panel'
+    'admin_panel',
+    'simple_history',
 
 
 ]
@@ -110,7 +111,7 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'fawdatest6',
+#         'NAME': 'fawdaapi',
 #         'USER': 'root',
 #         'PASSWORD': 'XdQ6e2UIIxlzxhg',
 #         'HOST': 'localhost',
