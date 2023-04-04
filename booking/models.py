@@ -3,6 +3,8 @@ from authentication.models import User
 from jobs.models import JobSahayak,JobMachine
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from simple_history.models import HistoricalRecords
+
 
 
 class JobBooking(models.Model):
@@ -12,6 +14,11 @@ class JobBooking(models.Model):
         ('Booked', 'Booked'),
         ('Ongoing','Ongoing'),
         ('Completed','Completed'),
+        ('Cancelled','Cancelled'),
+        ('Rejected','Rejected'),
+        ('Cancelled-After-Payment','Cancelled-After-Payment'),
+        ('Rejected-After-Payment','Rejected-After-Payment'),
+        ('Admin-Refunded','Admin-Refunded')
     )
     # total_amount=models.CharField(max_length=100,null=True,blank=True) 
     jobsahayak = models.ForeignKey(JobSahayak, on_delete=models.CASCADE,null=True,blank=True)
@@ -21,7 +28,7 @@ class JobBooking(models.Model):
     date_booked = models.DateTimeField(null=True,blank=True)
     date_ongoing=models.DateTimeField(null=True,blank=True)
     date_completed=models.DateTimeField(null=True,blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_TYPE_CHOICES)
+    status = models.CharField(max_length=50, choices=STATUS_TYPE_CHOICES)
     count_male=models.CharField(max_length=100,null=True,blank=True)
     count_female=models.CharField(max_length=100,null=True,blank=True)
     total_amount=models.CharField(max_length=100,null=True,blank=True)
@@ -38,6 +45,8 @@ class JobBooking(models.Model):
         ('Paid','Paid')
     )
     is_admin_paid=models.CharField(max_length=20,choices=ADMIN_PAYMENT, default='Pending')
+    history = HistoricalRecords()
+
 
     def __str__(self):
         if self.jobsahayak:

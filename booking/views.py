@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from .serializers import *
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from jobs.serializers import JobSahaykSerialiser,GetJobMachineSerializer
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 class JobAcceptMachin(APIView):
     permission_classes=[IsAuthenticated,]
@@ -271,7 +273,7 @@ class MyBookingDetailsSahayak(APIView):
                     'fawda_fee': booking.fawda_fee,
                     'booking_user_id':booking.booking_user.id,
                     'datetime':booking.jobsahayak.datetime,
-                    'discription':booking.jobsahayak.description,
+                    'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'pay_for_male':booking.jobsahayak.pay_amount_male,
                     'pay_for_female':booking.jobsahayak.pay_amount_female,
@@ -291,7 +293,7 @@ class MyBookingDetailsSahayak(APIView):
                     'payment_your':booking.payment_your,
                     'datetime':booking.jobsahayak.datetime,
                     'land_area':booking.jobsahayak.land_area,
-                    'discription':booking.jobsahayak.description,
+                    'description':booking.jobsahayak.description,
                     'fawda_fee':booking.fawda_fee,
                     'booking_user_id':booking.booking_user.id,
                     'job_type':booking.jobsahayak.job_type,
@@ -382,7 +384,7 @@ class MyBookingDetails(APIView):
                     'fawda_fee': booking.fawda_fee,
                     'booking_user_id':booking.booking_user.id,
                     'datetime':booking.jobsahayak.datetime,
-                    'discription':booking.jobsahayak.description,
+                    'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'pay_for_male':booking.pay_amount_male,
                     'pay_for_female':booking.pay_amount_female,
@@ -403,7 +405,7 @@ class MyBookingDetails(APIView):
                     'payment_your':booking.payment_your,
                     'datetime':booking.jobsahayak.datetime,
                     'land_area':booking.jobsahayak.land_area,
-                    'discription':booking.jobsahayak.description,
+                    'description':booking.jobsahayak.description,
                     'fawda_fee':booking.fawda_fee,
                     'booking_user_id':booking.booking_user.id,
                     'job_type':booking.jobsahayak.job_type,
@@ -428,6 +430,7 @@ class MyBookingDetails(APIView):
                 'booking_id':booking.id,
                 'id':booking.jobmachine.id,
                 'work_type':booking.jobmachine.work_type,
+                'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
                 'datetime':booking.jobmachine.datetime,
                 'land_area':booking.jobmachine.land_area,
@@ -533,63 +536,67 @@ class CompletedStatusApi(APIView):
 
 
 
-# class RejectedBooking(APIView):
-#     permission_classes=[IsAuthenticated,]
-#     def post(self,request,format=None):
-#         bookingid=request.data.get('booking_id')
-#         count_male=request.data.get('count_male')
-#         count_female=request.data.get('count_female')
-#         status=request.data.get('status')
-#         if not bookingid:
-#             return Response({'error':'booking_id required !'})
-#         if not bookingid.isdigit():
-#             return Response({'error':'booking_id must be numeric !'})   
-#         if not status:
-#             return Response({'error':'status required !'}) 
-#         if not status in ['Rejected','Rejected-After-Payment']:
-#             return Response({'error':'invilid status'})
-#         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
-#             try:
-#                 job=JobBooking.objects.get(pk=bookingid)   
-#             except JobBooking.DoesNotExist:
-#                 return Response({'error':'Booking does not exist !'})
-#             if job.jobsahayak:
-#                 if job.jobsahayak.job_type == 'individuals_sahayak':
-#                     if not count_male and not count_female:
-#                         return Response({'error':'count_male and count_female required !'})
-#                     if not count_male.isdigit() and not count_female.isdigit():
-#                         return Response({'error':'count_male and count_female should be numeric !'})
-#                     if job.status == status:
-#                         return Response({'msg':'status already up to date !'})    
-#                     job.status=status
-#                     job.save()
-#                     if job.jobsahayak.status == 'Pending':     
-#                         job.jobsahayak.count_male+=int(count_male)
-#                         job.jobsahayak.count_female+=int(count_female)
-#                         job.jobsahayak.save()
-#                     else:
-#                         job.jobsahayak.count_male=int(count_male) 
-#                         job.jobsahayak.count_female=int(count_female)
-#                         job.jobsahayak.status='Pending'   
-#                         job.jobsahayak.save()
-#                 else:
-#                     job.jobsahayak.status='Pending'        
-#                     job.jobsahayak.save()
-#                     job.status=status
-#                     job.save()
-#             else:
-#                 job.jobmachine.status='Pending'
-#                 if job.jobmachine.status == status:
-#                     return Response({'msg':'status already up to date !'})
-#                 job.status=status
-#                 job.jobmachine.save()
-#                 job.save()
-#                 return Response({'success':'status updated !'})    
-#         else:
-#             return Response({'error':'you are not Sahayak or MachineMalik'})
+class RejectedBooking(APIView):
+    permission_classes=[IsAuthenticated,]
+    def post(self,request,format=None):
+        bookingid=request.data.get('booking_id')
+        count_male=request.data.get('count_male')
+        count_female=request.data.get('count_female')
+        status=request.data.get('status')
+        if not bookingid:
+            return Response({'error':'booking_id required !'})
+        if not bookingid.isdigit():
+            return Response({'error':'booking_id must be numeric !'})   
+        if not status:
+            return Response({'error':'status required !'}) 
+        if not status in ['Rejected','Rejected-After-Payment']:
+            return Response({'error':'invilid status'})
+        if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
+            try:
+                job=JobBooking.objects.get(pk=bookingid)   
+            except JobBooking.DoesNotExist:
+                return Response({'error':'Booking does not exist !'})
+            if job.jobsahayak:
+                if not request.user == job.booking_user:
+                    return Response({'error':'you are not existing Grahak of this booking !'})
+                if job.jobsahayak.job_type == 'individuals_sahayak':
+                    if not count_male and not count_female:
+                        return Response({'error':'count_male and count_female required !'})
+                    if not count_male.isdigit() and not count_female.isdigit():
+                        return Response({'error':'count_male and count_female should be numeric !'})
+                    if job.status == status:
+                        return Response({'msg':'status already up to date !'})    
+                    job.status=status
+                    job.save()
+                    if job.jobsahayak.status == 'Pending':     
+                        job.jobsahayak.count_male+=int(count_male)
+                        job.jobsahayak.count_female+=int(count_female)
+                        job.jobsahayak.save()
+                    else:
+                        job.jobsahayak.count_male=int(count_male) 
+                        job.jobsahayak.count_female=int(count_female)
+                        job.jobsahayak.status='Pending'   
+                        job.jobsahayak.save()
+                else:
+                    job.jobsahayak.status='Pending'        
+                    job.jobsahayak.save()
+                    job.status=status
+                    job.save()
+            else:
+                if not request.user == job.booking_user:
+                    return Response({'error':'you are not existing MachineMalik of this booking !'})
+                job.jobmachine.status='Pending'
+                if job.jobmachine.status == status:
+                    return Response({'msg':'status already up to date !'})
+                job.status=status
+                job.jobmachine.save()
+                job.save()
+                return Response({'success':'status updated !'})    
+        else:
+            return Response({'error':'you are not Sahayak or MachineMalik'})
             
-#         # Add a return statement here
-#         return Response({'msg':'Booking rejected successfully.'})
+        # Add a return statement here
+        return Response({'msg':'Booking rejected successfully.'})
 
             
 # class CancelledBooking(APIView):
@@ -651,19 +658,129 @@ class CompletedStatusApi(APIView):
 #         # Add a return statement here
 #         return Response({'msg':'Booking Cancelled successfully.'})
 
-# # class RejectedThekePeKam(APIView):
-# #     def post(self,request,format=None):
-# #         pass 
 
-# # class RejectedMachineMalik(APIView):
-# #     def post(self,request,format=None):
-# #         pass 
+class CancellationBookingJob(APIView):
+    def post(self,request,format=None):
+        jobid=request.data.get('job_id')
+        jobnumber=request.data.get('job_number')
+        status=request.data.get('status')
+        if not jobid and not jobid.isdigit():
+            return Response({'error':'job_id is required in numeric !'})
+        if not jobnumber:
+            return Response({'error':'job_number required !'})
+        if JobBooking.objects.filter(Q(jobsahayak__job_number=jobnumber, jobsahayak_id=jobid) | Q(jobmachine__job_number=jobnumber, jobmachine_id=jobid)).exists():
+            booking_id=request.data.get('booking_id')
+            job_booking = get_object_or_404(JobBooking,pk=booking_id)
+            print(job_booking)
+            if job_booking.jobsahayak:
+                if job_booking.jobsahayak.status in ['Ongoing','Completed']:
+                    return Response({'error':'status can not be updated !'})
+                if not request.user == job_booking.jobsahayak.grahak:
+                    return Response({'error':'you are not existing with this booking !'})
+                job_booking.jobsahayak.status = 'Cancelled'
+                job_booking.jobsahayak.save()
+            else:
+                if job_booking.jobmachine.status in  ['Ongoing','Completed']:
+                    return Response({'error':'status can not updated !'})
+                if not request.user == job_booking.jobmachine.grahak:
+                    return Response({'error':'you are not existing with this booking !'})
+                job_booking.jobmachine.status = 'Cancelled'    
+                job_booking.jobmachine.save()
+            if not status:
+                return Response({'error':'status required'})    
+            if not status in ['Cancelled','Cancelled-After-Payment']:
+                return Response({'error':'invilid status !'})    
+            if job_booking.status == status:
+                return Response({'mag':'stauts already up to date !'})
+            job_booking.status = status
+            job_booking.save()
+            return Response({'success':'status updated !'})    
+        elif JobSahayak.objects.filter(pk=jobid,job_number=jobnumber).exists():
+            get_job=get_object_or_404(JobSahayak,pk=jobid,job_number=jobnumber)
+            if get_job.status == 'Cancelled':
+                return Response({'mag':'status already up to date !'})
+            if not request.user == get_job.grahak:
+                    return Response({'error':'you are not existing with this job !'})
+            if get_job.status in  ['Ongoing','Completed','Timeout']:
+                return Response({'error':'status can not be updated !'})        
+            get_job.status='Cencelled'
+            get_job.save()
+            return Response({'success':'status is updated !'})
+        elif JobMachine.objects.filter(pk=jobid,job_number=jobnumber).exists():
+            get_job1=get_object_or_404(JobMachine,pk=jobid,job_number=jobnumber)
+            if get_job1.status == 'Cancelled':
+                return Response({'msg':'status already up to date !'})    
+            if not request.user == get_job1.grahak:
+                    return Response({'error':'you are not existing with this job !'})
+            if not get_job1.status in  ['Ongoing','Completed','Timeout']:
+                return Response({'error':'status can not be updated !'})        
+            get_job1.status='Cencelled'
+            get_job1.save()
+            return Response({'success':'status is updated !'})
+        else:
+            return Response({'error':'invilid job_id or job_number'}) 
 
 
-# # class CancelledPending(APIView):
-# #     def post(self,request,format=None):
-# #         pass
+# class CancellationBookingJob(APIView):
+#     def post(self, request, format=None):
+#         job_id = request.data.get('job_id')
+#         job_number = request.data.get('job_number')
+#         status = request.data.get('status')
 
-# # class CancelledBooking(APIView):
-# #     def post(self,request,format=None):
-# #         pass        
+#         if not job_id or not job_id.isdigit():
+#             return Response({'error': 'job_id is required in numeric!'})
+
+#         job_booking_qs = JobBooking.objects.filter(
+#             jobsahayak__job_number=job_number,
+#             jobsahayak__id=job_id,
+#             jobmachine__job_number=job_number,
+#             jobmachine__id=job_id
+#         )
+#         print(job_booking_qs)
+
+#         if job_booking_qs.exists():
+#             job_booking = job_booking_qs.first()
+
+#             if job_booking.jobsahayak:
+#                 if not request.user == job_booking.jobsahayak.grahak:
+#                     return Response({'error': 'you are not authorized for this booking!'})
+
+#                 job_booking.jobsahayak.status = 'Cancelled'
+#                 job_booking.jobsahayak.save()
+
+#             if job_booking.jobmachine:
+#                 if not request.user == job_booking.jobmachine.grahak:
+#                     return Response({'error': 'you are not authorized for this booking!'})
+
+#                 job_booking.jobmachine.status = 'Cancelled'
+#                 job_booking.jobmachine.save()
+
+#             job_booking.status = 'Cancelled'
+#             job_booking.save()
+
+#             return Response({'success': 'status is updated!'})
+
+#         elif JobSahayak.objects.filter(pk=job_id, job_number=job_number).exists():
+#             job_sahayak = JobSahayak.objects.get(pk=job_id, job_number=job_number)
+
+#             if not request.user == job_sahayak.grahak:
+#                 return Response({'error': 'you are not authorized for this job!'})
+
+#             job_sahayak.status = 'Cancelled'
+#             job_sahayak.save()
+
+#             return Response({'success': 'status is updated!'})
+
+#         elif JobMachine.objects.filter(pk=job_id, job_number=job_number).exists():
+#             job_machine = JobMachine.objects.get(pk=job_id, job_number=job_number)
+
+#             if not request.user == job_machine.grahak:
+#                 return Response({'error': 'you are not authorized for this job!'})
+
+#             job_machine.status = 'Cancelled'
+#             job_machine.save()
+
+#             return Response({'success': 'status is updated!'})
+
+#         else:
+#             return Response({'error': 'invalid job_id or job_number!'})

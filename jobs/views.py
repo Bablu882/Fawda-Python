@@ -389,7 +389,8 @@ class GetAllJob(APIView):
                 print(distance)
                 if distance <= 5:
                     serial=GetJobIndividualsSerializer(job_post)
-                    result.append(serial.data)
+                    
+                    result.append({"data":serial.data,'village':job_post.grahak.profile.village})
         elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending')
             for job_post in job_posts_machin:
@@ -401,7 +402,7 @@ class GetAllJob(APIView):
                 # print(distance)
                 if distance <= 10:
                     serial=GetJobMachineSerializer(job_post)
-                    result.append(serial.data)        
+                    result.append({"data":serial.data,"village":job_post.grahak.profile.village})        
         else:
             return Response({'error':'You are not Sahayak or MachinMalik'})            
         return Response(result)

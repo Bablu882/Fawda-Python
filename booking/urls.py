@@ -15,6 +15,7 @@ urlpatterns=[
        path('api/booking_ongoing/',OngoingStatusApi.as_view()),
        path('api/booking_completed/',CompletedStatusApi.as_view()),
        path('api/get-reating/',RatingGet.as_view()),
-       # path('api/rejected/',RejectedBooking.as_view(),)
+       path('api/rejected/',RejectedBooking.as_view()),
+       path('api/cancel/',CancellationBookingJob.as_view()),
 
 ]
