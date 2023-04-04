@@ -234,7 +234,9 @@ class MyJobsDetais(APIView):
                         "total_amount_machine":job.total_amount_machine,
                         "grahak_name":job.jobmachine.grahak.profile.name,
                         "grahak_phone":job.jobmachine.grahak.mobile_no,
-                        "status":job.status 
+                        "status":job.status,
+                        "work_type":job.jobmachine.work_type,
+                        "machine":job.jobmachine.machine 
                     })            
             
             return Response({'success':True,'data':myjob_list})
