@@ -405,6 +405,7 @@ class GetAllJob(APIView):
                         "pay_amount_female":job_post.pay_amount_female,
                         "total_amount":job_post.total_amount,
                         "total_amount_theka":job_post.total_amount_theka,
+                        "total_amount_sahayak":job_post.total_amount_sahayak,
                         "num_days":job_post.num_days,
                         "land_area":job_post.land_area,
                         "land_type":job_post.land_type,
