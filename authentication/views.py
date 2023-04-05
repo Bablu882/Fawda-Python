@@ -52,9 +52,12 @@ class RegisterApi(APIView):
         district = request.data.get('district')
         latitude= request.data.get('latitude')
         longitude=request.data.get('longitude')
+        deviceid=request.data.get('device_id')
 
 
         # Validate phone number
+        if not deviceid:
+            return Response({'error':'device_id required !'})
         if not phone_number:
             return Response({'error': 'Phone number is required.'})
         if not re.match(r'^\d{10}$', phone_number):
@@ -127,6 +130,7 @@ class RegisterApi(APIView):
 
         # Generate JWT tokens for the user
         token = RefreshToken.for_user(user)
+        token['device_id'] = deviceid
         key = {
             'refresh': str(token),
             'access': str(token.access_token),
@@ -168,10 +172,14 @@ class LoginApi(APIView):
     permission_classes=[AllowAny,]
     def post(self, request, *args, **kwargs):
         phone = request.data.get('phone')
+        deviceid=request.data.get('device_id')
+
         if not phone:
             return Response({'error':'enter valid phone number !'})
         if not re.match(r'^\d{10}$', phone):
             return Response({'error': 'Phone number should be 10 digits.'})   
+        if not deviceid:
+            return Response({'error':'device_id required !'})    
         user = authenticate(request, mobile_no=phone)
         if user is not None:
             login(request, user)
@@ -182,6 +190,7 @@ class LoginApi(APIView):
             )
             #send here OTP to mobile no.for varification
             refresh = RefreshToken.for_user(user)
+            refresh['device_id'] = deviceid 
             tokens = {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),

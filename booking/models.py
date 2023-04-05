@@ -42,7 +42,8 @@ class JobBooking(models.Model):
     pay_amount_female=models.CharField(max_length=100,null=True,blank=True)
     ADMIN_PAYMENT=(
         ('Pending','Pending'),
-        ('Paid','Paid')
+        ('Paid','Paid'),
+        ('Refunded','Refunded')
     )
     is_admin_paid=models.CharField(max_length=20,choices=ADMIN_PAYMENT, default='Pending')
     history = HistoricalRecords()

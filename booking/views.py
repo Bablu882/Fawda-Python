@@ -395,7 +395,8 @@ class MyBookingDetails(APIView):
                     'user_status':booking.booking_user.user_type,
                     'sahayak_name':booking.booking_user.profile.name,
                     'sahayak_village':booking.booking_user.profile.village,
-                    'sahayak_mobile_no':booking.booking_user.mobile_no
+                    'sahayak_mobile_no':booking.booking_user.mobile_no,
+                    'job_number':booking.jobsahayak.job_number
                 })
             else:
                 booking_data.append({
@@ -414,7 +415,8 @@ class MyBookingDetails(APIView):
                     'user_status':booking.booking_user.user_type,
                     'thekedar_name':booking.booking_user.profile.name,
                     'thekedar_village':booking.booking_user.profile.village,
-                    'thekedar_mobile_no':booking.booking_user.mobile_no
+                    'thekedar_mobile_no':booking.booking_user.mobile_no,
+                    'job_number':booking.jobsahayak.job_number
                 })    
         response_data = {
             'total_amount': total_amount,
@@ -443,7 +445,8 @@ class MyBookingDetails(APIView):
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
                 'machine_malik_mobile_no':booking.booking_user.mobile_no,
-                'booking_user_id':booking.booking_user.id
+                'booking_user_id':booking.booking_user.id,
+                'job_number':booking.jobmachine.job_number
                 
             })
         booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending')

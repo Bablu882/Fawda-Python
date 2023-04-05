@@ -1,0 +1,162 @@
+
+{% load adminlte_helpers i18n %}
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    
+    {% block meta %}
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    {% endblock %}
+<link rel="icon" href="{{site_info.favicon.url}}">
+    {% block stylesheets %}
+        {% include 'adminlte/lib/_styles.html' %}
+    {% endblock %}
+
+    {% block extra_head %}{% endblock %}
+</head>
+<style>
+  table {
+  font-size: 14px;
+}
+
+th {
+  background-color: #717579;
+  color: white;
+}
+
+td {
+  background-color: #f2f2f2;
+  color: black;
+}
+
+</style>
+<body class="hold-transition sidebar-mini {% block body_class %}{% block bodyclass %}{% endblock %}{% endblock %}">
+
+{% block body %}
+    <div class="wrapper">
+        {% block nav_header %}
+            {% include 'adminlte/lib/_main_header.html' %}
+        {% endblock %}
+
+        {% block nav_sidebar %}
+            {% include 'adminlte/lib/_main_sidebar.html' %}
+        {% endblock %}
+
+        {% block content_wrapper %}
+        <div class="content-wrapper">
+            {% block content_header %}
+                <section class="content-header">
+                    {% block no_heading %}
+                        <h1>
+                            {% block page_name %}{% endblock %}
+                            <div class="header-actions">
+                                {% block page_actions %}{% endblock %}
+                            </div>
+                            {% block no_description %}
+                            <small>{% block page_description %}{% endblock %}</small>
+                            {% endblock %}
+                        </h1>
+                        {% block breadcrumbs %}
+                            {# Breadcrumb implementation left to developers #}
+                        {% endblock %}
+                    {% endblock no_heading %}
+                </section>
+            {% endblock %}
+
+            {% block content_outer %}
+            <section class="content">
+
+              <div class="justify-content-between d-flex align-items-center">
+                <h1>Booking Log</h1>
+                <a href="#" class="btn btn-primary">Download</a>
+              </div>
+
+              <table class="table table-bordered table-striped table-hover table-sm table-dark border-dark">
+                <thead class="bg-primary text-white">
+                  <tr>
+                    <th scope="col">History Id</th>
+                    <th scope="col">History Date</th>
+                    <th scope="col">History Type</th>
+                    <th scope="col">Date Accepted</th>
+                    <th scope="col">Date Booked</th>
+                    <th scope="col">Date Ongoing</th>
+                    <th scope="col">Date Completed</th>
+                    <th scope="col">Booking Status</th>
+                    <th scope="col">Is Admin Paid</th>
+                    <th scope="col">Count Male</th>
+                    <th scope="col">Count Female</th>
+                    <th scope="col">Pay For Male</th>
+                    <th scope="col">Pay For Female</th>
+                    <th scope="col">Total Amount</th>
+                    <th scope="col">Total Amount Sahayak</th>
+                    <th scope="col">Total Amount Theka</th>
+                    <th scope="col">Total Amount Machine</th>
+                    <th scope="col">Payment Your</th>
+                    <th scope="col">Fawda Fee</th>
+                    <th scope="col">Admin Commission</th>
+                    <th scope="col">Booking User Id</th>
+                    <th scope="col">Job Machine Id</th>
+                    <th scope="col">Job Sahayak Id</th>
+
+
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for history in historys %}
+                  <tr>
+                    <td>{{history.history_id}}</td>
+                    <td>{{history.history_date}}</td>
+                    <td>{{history.history_type}}</td>
+                    <td>{{history.date_accepted}}</td>
+                    <td>{{history.date_booked}}</td>
+                    <td>{{history.date_ongoing}}</td>
+                    <td>{{history.date_completed}}</td>
+                    <td>{{history.status}}</td>
+                    <td>{{history.is_admin_paid}}</td>
+                    <td>{{history.count_male}}</td>
+                    <td>{{history.count_female}}</td>
+                    <td>{{history.pay_amount_male}}</td>
+                    <td>{{history.pay_amount_female}}</td>
+                    <td>{{history.total_amount}}</td>
+                    <td>{{history.total_amount_sahayak}}</td>
+                    <td>{{history.total_amount_theka}}</td>
+                    <td>{{history.total_amount_machine}}</td>
+                    <td>{{history.payment_your}}</td>
+                    <td>{{history.fawda_fee}}</td>
+                    <td>{{history.admin_commission}}</td>
+                    <td>{{history.booking_user_id}}</td>
+                    <td>{{history.jobmachine_id}}</td>
+                    <td>{{history.jobmachine_id}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </section>
+            {% endblock %}
+
+        </div>
+        {% endblock content_wrapper %}
+        
+        {% block nav_footer %}
+            {% include 'adminlte/lib/_main_footer.html' %}
+        {% endblock %}
+
+    </div>
+{% endblock body %}
+
+{% block javascript %}
+{% include 'adminlte/lib/_scripts.html' %}
+<script src="/static/assets-admin/js/chart.js"></script>
+<script src="/static/assets-admin/js/custom-chart.js" type="text/javascript"></script>
+
+{% endblock %}
+
+{% block extra_js %}{% endblock %}
+
+{% block extra_foot %}{% endblock %}
+</body>
+</html>
