@@ -386,7 +386,13 @@
               row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
-              row.append(`<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`);
+
+              let button = `<td></td>`;
+              if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
+                button = `<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
+              }
+
+              row.append(button);
               tableBody.append(row); // Append new row
             });
           }

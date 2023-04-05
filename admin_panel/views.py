@@ -22,7 +22,7 @@ class JobDetailsAdmin(APIView):
         status = request.GET.get('status')
         print(status)
         data=[]
-        if status == 'Pending' or status == 'Cancelled' or status == 'Timeout':
+        if status == 'Pending' or status == 'Timeout':
             job_sahayak=JobSahayak.objects.filter(status=status)
             job_machine=JobMachine.objects.filter(status=status)
             for jobs in job_sahayak:
@@ -67,7 +67,7 @@ class JobDetailsAdmin(APIView):
                             'Payment_status':jobs.is_admin_paid
 
                         })
-                    elif jobs.jobsahayak.job_type == 'individuals_sahayak':
+                    else:
                         data.append({
                             'id':jobs.id,
                             'job_number':jobs.jobsahayak.job_number,
@@ -207,41 +207,47 @@ class AdminPaymentStatus(APIView):
     permission_classes=[AllowAny,]
     def post(self,request,format=None):
         get_id=request.POST.get('id')
-        print(get_id)
-        if JobBooking.objects.filter(pk=get_id).exists():
-            get=JobBooking.objects.get(pk=get_id)
-            get.is_admin_paid='Paid'
-            get.save()
-            if get.jobsahayak:
-                booking=BookingHistorySahayak.objects.create(
-                    grahak_name=get.jobsahayak.grahak.profile.name,
-                    grahak_mobile_no=get.jobsahayak.grahak.mobile_no,
-                    job_type=get.jobsahayak.job_type,
-                    job_number=get.jobsahayak.job_number,
-                    job_posting_date=get.jobsahayak.date,
-                    job_booking_date=get.date_booked,
-                    job_status=get.jobsahayak.status,
-                    payment_status_by_admin=get.is_admin_paid,
-                    paid_to_service_provider=get.payment_your,
-                    paid_by_grahak=get.total_amount,
-                    sahayak_name=get.booking_user.profile.name,
-                    sahayak_mobile_no=get.booking_user.mobile_no
-                )
-            else:
-                booking=BookingHistoryMachine.objects.create(
-                    grahak_name=get.jobmachine.grahak.profile.name,
-                    grahak_mobile_no=get.jobmachine.grahak.mobile_no,
-                    job_type=get.jobmachine.job_type,
-                    job_number=get.jobmachine.job_number,
-                    job_posting_date=get.jobmachine.date,
-                    job_booking_date=get.date_booked,
-                    job_status=get.jobmachine.status,
-                    payment_status_by_admin=get.is_admin_paid,
-                    paid_to_service_provider=get.payment_your,
-                    paid_by_grahak=get.total_amount,
-                    machine_malik_name=get.booking_user.profile.name,
-                    machine_malik_mobile_no=get.booking_user.mobile_no
-                )  
+        if request.user.is_superuser:
+            if JobBooking.objects.filter(pk=get_id).exists():
+                get=JobBooking.objects.get(pk=get_id)
+                if get.status == 'Completed':
+                    get.is_admin_paid='Paid'
+                    get.save()
+                    if get.jobsahayak:
+                        booking=BookingHistorySahayak.objects.create(
+                            grahak_name=get.jobsahayak.grahak.profile.name,
+                            grahak_mobile_no=get.jobsahayak.grahak.mobile_no,
+                            job_type=get.jobsahayak.job_type,
+                            job_number=get.jobsahayak.job_number,
+                            job_posting_date=get.jobsahayak.date,
+                            job_booking_date=get.date_booked,
+                            job_status=get.jobsahayak.status,
+                            payment_status_by_admin=get.is_admin_paid,
+                            paid_to_service_provider=get.payment_your,
+                            paid_by_grahak=get.total_amount,
+                            sahayak_name=get.booking_user.profile.name,
+                            sahayak_mobile_no=get.booking_user.mobile_no
+                        )
+                    else:
+                        booking=BookingHistoryMachine.objects.create(
+                            grahak_name=get.jobmachine.grahak.profile.name,
+                            grahak_mobile_no=get.jobmachine.grahak.mobile_no,
+                            job_type=get.jobmachine.job_type,
+                            job_number=get.jobmachine.job_number,
+                            job_posting_date=get.jobmachine.date,
+                            job_booking_date=get.date_booked,
+                            job_status=get.jobmachine.status,
+                            payment_status_by_admin=get.is_admin_paid,
+                            paid_to_service_provider=get.payment_your,
+                            paid_by_grahak=get.total_amount,
+                            machine_malik_name=get.booking_user.profile.name,
+                            machine_malik_mobile_no=get.booking_user.mobile_no
+                        )  
+                elif get.status == 'Cancelled-After-Payment' or get.status == 'Rejected-After-Payment':
+                    get.is_admin_paid ='Refunded'
+                    get.status = 'Admin-Refunded'
+                    get.save()
+                            
         return Response({'msg':'Payment status updated successfully !'})    
 
 
@@ -255,6 +261,12 @@ def my_custom_view(request):
     bookings=BookingHistorySahayak.objects.all()
     bookings2=BookingHistoryMachine.objects.all()
     return render(request, 'admin/custom_home.html', {'bookings':bookings,'bookings2':bookings2})
+
+@staff_member_required
+def booking_log_history(request):
+    bookings=JobBooking.history.all()
+    print(bookings)
+    return render(request, 'admin/booking_log.html', {'historys':bookings})
 
 
 @staff_member_required
