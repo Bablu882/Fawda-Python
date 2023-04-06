@@ -3,6 +3,7 @@ from rest_framework.response import Response
 # import requests
 from .models import Payment
 from booking.models import JobBooking
+from rest_framework.permissions import AllowAny
 
 # class PaymentAPIView(APIView):
 #     def post(self, request):
@@ -57,6 +58,7 @@ from booking.models import JobBooking
 
 
 class TestPaymentAPIView(APIView):
+    permission_classes=[AllowAny,]
     def post(self, request):
         if request.user.user_type == 'Grahak':
             booking_id = request.data.get('booking_id')

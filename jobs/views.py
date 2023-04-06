@@ -96,6 +96,8 @@ class EditThekePeKam(APIView):
 
         # Get the JobSahayak object or return a 404 error response
         job = get_object_or_404(JobSahayak, pk=job_id, job_type='theke_pe_kam')
+        if not request.user == job.grahak:
+            return Response({'error':'unauthorised user !'})
         job.total_amount_theka = amount_decimal
         job.save()
 
@@ -214,6 +216,8 @@ class EditIndividualSahayak(APIView):
 
         # Get the JobSahayak object or return a 404 error response
         job = get_object_or_404(JobSahayak, pk=job_id, job_type='individuals_sahayak')
+        if not request.user == job.grahak:
+            return Response({'error':'unauthorised user !'})
         job.pay_amount_male = amount_male
         job.pay_amount_female=amount_female
         job.save()
@@ -313,6 +317,8 @@ class EditJobMachine(APIView):
 
         # Get the JobSahayak object or return a 404 error response
         job = get_object_or_404(JobMachine, pk=job_id, job_type='machine_malik')
+        if not request.user == job.grahak:
+            return Response({'error':'unauthorised user'})
         job.total_amount_machine = amount_decimal
         job.save()
 
