@@ -717,7 +717,7 @@ class CancellationBookingJob(APIView):
                 return Response({'msg':'status already up to date !'})    
             if not request.user == get_job1.grahak:
                     return Response({'error':'you are not existing with this job !'})
-            if not get_job1.status in  ['Ongoing','Completed','Timeout']:
+            if get_job1.status in  ['Ongoing','Completed','Timeout']:
                 return Response({'error':'status can not be updated !'})        
             get_job1.status='Cencelled'
             get_job1.save()
