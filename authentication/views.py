@@ -7,35 +7,35 @@ from django.views import View
 from datetime import datetime, date, timedelta
 from django.http import JsonResponse
 from rest_framework import viewsets
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
-from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate,login
 from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.urls import reverse
+from rest_framework.decorators import api_view,permission_classes
 import re
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+from django.urls import reverse
+from django.http import HttpResponseRedirect 
+from rest_framework.test import APIClient
 
 
 import random
 from rest_framework.permissions import AllowAny,IsAuthenticated
 # from twilio.rest import Client
 
+from django.core.cache import cache
+
+def blacklist_token(token):
+    cache.set(token, True)
 
 def test(request):
     return render(request,'authentication/test.html')
 
-
-def get_token(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'access_token': str(refresh.access_token),
-        'refresh_token': str(refresh),
-    }
 
 class RegisterApi(APIView):
     permission_classes = [AllowAny]
@@ -52,12 +52,9 @@ class RegisterApi(APIView):
         district = request.data.get('district')
         latitude= request.data.get('latitude')
         longitude=request.data.get('longitude')
-        deviceid=request.data.get('device_id')
 
 
         # Validate phone number
-        if not deviceid:
-            return Response({'error':'device_id required !'})
         if not phone_number:
             return Response({'error': 'Phone number is required.'})
         if not re.match(r'^\d{10}$', phone_number):
@@ -127,15 +124,7 @@ class RegisterApi(APIView):
             otp=otp,
             user=user
         )
-
-        # Generate JWT tokens for the user
-        token = RefreshToken.for_user(user)
-        token['device_id'] = deviceid
-        key = {
-            'refresh': str(token),
-            'access': str(token.access_token),
-        }
-
+        
         # Send OTP to user's phone number (use your own SMS gateway or API)
         # TODO: Implement SMS gateway/API integration to send OTP to user's phone number
         # ...
@@ -144,60 +133,78 @@ class RegisterApi(APIView):
         return Response({
             'success': True,
             'otp': otp_obj.otp,
-            'token': key,
         })
     
 
 class VerifyMobile(APIView):
     permission_classes=[AllowAny,]
+
     def post(self, request, format=None):
         otp_input = request.data.get('otp')
-        # get the user associated with the OTP
-        if not otp_input.isdigit():
-            return Response({'error':'otp should be number'})
         try:
             otp = OTP.objects.get(otp=otp_input)
-            user =otp.user
+            user = otp.user
         except OTP.DoesNotExist:
             return Response({'error': 'Invalid OTP'})
-        # mark user as verified and active
+
+        # Create new token for the user
+        use=Token.objects.filter(user=user)
+        print(use)
+        # Revoke any existing tokens for the user
+        Token.objects.filter(user=user).delete()
+        token, _ = Token.objects.get_or_create(user=user)
+        # Update user properties
         user.is_verified = True
         user.is_active = True
         user.save()
-        # delete the OTP
-        otp.delete()
-        return Response({'verified': True})
+
+        return Response({'verified':True,'token': token.key})
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def User_logout(request):
+    request.user.auth_token.delete()
+    logout(request)
+    response_data = {
+        'message': 'User logged out successfully',
+        'message':'token has been deleted '
+    }
+    return Response(response_data)
+
+
 
 class LoginApi(APIView):
-    permission_classes=[AllowAny,]
-    def post(self, request, *args, **kwargs):
-        phone = request.data.get('phone')
-        deviceid=request.data.get('device_id')
+    permission_classes = [AllowAny]
 
+    @method_decorator(never_cache)
+    def post(self, request, *args, **kwargs):
+        global response_data
+        response_data={'msg':'previous token has been deleted create new to verify !','msg2':'you are logged out verify token to login'}
+        phone = request.data.get('phone')
         if not phone:
             return Response({'error':'enter valid phone number !'})
         if not re.match(r'^\d{10}$', phone):
             return Response({'error': 'Phone number should be 10 digits.'})   
-        if not deviceid:
-            return Response({'error':'device_id required !'})    
         user = authenticate(request, mobile_no=phone)
+        if Token.objects.filter(user=user):
+            logout(request)
+            logout_url = reverse('User_logout')
+            client = APIClient()
+            response = client.get(logout_url, HTTP_AUTHORIZATION='Token ' + str(request.auth))
+            response_data = response.data
+            # Add remaining data from response to the new response
+            response_data.update({'success': True, 'user_type': user.user_type})
+
         if user is not None:
             login(request, user)
+            
             otp=random.randint(100000, 999999)
             otps=OTP.objects.create(
                 otp=otp,
                 user=user
             )
             #send here OTP to mobile no.for varification
-            refresh = RefreshToken.for_user(user)
-            refresh['device_id'] = deviceid 
-            tokens = {
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }
-            return Response({'success':True,'otp':otps.otp,'user_type':user.user_type,'token':tokens})
+            return Response({'success':True,'otp':otps.otp,'user_type':user.user_type,'data':response_data})
         return Response({'message':'User not registered','success': False})
-    
 
 class MobileNoAuthBackend(BaseBackend):
     def authenticate(self, request, mobile_no=None):
