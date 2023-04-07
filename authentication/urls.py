@@ -20,6 +20,7 @@ urlpatterns = [
     path('chart-ajax-admin/', views.chartJsonListViewAdmin.as_view(), name="chart-ajax-admin"),
     path('logout/',logout_view,name='logout'),
     path('api/districts/',DistrictApiView.as_view()),
+    path('api/logout/',User_logout,name='User_logout'),
    
 
 
