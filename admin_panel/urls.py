@@ -14,5 +14,6 @@ urlpatterns=[
     path('export-history-sahayak/',export_booking_history_sahayak_excel, name='history_sahayak'),
     path('export-history-machine/',export_booking_history_machine_excel, name='history_machine'),
     path('api/terms_and_conditions/',TermsAndCondition.as_view()),
+    path('api/client_user_info/',ClientUserInfo.as_view()),
 
 ]   

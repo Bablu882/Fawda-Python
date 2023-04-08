@@ -1,6 +1,12 @@
 from rest_framework import serializers
 from .models import *
-class TermsAndConditionSerializer(serializers.ModelSerializer):
+class ClientInformationsSerializer(serializers.ModelSerializer):
     class Meta:
-        model=TermsCondition
-        fields=['terms_condition','privacy_policy']
+        model=ClientInformations
+        fields='__all__'
+
+
+class AppVersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=AppVersion
+        fields='__all__'        

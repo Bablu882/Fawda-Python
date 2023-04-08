@@ -9,10 +9,11 @@ import uuid
 import openpyxl
 from django.http import HttpResponse
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from .serializers import *
+from authentication.views import BearerTokenAuthentication
 
 
 
@@ -442,6 +443,28 @@ def export_booking_history_machine_excel(request):
 class TermsAndCondition(APIView):
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
-        terms=TermsCondition.objects.all()
-        serializer=TermsAndConditionSerializer(terms,many=True)
+        terms=ClientInformations.objects.all()
+        serializer=ClientInformationsSerializer(terms,many=True)
         return Response(serializer.data)
+
+class ClientUserInfo(APIView):
+    permission_classes=[IsAuthenticated,]
+    authentication_classes=[BearerTokenAuthentication,]
+    def get(self,request,format=None):
+        print(request.user)
+        client_info=ClientInformations.objects.all()
+        app_version=AppVersion.objects.all()
+        serial=ClientInformationsSerializer(client_info,many=True)
+        serial2=AppVersionSerializer(app_version,many=True)
+        serial3=({
+            'phone':request.user.mobile_no,
+            'name':request.user.profile.name,
+            'mohalla':request.user.profile.mohalla,
+            'village':request.user.profile.village,
+            'gender':request.user.profile.gender,
+            'state':request.user.profile.state,
+            'district':request.user.profile.district
+        })
+        return Response(
+            {'client_info': serial.data, 'app_version': serial2.data, 'user_details': serial3}
+        )

@@ -11,10 +11,12 @@ from rest_framework.permissions import IsAuthenticated,AllowAny
 import uuid
 import re
 from dateutil import parser
+from authentication.views import BearerTokenAuthentication
 
 # Create your views here.
 
 class BookingThekePeKam(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
         if request.user.user_type == 'Grahak':
@@ -73,6 +75,8 @@ class BookingThekePeKam(APIView):
             return Response({'error':'You are not Grahak'})  
 
 class EditThekePeKam(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
+    permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
         job_id = request.data.get('job_id')
         amount = request.data.get('amount')
@@ -105,6 +109,7 @@ class EditThekePeKam(APIView):
  
 
 class BookingSahayakIndividuals(APIView):
+    permission_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
         if request.user.user_type == 'Grahak':
@@ -187,6 +192,8 @@ class BookingSahayakIndividuals(APIView):
 
 
 class EditIndividualSahayak(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
+    permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
         job_id = request.data.get('job_id')
         pay_amount_female = request.data.get('pay_amount_female')
@@ -227,6 +234,7 @@ class EditIndividualSahayak(APIView):
 
         
 class BookingJobMachine(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
         if request.user.user_type == 'Grahak':
@@ -294,6 +302,8 @@ class BookingJobMachine(APIView):
             return Response({'error':'You are not Grahak !'})        
 
 class EditJobMachine(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
+    permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
         job_id = request.data.get('job_id')
         amount = request.data.get('amount')
@@ -327,6 +337,7 @@ class EditJobMachine(APIView):
 
 ###---------------------------------------------------------------------------###
 class GetSahayakJobDetails(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
         if request.user.user_type == 'Sahayak':
@@ -344,6 +355,7 @@ class GetSahayakJobDetails(APIView):
         return Response({'error':'you are not Sahayak'})
         
 class GetMachineJobDetails(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
         if request.user.user_type == 'MachineMalik':
@@ -376,6 +388,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 class GetAllJob(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     # @csrf_exempt
     def get(self,request,format=None):
@@ -458,6 +471,7 @@ class GetAllJob(APIView):
 
 
 class GetMachineDetails(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
         work_type_id=request.data.get('id')
@@ -478,6 +492,7 @@ class GetMachineDetails(APIView):
             return Response(machines_by_work_type)
 
 class GetMachineDetailArray(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[AllowAny,]
     def post(self,request,format=None):
         worktype=request.data.get('work_type')
@@ -489,6 +504,7 @@ class GetMachineDetailArray(APIView):
             return Response({'error':'work_type required !'})    
 
 class GetWorkType(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
         data=WorkType.objects.all()
@@ -498,14 +514,13 @@ class GetWorkType(APIView):
 
 
 ###--------------------------------------------------------------------------------####
+
 class Requestuser(APIView):
+    authentication_classes = [BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def get(self,request):
         user=request.user
         return Response({'user':user.mobile_no,'user_type':user.user_type})
-    
-
-
 
 
 

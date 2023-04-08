@@ -49,9 +49,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'admin_panel',
     'simple_history',
-    'django_celery_results',
-    'django_celery_beat',
-
 
 ]
 
