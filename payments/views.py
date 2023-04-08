@@ -3,7 +3,8 @@ from rest_framework.response import Response
 # import requests
 from .models import Payment
 from booking.models import JobBooking
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny,IsAuthenticated
+from authentication.views import BearerTokenAuthentication
 
 # class PaymentAPIView(APIView):
 #     def post(self, request):
@@ -58,7 +59,8 @@ from rest_framework.permissions import AllowAny
 
 
 class TestPaymentAPIView(APIView):
-    permission_classes=[AllowAny,]
+    authentication_classes=[BearerTokenAuthentication,]
+    permission_classes=[IsAuthenticated,]
     def post(self, request):
         if request.user.user_type == 'Grahak':
             booking_id = request.data.get('booking_id')
@@ -103,3 +105,5 @@ class TestPaymentAPIView(APIView):
                 job.jobmachine.save()
 
             return Response(response_data)
+        else:
+            return Response({'error':'you are not Grahak !'})
