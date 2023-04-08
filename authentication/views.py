@@ -15,23 +15,36 @@ from django.contrib.auth.backends import BaseBackend
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 from django.urls import reverse
-from rest_framework.decorators import api_view,permission_classes
+from rest_framework.decorators import api_view,permission_classes,authentication_classes
 import re
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from django.urls import reverse
-from django.http import HttpResponseRedirect 
-from rest_framework.test import APIClient
-
-
+from django.contrib.sessions.models import Session
+from django.utils import timezone
 import random
 from rest_framework.permissions import AllowAny,IsAuthenticated
-# from twilio.rest import Client
+from rest_framework.authentication import TokenAuthentication
+from rest_framework import exceptions
 
-from django.core.cache import cache
+class BearerTokenAuthentication(TokenAuthentication):
+    keyword = 'Bearer'
 
-def blacklist_token(token):
-    cache.set(token, True)
+    def authenticate_credentials(self, key):
+        try:
+            token = key
+            if not isinstance(key, Token):
+                token = Token.objects.get(key=key)
+            if not token.user.is_active:
+                raise exceptions.AuthenticationFailed('User inactive or deleted.')
+            return (token.user, token)
+        except Token.DoesNotExist:
+            raise exceptions.AuthenticationFailed('Invalid token.')
+
+
+
+
+
 
 def test(request):
     return render(request,'authentication/test.html')
@@ -157,54 +170,53 @@ class VerifyMobile(APIView):
         user.is_verified = True
         user.is_active = True
         user.save()
-
+        OTP.objects.filter(user=user).delete()
         return Response({'verified':True,'token': token.key})
+    
 @api_view(["GET"])
+@authentication_classes([BearerTokenAuthentication])
 @permission_classes([IsAuthenticated])
 def User_logout(request):
     request.user.auth_token.delete()
     logout(request)
     response_data = {
-        'message': 'User logged out successfully',
-        'message':'token has been deleted '
+        'msg': 'user logged out successfully !',
+        'msg2':'previous token has been deleted !'
     }
     return Response(response_data)
 
 
-
 class LoginApi(APIView):
-    permission_classes = [AllowAny]
-
+    permission_classes = [AllowAny,]
     @method_decorator(never_cache)
     def post(self, request, *args, **kwargs):
-        global response_data
-        response_data={'msg':'previous token has been deleted create new to verify !','msg2':'you are logged out verify token to login'}
         phone = request.data.get('phone')
         if not phone:
             return Response({'error':'enter valid phone number !'})
         if not re.match(r'^\d{10}$', phone):
-            return Response({'error': 'Phone number should be 10 digits.'})   
+            return Response({'error': 'Phone number should be 10 digits.'})
+        
         user = authenticate(request, mobile_no=phone)
-        if Token.objects.filter(user=user):
-            logout(request)
-            logout_url = reverse('User_logout')
-            client = APIClient()
-            response = client.get(logout_url, HTTP_AUTHORIZATION='Token ' + str(request.auth))
-            response_data = response.data
-            # Add remaining data from response to the new response
-            response_data.update({'success': True, 'user_type': user.user_type})
-
         if user is not None:
+            # get all sessions of the user and delete them
+            sessions = Session.objects.filter(expire_date__gte=timezone.now(), session_key__contains=str(user.id))
+            for session in sessions:
+                session.delete()
+
+            # delete all tokens of the user
+            Token.objects.filter(user=user).delete()
+
+            # authenticate and login the user
             login(request, user)
-            
-            otp=random.randint(100000, 999999)
-            otps=OTP.objects.create(
-                otp=otp,
-                user=user
-            )
-            #send here OTP to mobile no.for varification
-            return Response({'success':True,'otp':otps.otp,'user_type':user.user_type,'data':response_data})
-        return Response({'message':'User not registered','success': False})
+
+            # create OTP and send it to the user
+            otp = random.randint(100000, 999999)
+            otps = OTP.objects.create(otp=otp, user=user)
+            # send OTP to the user's mobile number for verification
+
+            return Response({'success':True,'otp':otps.otp,'user_type':user.user_type,'data':'Previous sessions and tokens deleted successfully'})
+        else:
+            return Response({'error': 'Invalid phone number or user not registered'})
 
 class MobileNoAuthBackend(BaseBackend):
     def authenticate(self, request, mobile_no=None):
@@ -271,6 +283,7 @@ class chartJsonListViewAdmin(View):
 
 
 class StateViewSet(viewsets.ModelViewSet):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsOwnerOrReadOnly,]
     queryset = State.objects.all()
     serializer_class = StateSerializer
@@ -284,6 +297,7 @@ class StateViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 class DistrictApiView(APIView):
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[AllowAny,]
     def post(self,request,format=None):
         state=request.data.get('state')
@@ -300,6 +314,7 @@ class DistrictApiView(APIView):
             return Response({'error':'state required !'})  
 
 class ProfileApi(APIView):
+    authentication_classes=[BearerTokenAuthentication]
     permission_classes=[IsOwnerOrReadOnly]
     def get(self,request,format=None):
         profile=Profile.objects.get(user=request.user)
@@ -310,7 +325,4 @@ def logout_view(request):
     logout(request)
     admin_login_url = reverse('admin:login') # generate URL for admin login page
     return redirect(admin_login_url)
-
-
-
 

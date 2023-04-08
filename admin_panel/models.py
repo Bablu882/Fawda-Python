@@ -36,6 +36,15 @@ class BookingHistoryMachine(models.Model):
         return f"{self.grahak_name}+{self.machine_malik_name}+{self.job_type} success {self.payment_status_by_admin}"
 
  
-class TermsCondition(models.Model):
+class ClientInformations(models.Model):
     privacy_policy=models.TextField()
     terms_condition=models.TextField()
+    phone_no=models.CharField(max_length=20)
+    def __str__(self):
+        return self.phone_no
+
+class AppVersion(models.Model):
+    version=models.CharField(max_length=20)    
+    release_date=models.DateTimeField(auto_now_add=True)
+    def __str__(self) -> str:
+        return self.version
