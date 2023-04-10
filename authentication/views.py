@@ -173,7 +173,7 @@ class VerifyMobile(APIView):
         OTP.objects.filter(user=user).delete()
         return Response({'verified':True,'token': token.key})
     
-@api_view(["GET"])
+@api_view(["POST"])
 @authentication_classes([BearerTokenAuthentication])
 @permission_classes([IsAuthenticated])
 def User_logout(request):
