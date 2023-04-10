@@ -14,6 +14,8 @@ from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from .serializers import *
 from authentication.views import BearerTokenAuthentication
+from django.db.models import Max
+
 
 
 
@@ -451,12 +453,16 @@ class ClientUserInfo(APIView):
     permission_classes=[IsAuthenticated,]
     authentication_classes=[BearerTokenAuthentication,]
     def get(self,request,format=None):
-        print(request.user)
-        client_info=ClientInformations.objects.all()
-        app_version=AppVersion.objects.all()
-        serial=ClientInformationsSerializer(client_info,many=True)
-        serial2=AppVersionSerializer(app_version,many=True)
-        serial3=({
+        app_version= AppVersion.objects.order_by('-release_date').first()
+        latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+        if latest_info['created_at__max']:
+            latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])
+            client_info = {
+                'privacy_policy': latest_info.privacy_policy,
+                'terms_condition': latest_info.terms_condition,
+                'phone_no': latest_info.phone_no,
+            }
+        user_info=({
             'phone':request.user.mobile_no,
             'name':request.user.profile.name,
             'mohalla':request.user.profile.mohalla,
@@ -466,5 +472,5 @@ class ClientUserInfo(APIView):
             'district':request.user.profile.district
         })
         return Response(
-            {'client_info': serial.data, 'app_version': serial2.data, 'user_details': serial3}
+            {'client_info': client_info, 'app_version': str(app_version), 'user_details': user_info}
         )
