@@ -28,6 +28,8 @@ class MachineType(models.Model):
 
 class FawdaFee(models.Model):
     fawda_fee_percentage = models.CharField(max_length=100,default='2.5%')
+    def __str__(self) -> str:
+        return self.fawda_fee_percentage
 
 class JobSahayak(models.Model):
     STATUS_TYPE_CHOICES = (
@@ -163,7 +165,7 @@ class JobMachine(models.Model):
     job_number=models.CharField(max_length=50,null=True,blank=True)
 
     def __str__(self) -> str:
-        return self.grahak.mobile_no
+        return f"{self.job_type},work_type:{self.work_type},machine:{self.machine}"
     
     def formatted_datetime(self):
         return self.datetime.strftime('%I:%M %p')
