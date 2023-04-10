@@ -460,7 +460,9 @@ class ClientUserInfo(APIView):
             client_info = {
                 'privacy_policy': latest_info.privacy_policy,
                 'terms_condition': latest_info.terms_condition,
+                'about_us':latest_info.about_us,
                 'phone_no': latest_info.phone_no,
+                
             }
         user_info=({
             'phone':request.user.mobile_no,
