@@ -37,7 +37,7 @@ class BookingThekePeKam(APIView):
                     # Return a 400 Bad Request response if the datetime is in an invalid format
                     return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})
                 if not landarea.isdigit():
-                    return Response({'error':'land area should be number type !'})
+                    return Response({'error':'land area should be number type !'})    
                 try:
                     amount = int(amount)
                 except ValueError:
@@ -45,6 +45,12 @@ class BookingThekePeKam(APIView):
                         amount = float(amount)
                     except ValueError:
                         return Response({'error': 'total_amount_theka should be numeric!'})
+                if not isinstance(amount, (float, int)):
+                    return Response({'error': 'total_amount_theka should be a float or an int!'})
+
+                if amount <= 5:
+                    return Response({'error': 'total_amount_theka should be greater than  5 !'})
+
                 existing_job = JobSahayak.objects.filter(
                     datetime=datetime,
                     description=description,
@@ -109,7 +115,7 @@ class EditThekePeKam(APIView):
  
 
 class BookingSahayakIndividuals(APIView):
-    permission_classes=[BearerTokenAuthentication,]
+    authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
         if request.user.user_type == 'Grahak':
@@ -141,7 +147,6 @@ class BookingSahayakIndividuals(APIView):
                         pay_amount_male = float(pay_amount_male)
                     except ValueError:
                         return Response({'error': 'pay_amount_male should be integer!'})
-
                 try:
                     pay_amount_female = int(pay_amount_female)
                 except ValueError:
@@ -149,6 +154,11 @@ class BookingSahayakIndividuals(APIView):
                         pay_amount_female = float(pay_amount_female)
                     except ValueError:
                         return Response({'error': 'pay_amount_male should be integer!'})         
+                if not isinstance(pay_amount_male, (float, int)) or not isinstance(pay_amount_female, (float, int)):
+                    return Response({'error': 'pay_amount_male or pay_amount_female should be a float or an int!'})
+
+                if pay_amount_male <= 5 or pay_amount_female <= 5:
+                    return Response({'error': 'pay_amount_male or pay_amount_female should be greater than 5 !'}) 
                 # check if a job with the same details already exists
                 existing_jobs = JobSahayak.objects.filter(
                     grahak=request.user,
@@ -268,7 +278,11 @@ class BookingJobMachine(APIView):
                         amount = float(amount)
                     except ValueError:
                         return Response({'error': 'total_amount_theka should be numeric!'}) 
-                    
+                if not isinstance(amount, (float, int)):
+                    return Response({'error': 'total_amount_machine should be a float or an int!'})
+
+                if amount <= 5:
+                    return Response({'error': 'total_amount_machine should be greater than 5 !'})     
                 existing_job=JobMachine.objects.filter(
                     work_type=worktype,
                     machine=machine,
