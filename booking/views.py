@@ -375,7 +375,7 @@ class MyBookingDetails(APIView):
     def get(self,request,format=None):
         if not request.user.user_type=='Grahak':
             return Response({'error':'you are not Grahak !'})
-        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status='Accepted')
+        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing','Completed'])
         total_amount = 0
         count_male = 0
         count_female = 0
@@ -449,7 +449,7 @@ class MyBookingDetails(APIView):
             'fawda_fee': fawda_fee,
             'bookings': booking_data,
         }
-        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status='Accepted')
+        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status__in=['Accepted','Booked','Ongoing','Completed'])
         booking_data1=[]
         for booking in bookings1:
             booking_data1.append({
