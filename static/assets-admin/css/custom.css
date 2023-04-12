@@ -1,0 +1,28 @@
+@import"bootstrap.css";
+
+.invoice-logo-image{
+    height: 148px;
+}
+.invoice-location-image{
+    height: 50px;
+}
+.section-tax-invoice p::before {
+    content: '';
+    width: 88%;
+    height: 2px;
+    position: absolute;
+    bottom: 0;
+    background: #0099FF;
+    left: 0;
+}
+.signature{
+    width: 150px;
+    height: 100px;
+}
+/* responsive */
+@media(max-width:767px){
+    .tax-amount{
+       flex-wrap: unset;
+    }
+
+}
