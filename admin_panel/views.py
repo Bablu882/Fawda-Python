@@ -15,7 +15,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from .serializers import *
 from authentication.views import BearerTokenAuthentication
 from django.db.models import Max
-
+from datetime import datetime
 
 
 
@@ -122,14 +122,14 @@ class JobDetailsAdminPanel(APIView):
                 'status':details1.status,
                 'desc':details1.description,
                  
-                'heading':"",
-                'name':"",
-                'gender':"",
-                'phone':"",
-                'mohalla':"",
-                'village':"",
-                'state':"",
-                'district':"",
+                # 'heading':"",
+                # 'name':"",
+                # 'gender':"",
+                # 'phone':"",
+                # 'mohalla':"",
+                # 'village':"",
+                # 'state':"",
+                # 'district':"",
 
             })
         elif JobMachine.objects.filter(id=data,job_number=job_number,status='Pending').exists():
@@ -145,14 +145,14 @@ class JobDetailsAdminPanel(APIView):
                 'status':details2.status,
                 'desc':details2.description,
                 
-                'heading':"",
-                'name':"",
-                'gender':"",
-                'phone':"",
-                'mohalla':"",
-                'village':"",
-                'state':"",
-                'district':"",
+                # 'heading':"",
+                # 'name':"",
+                # 'gender':"",
+                # 'phone':"",
+                # 'mohalla':"",
+                # 'village':"",
+                # 'state':"",
+                # 'district':"",
 
             })
         elif JobBooking.objects.filter(id=data).exists():
@@ -210,46 +210,48 @@ class AdminPaymentStatus(APIView):
     permission_classes=[AllowAny,]
     def post(self,request,format=None):
         get_id=request.POST.get('id')
-        if request.user.is_superuser:
-            if JobBooking.objects.filter(pk=get_id).exists():
-                get=JobBooking.objects.get(pk=get_id)
-                if get.status == 'Completed':
-                    get.is_admin_paid='Paid'
-                    get.save()
-                    if get.jobsahayak:
-                        booking=BookingHistorySahayak.objects.create(
-                            grahak_name=get.jobsahayak.grahak.profile.name,
-                            grahak_mobile_no=get.jobsahayak.grahak.mobile_no,
-                            job_type=get.jobsahayak.job_type,
-                            job_number=get.jobsahayak.job_number,
-                            job_posting_date=get.jobsahayak.date,
-                            job_booking_date=get.date_booked,
-                            job_status=get.jobsahayak.status,
-                            payment_status_by_admin=get.is_admin_paid,
-                            paid_to_service_provider=get.payment_your,
-                            paid_by_grahak=get.total_amount,
-                            sahayak_name=get.booking_user.profile.name,
-                            sahayak_mobile_no=get.booking_user.mobile_no
-                        )
-                    else:
-                        booking=BookingHistoryMachine.objects.create(
-                            grahak_name=get.jobmachine.grahak.profile.name,
-                            grahak_mobile_no=get.jobmachine.grahak.mobile_no,
-                            job_type=get.jobmachine.job_type,
-                            job_number=get.jobmachine.job_number,
-                            job_posting_date=get.jobmachine.date,
-                            job_booking_date=get.date_booked,
-                            job_status=get.jobmachine.status,
-                            payment_status_by_admin=get.is_admin_paid,
-                            paid_to_service_provider=get.payment_your,
-                            paid_by_grahak=get.total_amount,
-                            machine_malik_name=get.booking_user.profile.name,
-                            machine_malik_mobile_no=get.booking_user.mobile_no
-                        )  
-                elif get.status == 'Cancelled-After-Payment' or get.status == 'Rejected-After-Payment':
-                    get.is_admin_paid ='Refunded'
-                    get.status = 'Admin-Refunded'
-                    get.save()
+        # if request.user.is_superuser:
+        if JobBooking.objects.filter(pk=get_id).exists():
+            get=JobBooking.objects.get(pk=get_id)
+            if get.status == 'Completed':
+                get.is_admin_paid='Paid'
+                get.save()
+                if get.jobsahayak:
+                    booking=BookingHistorySahayak.objects.create(
+                        grahak_name=get.jobsahayak.grahak.profile.name,
+                        grahak_mobile_no=get.jobsahayak.grahak.mobile_no,
+                        job_type=get.jobsahayak.job_type,
+                        job_number=get.jobsahayak.job_number,
+                        job_posting_date=get.jobsahayak.date,
+                        job_booking_date=get.date_booked,
+                        job_status=get.jobsahayak.status,
+                        payment_status_by_admin=get.is_admin_paid,
+                        paid_to_service_provider=get.payment_your,
+                        paid_by_grahak=get.total_amount,
+                        sahayak_name=get.booking_user.profile.name,
+                        sahayak_mobile_no=get.booking_user.mobile_no,
+                        booking_id=get.id
+                    )
+                else:
+                    booking=BookingHistoryMachine.objects.create(
+                        grahak_name=get.jobmachine.grahak.profile.name,
+                        grahak_mobile_no=get.jobmachine.grahak.mobile_no,
+                        job_type=get.jobmachine.job_type,
+                        job_number=get.jobmachine.job_number,
+                        job_posting_date=get.jobmachine.date,
+                        job_booking_date=get.date_booked,
+                        job_status=get.jobmachine.status,
+                        payment_status_by_admin=get.is_admin_paid,
+                        paid_to_service_provider=get.payment_your,
+                        paid_by_grahak=get.total_amount,
+                        machine_malik_name=get.booking_user.profile.name,
+                        machine_malik_mobile_no=get.booking_user.mobile_no,
+                        booking_id=get.id
+                    )  
+            elif get.status == 'Cancelled-After-Payment' or get.status == 'Rejected-After-Payment':
+                get.is_admin_paid ='Refunded'
+                get.status = 'Admin-Refunded'
+                get.save()
                             
         return Response({'msg':'Payment status updated successfully !'})    
 
@@ -476,3 +478,127 @@ class ClientUserInfo(APIView):
         return Response(
             {'client_info': client_info, 'app_version': str(app_version), 'user_details': user_info}
         )
+    
+
+
+
+def BookingInvoiceView(request):
+    # if  request.user.is_superuser:
+    invoice_data=[]
+    bookings=JobBooking.objects.all().filter(is_admin_paid='Paid')
+    latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+    if latest_info['created_at__max']:
+        latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])  
+    for booking in bookings:
+        if booking.jobsahayak:
+            invoice_data.append({
+                'grahak_name':booking.jobsahayak.grahak.profile.name,
+                'job_number':booking.jobsahayak.job_number,
+                'grahak_address':f"{booking.jobsahayak.grahak.profile.village},{booking.jobsahayak.grahak.profile.mohalla},{booking.jobsahayak.grahak.profile.district},{booking.jobsahayak.grahak.profile.state}",
+                'date_invoice_generation':'date',
+                'fawda_fee':booking.fawda_fee *2,
+                'busigness_gst':latest_info.gst_no,
+                'busigness_name':latest_info.business_name,
+                'client_address':latest_info.client_address,
+                'sahayak_name':booking.booking_user.profile.name,
+                'sahayak_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
+                'payment':booking.payment_your
+            })
+        else:
+            invoice_data.append({
+                'grahak_name':booking.jobmachine.grahak.profile.name,
+                'job_number':booking.jobmachine.job_number,
+                'grahak_address':f"{booking.jobmachine.grahak.profile.village},{booking.jobmachine.grahak.profile.mohalla},{booking.jobmachine.grahak.profile.district},{booking.jobmachine.grahak.profile.state}",
+                'date_invoice_generation':'date',
+                'fawda_fee':booking.fawda_fee *2,
+                'busigness_gst':latest_info.gst_no,
+                'busigness_name':latest_info.business_name,
+                'client_address':latest_info.client_address,
+                'machine_malik_name':booking.booking_user.profile.name,
+                'machine_malik_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
+                'payment':booking.payment_your
+            })
+    return render(request,'admin/custom_home.html',context=invoice_data)        
+
+
+
+def BookingInvoice(request,id):
+    print(id)
+    if JobBooking.objects.filter(pk=id,is_admin_paid='Paid'):
+        booking=JobBooking.objects.get(pk=id)
+        latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+        if latest_info['created_at__max']:
+            latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])  
+        if booking.jobsahayak:
+            invoice_data=({
+                'grahak_name':booking.jobsahayak.grahak.profile.name,
+                'job_number':booking.jobsahayak.job_number,
+                'grahak_address':f"{booking.jobsahayak.grahak.profile.village},{booking.jobsahayak.grahak.profile.mohalla},{booking.jobsahayak.grahak.profile.district},{booking.jobsahayak.grahak.profile.state}",
+                'date_invoice_generation':'date',
+                'fawda_fee':booking.fawda_fee *2,
+                'busigness_gst':latest_info.gst_no,
+                'busigness_name':latest_info.business_name,
+                'client_address':latest_info.client_address,
+                'sahayak_name':booking.booking_user.profile.name,
+                'sahayak_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
+                'payment':booking.payment_your
+            })
+        else:
+            invoice_data=({
+                'grahak_name':booking.jobmachine.grahak.profile.name,
+                'job_number':booking.jobmachine.job_number,
+                'grahak_address':f"{booking.jobmachine.grahak.profile.village},{booking.jobmachine.grahak.profile.mohalla},{booking.jobmachine.grahak.profile.district},{booking.jobmachine.grahak.profile.state}",
+                'date_invoice_generation':'date',
+                'fawda_fee':booking.fawda_fee *2,
+                'busigness_gst':latest_info.gst_no,
+                'busigness_name':latest_info.business_name,
+                'client_address':latest_info.client_address,
+                'machine_malik_name':booking.booking_user.profile.name,
+                'machine_malik_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
+                'payment':booking.payment_your
+            })
+        print(invoice_data)    
+    return render(request,'admin/custom_home.html',context={'invoice_data':invoice_data})        
+
+
+
+
+class BookingInvoiceApiView(APIView):
+    permission_classes=[AllowAny,]
+    def get(self,request,format=None):
+        booking_id=request.GET.get('id')
+        if JobBooking.objects.filter(pk=booking_id,is_admin_paid='Paid'):
+            booking=JobBooking.objects.get(pk=booking_id)
+            latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+            if latest_info['created_at__max']:
+                latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])  
+            if booking.jobsahayak:
+                invoice_data=({
+                    'grahak_name':booking.jobsahayak.grahak.profile.name,
+                    'job_number':booking.jobsahayak.job_number,
+                    'grahak_address':f"{booking.jobsahayak.grahak.profile.village},{booking.jobsahayak.grahak.profile.mohalla},{booking.jobsahayak.grahak.profile.district},{booking.jobsahayak.grahak.profile.state}",
+                    'date_invoice_generation':datetime.now().strftime('%Y-%m-%d'),
+                    'fawda_fee':booking.fawda_fee *2,
+                    'busigness_gst':latest_info.gst_no,
+                    'busigness_name':latest_info.business_name,
+                    'client_address':latest_info.client_address,
+                    'provider_name':booking.booking_user.profile.name,
+                    'provider_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
+                    'payment':booking.payment_your
+                })
+            else:
+                invoice_data=({
+                    'grahak_name':booking.jobmachine.grahak.profile.name,
+                    'job_number':booking.jobmachine.job_number,
+                    'grahak_address':f"{booking.jobmachine.grahak.profile.village},{booking.jobmachine.grahak.profile.mohalla},{booking.jobmachine.grahak.profile.district},{booking.jobmachine.grahak.profile.state}",
+                    'date_invoice_generation':datetime.now().strftime('%Y-%m-%d'),
+                    'fawda_fee':booking.fawda_fee *2,
+                    'busigness_gst':latest_info.gst_no,
+                    'busigness_name':latest_info.business_name,
+                    'client_address':latest_info.client_address,
+                    'provider_name':booking.booking_user.profile.name,
+                    'provider_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
+                    'payment':booking.payment_your
+                })
+            print(invoice_data)    
+        return Response({'invoice_data':invoice_data})        
