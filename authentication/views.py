@@ -171,7 +171,7 @@ class LoginApi(APIView):
             otps = OTP.objects.create(otp=otp, user=user)
             # send OTP to the user's mobile number for verification
 
-            return Response({'success': True, 'otp': otps.otp, 'user_type': user.user_type, 'data': 'Previous sessions and tokens deleted successfully', 'status': status.HTTP_200_OK})
+            return Response({'success': True, 'otp': otps.otp, 'user_type': user.user_type,'status': status.HTTP_200_OK})
         else:
             return Response({'message': 'User not registered !','status':status.HTTP_404_NOT_FOUND})
         
