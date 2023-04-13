@@ -10,6 +10,13 @@ class PostJobThekePeKamSerializer(serializers.ModelSerializer):
                 'land_type',
                 'total_amount_theka'
                 ]
+        
+    def validate(self, data):
+        if not data['datetime'] or not data['description'] or not data['land_area'] or not data['land_type'] or not data['total_amount_theka']:
+            raise serializers.ValidationError({'error': 'All fields are required!'})
+        if not data['land_area'].isdigit():
+            raise serializers.ValidationError({'error': 'Land area should be numeric!'})
+        return data
 class GetJobThekePeKamSerializer(serializers.ModelSerializer):
     class Meta:
         model=JobSahayak
@@ -30,12 +37,15 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
                 # 'fawda_fee_percentage'
                 # 'total_amount'
                 ]
+   
+          
 class GetJobIndividualsSerializer(serializers.ModelSerializer):
     class Meta:
         model=JobSahayak
         fields='__all__'        
 
 class JobMachineSerializers(serializers.ModelSerializer):
+    others = serializers.CharField(max_length=500, allow_null=True, allow_blank=True)
     class Meta:
         model=JobMachine
         fields= [
