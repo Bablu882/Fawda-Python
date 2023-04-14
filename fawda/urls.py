@@ -16,6 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from admin_panel.views import my_custom_view,custom_users_view,booking_log_history
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/booking_history/', my_custom_view, name='booking_history'),
@@ -27,4 +29,11 @@ urlpatterns = [
     path('',include('booking.urls')),
     path('',include('payments.urls')),
     path('',include('admin_panel.urls')),
+    path('summernote/', include('django_summernote.urls')),
+
 ]
+if settings.DEBUG:
+    urlpatterns += (
+        static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) +
+        static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+        )

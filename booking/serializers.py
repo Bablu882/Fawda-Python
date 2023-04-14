@@ -18,10 +18,6 @@ class RatingSerializer(serializers.ModelSerializer):
 
         if not booking_job:
             raise serializers.ValidationError("booking_job is required")
-
-        if not rating:
-            raise serializers.ValidationError("rating is required")
-
         try:
             rating = int(rating)
         except ValueError:
