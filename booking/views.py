@@ -396,7 +396,7 @@ class MyBookingDetails(APIView):
                     'booking_id': booking.id,
                     'id':booking.jobsahayak.id,
                     'datetime': booking.jobsahayak.datetime,
-                    'status': booking.status,
+                    'booking_status': booking.status,
                     'count_male': booking.count_male,
                     'count_female': booking.count_female,
                     'total_amount': booking.total_amount,
@@ -424,7 +424,7 @@ class MyBookingDetails(APIView):
                 booking_data.append({
                     'booking_id':booking.id,
                     'id':booking.jobsahayak.id,
-                    'status':booking.status,
+                    'booking_status':booking.status,
                     'total_amount':booking.total_amount,
                     'total_amount_theka':booking.total_amount_theka,
                     'payment_your':booking.payment_your,
@@ -464,7 +464,7 @@ class MyBookingDetails(APIView):
                 'total_amount':booking.jobmachine.total_amount,
                 'total_amount_machine':booking.jobmachine.total_amount_machine,
                 'payment_your':booking.jobmachine.payment_your,
-                'status':booking.status,
+                'booking_status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
                 'machine_malik_mobile_no':booking.booking_user.mobile_no,
@@ -545,7 +545,7 @@ class OngoingStatusApi(APIView):
                         if job.status == 'Booked':   
                             job.status='Ongoing'
                             job.save()
-                            return Response({'message':'changed status to Ongoing successfully !','status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status to Ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
                         else:
                             return Response({'message':'status can not be updated it should be Booked before !'})    
                     else:
@@ -555,6 +555,7 @@ class OngoingStatusApi(APIView):
                         if job.status =='Booked':
                             job.status='Ongoing'
                             job.save()
+                            return Response({'message':'changed status ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
                         else:
                             return Response({'message':'status can not be updated it should be booked before !'})    
                     else:
@@ -581,7 +582,7 @@ class CompletedStatusApi(APIView):
                         if job.status =='Ongoing':   
                             job.status='Completed'
                             job.save()
-                            return Response({'message':'changed status to Completed successfully !','status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
                         else:    
                             return Response({'message':'Status can not be updated it should be Ongoing before !'})    
                     else:
@@ -591,7 +592,7 @@ class CompletedStatusApi(APIView):
                         if job.status =='Ongoing':   
                             job.status='Completed'
                             job.save()
-                            return Response({'message':'changed status to Completed successfully !','status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
                         else:    
                             return Response({'message':'Status can not be updated it should be Ongoing before !'})    
                     else:
