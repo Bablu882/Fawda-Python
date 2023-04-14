@@ -490,7 +490,7 @@ class RatingCreate(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def get(self, request,format=None):
-        booking_job_id=request.data.get('booking_job')
+        booking_job_id=request.data.get('booking_id')
         if not request.user.user_type == 'Grahak':
             return Response({'message':'only grahak can give rating !'})
         if not booking_job_id:
@@ -504,13 +504,35 @@ class RatingCreate(APIView):
     
     def post(self, request):
         if request.user.user_type == 'Grahak':
-            serializer = RatingSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors)
+            booking_job_id = request.data.get('booking_id')
+            rating_value = request.data.get('rating')
+            comment_value = request.data.get('comment', '')
+            try:
+                booking_job = JobBooking.objects.get(id=booking_job_id)
+            except JobBooking.DoesNotExist:
+                return Response({'error': f'Invalid booking_job id {booking_job_id}'})
+            if booking_job.jobsahayak:
+                if not booking_job.jobsahayak.grahak == request.user:
+                    return Response({'error':'unauthorised user !'})
+            else:
+                if not booking_job.jobmachine.grahak == request.user:
+                    return Response({'error':'unauthorised user !'})
+                    
+            if not booking_job.status == 'Completed':
+                return Response({'message':'rating can not create,booking status should be Completed before !'})        
+            try:
+                rating = Rating.objects.get(booking_job_id=booking_job_id)
+                return Response({'message': f'A rating has already been created for booking_job with id {booking_job_id}'})
+            except Rating.DoesNotExist:
+                pass
+            rating = Rating.objects.create(
+                booking_job=booking_job,
+                rating=rating_value,
+                comment=comment_value,
+            )
+            return Response({'message': f'Rating added for booking_job with id {booking_job_id}','status':status.HTTP_201_CREATED})
         else:
-            return Response({'message':'only Grahak can post rating'})
+            return Response({'message': 'Only Grahak can post rating'})
         
 class RatingGet(APIView):
     permission_classes=[BearerTokenAuthentication,]

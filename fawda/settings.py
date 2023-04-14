@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'admin_panel',
     'simple_history',
+    'whitenoise.runserver_nostatic',
+    'django_summernote',
 
 ]
 
@@ -60,6 +62,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'fawda.urls'
@@ -199,4 +202,7 @@ AUTHENTICATION_BACKENDS = [
     'authentication.views.MobileNoAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-
+SUMMERNOTE_CONFIG = {
+    'width': '100%',
+    'height': '480',
+}

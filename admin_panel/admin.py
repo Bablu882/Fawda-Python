@@ -10,7 +10,7 @@ from django.utils.html import format_html
 from .models import *
 admin.site.register(BookingHistoryMachine)
 admin.site.register(BookingHistorySahayak)
-admin.site.register(ClientInformations)
+# admin.site.register(ClientInformations)
 admin.site.register(AppVersion)
 from .views import my_custom_view,custom_users_view,booking_log_history
 
@@ -27,3 +27,10 @@ class MyModelAdmin(admin.ModelAdmin):
         return custom_urls + urls
     
 
+from .models import ClientInformations
+from django_summernote.admin import SummernoteModelAdmin
+
+class ClientInformationsAdmin(SummernoteModelAdmin):
+    summernote_fields = ('privacy_policy', 'terms_condition', 'about_us')
+
+admin.site.register(ClientInformations, ClientInformationsAdmin)

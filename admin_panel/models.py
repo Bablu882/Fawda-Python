@@ -1,5 +1,6 @@
 from django.db import models
 from booking.models import JobBooking
+from django_summernote.fields import SummernoteTextField
 
 # Create your models here.
 
@@ -41,10 +42,10 @@ class BookingHistoryMachine(models.Model):
 
  
 class ClientInformations(models.Model):
-    privacy_policy=models.TextField()
-    terms_condition=models.TextField()
+    privacy_policy=SummernoteTextField()
+    terms_condition=SummernoteTextField()
     phone_no=models.CharField(max_length=20)
-    about_us=models.TextField()
+    about_us=SummernoteTextField()
     client_address=models.TextField()
     gst_no=models.CharField(max_length=100)
     business_name=models.CharField(max_length=200)
