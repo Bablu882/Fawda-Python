@@ -376,7 +376,7 @@ class MyBookingDetails(APIView):
     def get(self,request,format=None):
         if not request.user.user_type=='Grahak':
             return Response({'message':'you are not Grahak !'})
-        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing','Completed'])
+        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
         total_amount = 0
         count_male = 0
         count_female = 0
@@ -450,7 +450,7 @@ class MyBookingDetails(APIView):
             'fawda_fee': fawda_fee,
             'bookings': booking_data,
         }
-        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status__in=['Accepted','Booked','Ongoing','Completed'])
+        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
         booking_data1=[]
         for booking in bookings1:
             booking_data1.append({
@@ -473,9 +473,9 @@ class MyBookingDetails(APIView):
                 'land_type':booking.jobmachine.land_type
                 
             })
-        booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending')
+        booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending').order_by('-id')
         serializer1=JobSahaykSerialiser(booking2,many=True)
-        booking3=JobMachine.objects.filter(grahak=request.user,status='Pending')    
+        booking3=JobMachine.objects.filter(grahak=request.user,status='Pending').order_by('-id')   
         serializer2=GetJobMachineSerializer(booking3,many=True)
         return Response({
             'sahayk_booking_details':response_data,
