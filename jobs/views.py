@@ -523,7 +523,7 @@ class Requestuser(APIView):
     permission_classes=[IsAuthenticated,]
     def get(self,request):
         user=request.user
-        return Response({'user':user.mobile_no,'user_type':user.user_type})
+        return Response({'user':user.mobile_no,'user_type':user.user_type,'status':status.HTTP_200_OK})
 
 
 
