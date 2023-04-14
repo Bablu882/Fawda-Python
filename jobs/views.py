@@ -12,6 +12,7 @@ import uuid
 import re
 from dateutil import parser
 from authentication.views import BearerTokenAuthentication
+from rest_framework import status
 
 # Create your views here.
 
@@ -28,16 +29,6 @@ class BookingThekePeKam(APIView):
                 landarea=serializers.data.get('land_area')
                 amount=request.data.get('total_amount_theka')
                 grahak=request.user
-                if not datetime or not description or not landarea or not landtype or not amount:
-                    return Response({'error':'all fields are required !'})
-                try:
-                    # Check if the datetime string is in the correct format
-                    datetime_obj = parser.isoparse(datetime)
-                except ValueError:
-                    # Return a 400 Bad Request response if the datetime is in an invalid format
-                    return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})
-                if not landarea.isdigit():
-                    return Response({'error':'land area should be number type !'})    
                 try:
                     amount = int(amount)
                 except ValueError:
@@ -61,7 +52,7 @@ class BookingThekePeKam(APIView):
                     grahak=grahak
                 ).first()
                 if existing_job:
-                    return Response({'error': 'Booking already exists'})
+                    return Response({'message': 'Booking already exists'})
                     
                 unique_id = int(uuid.uuid4().hex[:6], 16)
                 job_number='T-'+str(unique_id)
@@ -76,9 +67,9 @@ class BookingThekePeKam(APIView):
                     job_number=job_number
                 )
                 serial=GetJobThekePeKamSerializer(job)
-                return Response({'success':'Booking created !','data':serial.data})
+                return Response({'message':'Booking created !','data':serial.data,'status':status.HTTP_201_CREATED})
         else:
-            return Response({'error':'You are not Grahak'})  
+            return Response({'message':'You are not Grahak'})  
 
 class EditThekePeKam(APIView):
     authentication_classes=[BearerTokenAuthentication,]
@@ -111,7 +102,7 @@ class EditThekePeKam(APIView):
         job.total_amount_theka = amount_decimal
         job.save()
 
-        return Response({'success': 'Amount updated successfully!'})
+        return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
 class BookingSahayakIndividuals(APIView):
@@ -125,8 +116,6 @@ class BookingSahayakIndividuals(APIView):
                 datetime=serializer.data.get('datetime')
                 pay_amount_male=serializer.data.get('pay_amount_male')
                 pay_amount_female=serializer.data.get('pay_amount_female')
-                if not data['datetime'] or not data['description'] or not data['land_type'] or not data['land_area'] or not data['count_male'] or not data['count_female'] or not data['pay_amount_male'] or not data['pay_amount_female'] or not data['num_days']:
-                    return Response({'error':'all fields are required !'})
                 try:
                     # Check if the datetime string is in the correct format
                     datetime_obj = parser.isoparse(datetime)
@@ -153,7 +142,7 @@ class BookingSahayakIndividuals(APIView):
                     try:
                         pay_amount_female = float(pay_amount_female)
                     except ValueError:
-                        return Response({'error': 'pay_amount_male should be integer!'})         
+                        return Response({'error': 'pay_amount_female should be integer!'})         
                 if not isinstance(pay_amount_male, (float, int)) or not isinstance(pay_amount_female, (float, int)):
                     return Response({'error': 'pay_amount_male or pay_amount_female should be a float or an int!'})
 
@@ -197,7 +186,7 @@ class BookingSahayakIndividuals(APIView):
                 )
                 job.save()
                 serial=GetJobIndividualsSerializer(job)
-                return Response({'message': 'success','data':serial.data})
+                return Response({'message': 'success','data':serial.data,'status':status.HTTP_201_CREATED})
         return Response({'message': 'You are not Grahak'})
 
 
@@ -239,7 +228,7 @@ class EditIndividualSahayak(APIView):
         job.pay_amount_female=amount_female
         job.save()
 
-        return Response({'success': 'Amount updated successfully!'})
+        return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
         
@@ -252,14 +241,14 @@ class BookingJobMachine(APIView):
             if serializers.is_valid(raise_exception=True):
                 worktype=serializers.data.get('work_type')
                 machine=serializers.data.get('machine')
-                others=serializers.data.get('others')
+                others=request.data.get('others')
                 datetime=serializers.data.get('datetime')
                 landarea=serializers.data.get('land_area')
                 landtype=serializers.data.get('land_type')
                 amount=serializers.data.get('total_amount_machine')
                 grahak=request.user
                 if not worktype or not machine or not datetime or not landarea or not landtype or not amount:
-                    return Response({'all fields are required instead of others !'})  
+                    return Response({'error':'all fields are required instead of others !'})  
                 if not landarea.isdigit():
                     return Response({'error':'land_area should be integer !'}) 
                 if not re.match(r'^[a-zA-Z\s]+$', worktype):
@@ -292,11 +281,11 @@ class BookingJobMachine(APIView):
                     land_type=landtype,
                     total_amount_machine=amount,
                     grahak=grahak,
-                    
+
 
                 )
                 if existing_job:
-                    return Response({'error':'job already exist !'})
+                    return Response({'message':'job already exist !'})
                 unique_id = int(uuid.uuid4().hex[:6], 16)
                 job_number='M-'+str(unique_id)
                 job=JobMachine.objects.create(
@@ -311,9 +300,9 @@ class BookingJobMachine(APIView):
                     job_number=job_number
                 )
                 serial=GetJobMachineSerializer(job)    
-                return Response({'success':'job created !','data':serial.data})
+                return Response({'message':'job created successfully !','status':status.HTTP_201_CREATED,'data':serial.data})
         else:
-            return Response({'error':'You are not Grahak !'})        
+            return Response({'message':'You are not Grahak !'})        
 
 class EditJobMachine(APIView):
     authentication_classes=[BearerTokenAuthentication,]
@@ -346,7 +335,7 @@ class EditJobMachine(APIView):
         job.total_amount_machine = amount_decimal
         job.save()
 
-        return Response({'success': 'Amount updated successfully!'})
+        return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
 ###---------------------------------------------------------------------------###
@@ -366,7 +355,7 @@ class GetSahayakJobDetails(APIView):
                 return Response({'error': 'Job does not exist !'})
             serial=JobSahaykSerialiser(getjob)    
             return Response({'seccess':True,'data':serial.data})
-        return Response({'error':'you are not Sahayak'})
+        return Response({'message':'you are not Sahayak'})
         
 class GetMachineJobDetails(APIView):
     authentication_classes=[BearerTokenAuthentication,]
@@ -384,7 +373,7 @@ class GetMachineJobDetails(APIView):
                 return Response({'error': 'Job does not exist !'})
             serial=GetJobMachineSerializer(getjob)    
             return Response({'seccess':True,'data':serial.data})
-        return Response({'error':'you are not MachineMalik'})
+        return Response({'message':'you are not MachineMalik'})
 
 
 
@@ -412,7 +401,7 @@ class GetAllJob(APIView):
         sahayak_lat = sahayak_profile.latitude
         sahayak_lon = sahayak_profile.longitude
         if sahayak.user_type == 'Sahayak':
-            job_posts = JobSahayak.objects.all().filter(status='Pending')
+            job_posts = JobSahayak.objects.all().filter(status='Pending').order_by('-date')
             for job_post in job_posts:
                 grahak_profile = job_post.grahak.profile
                 grahak_lat = grahak_profile.latitude
@@ -447,7 +436,7 @@ class GetAllJob(APIView):
                         "village":job_post.grahak.profile.village
                     })
         elif sahayak.user_type == 'MachineMalik':
-            job_posts_machin=JobMachine.objects.all().filter(status='Pending')
+            job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-date')
             for job_post in job_posts_machin:
                 grahak_profile = job_post.grahak.profile
                 # print(grahak_profile)
@@ -478,7 +467,7 @@ class GetAllJob(APIView):
 
                     })        
         else:
-            return Response({'error':'You are not Sahayak or MachinMalik'})            
+            return Response({'message':'You are not Sahayak or MachinMalik'})            
         return Response(result)
 
 
@@ -534,7 +523,7 @@ class Requestuser(APIView):
     permission_classes=[IsAuthenticated,]
     def get(self,request):
         user=request.user
-        return Response({'user':user.mobile_no,'user_type':user.user_type})
+        return Response({'user':user.mobile_no,'user_type':user.user_type,'status':status.HTTP_200_OK})
 
 
 
