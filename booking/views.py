@@ -566,20 +566,26 @@ class OngoingStatusApi(APIView):
                     return Response({'message':'booking status Ongoing already up to date !'})
                 if job.jobsahayak:
                     if job.jobsahayak.grahak == request.user:
+                        if not job.jobsahayak.status == 'Pending':
+                            job.jobsahayak.status='Ongoing'
+                            job.jobsahayak.save()
                         if job.status == 'Booked':   
                             job.status='Ongoing'
                             job.save()
-                            return Response({'message':'changed status to Ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status to Ongoing successfully !','booking-status':job.status,'status':status.HTTP_200_OK})
                         else:
                             return Response({'message':'status can not be updated it should be Booked before !'})    
                     else:
                         return Response({'error':'unauthorised grahak !'})
                 else:
                     if job.jobmachine.grahak == request.user:
+                        if not job.jobmachine.status == 'Pending':
+                            job.jobmachine.status='Ongoing'
+                            job.jobmachine.save()
                         if job.status =='Booked':
                             job.status='Ongoing'
                             job.save()
-                            return Response({'message':'changed status ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status ongoing successfully !','booking-status':job.status,'status':status.HTTP_200_OK})
                         else:
                             return Response({'message':'status can not be updated it should be booked before !'})    
                     else:
@@ -605,20 +611,26 @@ class CompletedStatusApi(APIView):
                     return Response({'message':'booking status Completed already up to date !'})
                 if job.jobsahayak:
                     if job.jobsahayak.grahak == request.user:
+                        if not job.jobsahayak == 'Pending':
+                            job.jobsahayak.status='Completed'
+                            job.jobsahayak.save()
                         if job.status =='Ongoing':   
                             job.status='Completed'
                             job.save()
-                            return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status to Completed successfully !','booking-status':job.status,'status':status.HTTP_200_OK})
                         else:    
                             return Response({'message':'Status can not be updated it should be Ongoing before !'})    
                     else:
                         return Response({'error':'unauthorised grahak !'})        
                 else:
                     if job.jobmachine.grahak == request.user:
+                        if not job.jobmachine.status == 'Pending':
+                            job.jobmachine.status='Completed'
+                            job.jobmachine.save()
                         if job.status =='Ongoing':   
                             job.status='Completed'
                             job.save()
-                            return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                            return Response({'message':'changed status to Completed successfully !','booking-status':job.status,'status':status.HTTP_200_OK})
                         else:    
                             return Response({'message':'Status can not be updated it should be Ongoing before !'})    
                     else:
@@ -701,65 +713,6 @@ class RejectedBooking(APIView):
         # Add a return statement here
         return Response({'msg':'Booking rejected successfully.'})
 
-            
-# class CancelledBooking(APIView):
-#     permission_classes=[IsAuthenticated,]
-#     def post(self,request,format=None):
-#         bookingid=request.data.get('booking_id')
-#         count_male=request.data.get('count_male')
-#         count_female=request.data.get('count_female')
-#         status=request.data.get('status')
-#         if not bookingid:
-#             return Response({'error':'booking_id required !'})
-#         if not bookingid.isdigit():
-#             return Response({'error':'booking_id must be numeric !'})   
-#         if not status:
-#             return Response({'error':'status required !'}) 
-#         if not status in ['Cencelled','Cencelled-After-Payment']:
-#             return Response({'error':'invilid status'})
-#         if request.user.user_type == 'Grahak':
-#             try:
-#                 job=JobBooking.objects.get(pk=bookingid)   
-#             except JobBooking.DoesNotExist:
-#                 return Response({'error':'Booking does not exist !'})
-#             if job.jobsahayak:
-#                 if job.jobsahayak.job_type == 'individuals_sahayak':
-#                     if not count_male and not count_female:
-#                         return Response({'error':'count_male and count_female required !'})
-#                     if not count_male.isdigit() and not count_female.isdigit():
-#                         return Response({'error':'count_male and count_female should be numeric !'})
-#                     if job.status == status:
-#                         return Response({'msg':'status already up to date !'})    
-#                     job.status=status
-#                     job.save()
-#                     if job.jobsahayak.status == 'Pending':     
-#                         job.jobsahayak.count_male+=int(count_male)
-#                         job.jobsahayak.count_female+=int(count_female)
-#                         job.jobsahayak.status ='Cancelled'
-#                         job.jobsahayak.save()
-#                     else:
-#                         job.jobsahayak.count_male=int(count_male) 
-#                         job.jobsahayak.count_female=int(count_female)
-#                         job.jobsahayak.status='Cancelled'   
-#                         job.jobsahayak.save()
-#                 else:
-#                     job.jobsahayak.status='Cencelled'        
-#                     job.jobsahayak.save()
-#                     job.status=status
-#                     job.save()
-#             else:
-#                 job.jobmachine.status='Cancelled'
-#                 if job.jobmachine.status == status:
-#                     return Response({'msg':'status already up to date !'})
-#                 job.status=status
-#                 job.jobmachine.save()
-#                 job.save()
-#                 return Response({'error':'status updated !'})    
-#         else:
-#             return Response({'error':'you are not Grahak'})
-            
-#         # Add a return statement here
-#         return Response({'msg':'Booking Cancelled successfully.'})
 
 
 class CancellationBookingJob(APIView):
