@@ -562,24 +562,26 @@ class OngoingStatusApi(APIView):
         if request.user.user_type == 'Grahak':
             try:
                 job=JobBooking.objects.get(pk=bookingid)
+                if job.status == 'Ongoing':
+                    return Response({'message':'booking status Ongoing already up to date !'})
                 if job.jobsahayak:
                     if job.jobsahayak.grahak == request.user:
-                        # if job.status == 'Booked':   
-                        job.status='Ongoing'
-                        job.save()
-                        return Response({'message':'changed status to Ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
-                        # else:
-                        #     return Response({'message':'status can not be updated it should be Booked before !'})    
+                        if job.status == 'Booked':   
+                            job.status='Ongoing'
+                            job.save()
+                            return Response({'message':'changed status to Ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                        else:
+                            return Response({'message':'status can not be updated it should be Booked before !'})    
                     else:
                         return Response({'error':'unauthorised grahak !'})
                 else:
                     if job.jobmachine.grahak == request.user:
-                        # if job.status =='Booked':
-                        job.status='Ongoing'
-                        job.save()
-                        return Response({'message':'changed status ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
-                        # else:
-                        #     return Response({'message':'status can not be updated it should be booked before !'})    
+                        if job.status =='Booked':
+                            job.status='Ongoing'
+                            job.save()
+                            return Response({'message':'changed status ongoing successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                        else:
+                            return Response({'message':'status can not be updated it should be booked before !'})    
                     else:
                         return Response({'error':'unauthorised grahak !'})        
             except JobBooking.DoesNotExist:
@@ -599,24 +601,26 @@ class CompletedStatusApi(APIView):
         if request.user.user_type == 'Grahak':
             try:
                 job=JobBooking.objects.get(pk=bookingid)
+                if job.status == 'Completed':
+                    return Response({'message':'booking status Completed already up to date !'})
                 if job.jobsahayak:
                     if job.jobsahayak.grahak == request.user:
-                        # if job.status =='Ongoing':   
-                        job.status='Completed'
-                        job.save()
-                        return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
-                        # else:    
-                        #     return Response({'message':'Status can not be updated it should be Ongoing before !'})    
+                        if job.status =='Ongoing':   
+                            job.status='Completed'
+                            job.save()
+                            return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                        else:    
+                            return Response({'message':'Status can not be updated it should be Ongoing before !'})    
                     else:
                         return Response({'error':'unauthorised grahak !'})        
                 else:
                     if job.jobmachine.grahak == request.user:
-                        # if job.status =='Ongoing':   
-                        job.status='Completed'
-                        job.save()
-                        return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
-                        # else:    
-                        #     return Response({'message':'Status can not be updated it should be Ongoing before !'})    
+                        if job.status =='Ongoing':   
+                            job.status='Completed'
+                            job.save()
+                            return Response({'message':'changed status to Completed successfully !','booking_status':job.status,'status':status.HTTP_200_OK})
+                        else:    
+                            return Response({'message':'Status can not be updated it should be Ongoing before !'})    
                     else:
                         return Response({'error':'unauthorised grahak !'}) 
             except JobBooking.DoesNotExist:
