@@ -5,7 +5,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    
+    <!-- <script src="/static/asstes-admin/js/jspdf.min.js"></script> -->
+
     {% block meta %}
         <meta charset="utf-8">
         <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
@@ -19,6 +20,9 @@
     {% block extra_head %}{% endblock %}
     <link href="/static/assets-admin/css/bootstrap.css" rel="stylesheet">
     <link href="/static/assets-admin/css/custom.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 </head>
 <style>
   table {
@@ -165,7 +169,7 @@ td {
                 <!-- The Modal -->
       <div class="modal" id="myModal">
         <div class="modal-dialog modal-lg">
-          <div class="modal-content">
+          <div class="modal-content" id="modal-content">
       
             <!-- Modal Header -->
             <div class="modal-header" id="invoice_wrapper">
@@ -187,7 +191,7 @@ td {
             </div>
       
             <!-- Modal body -->
-            <div class="modal-body">
+            <div class="modal-body" id="letdown">
                 <section class="section-tax-invoice">
                     <div class="container d-flex  mt-lg-4 mt-3">
                         <span>
@@ -408,12 +412,11 @@ td {
                     </section>
                 </section>       
             </div>
+
       
             <!-- Modal footer -->
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary">
-                download
-                </button>
+                <button id="download-button">Download PDF</button>
              
             </div>
       
@@ -468,6 +471,83 @@ td {
           }
         })}  
         
+
+        
+//     function downloadModalAsPDF() {
+//     var modalContent = document.getElementById('letdown').innerHTML;
+//     var xhr = new XMLHttpRequest();
+//     xhr.onreadystatechange = function() {
+//         if (xhr.readyState === 4 && xhr.status === 200) {
+//             // When the server returns the PDF file, create a link to download it
+//             var blob = new Blob([xhr.response], {type: 'application/pdf'});
+//             var link = document.createElement('a');
+//             link.href = window.URL.createObjectURL(blob);
+//             link.download = 'my_modal.pdf';
+//             document.body.appendChild(link);
+//             link.click();
+//             document.body.removeChild(link);
+//         }
+//     }
+//     xhr.open('POST', "#");
+//     xhr.setRequestHeader('Content-Type', 'application/json');
+//     xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}'); // Add the CSRF token
+//     xhr.send(JSON.stringify({modalContent: modalContent}));
+// }
+// function downloadModalAsPDF() {
+//     var modalContent = document.getElementById('letdown').innerHTML;
+
+//     // Define the PDF document layout
+//     var docDefinition = {
+//         content: [
+//             {
+//                 // Use the HTML content from the modal
+//                 html: modalContent
+//             }
+//         ]
+//     };
+
+//     // Generate the PDF and download it
+//     pdfMake.createPdf(docDefinition).download('my_modal.pdf');
+// }
+// function downloadModalContent() {
+//   const modalContent = document.querySelector('#myModal').innerHTML;
+//   const tempDiv = document.createElement('div');
+//   tempDiv.innerHTML = modalContent;
+//   const modalNode = tempDiv.firstChild;
+
+//   const downloadLink = document.createElement('a');
+//   downloadLink.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(modalContent));
+//   downloadLink.setAttribute('download', 'modal.html');
+//   downloadLink.style.display = 'none';
+
+//   document.body.insertBefore(modalNode, document.body.firstChild);
+//   document.body.appendChild(downloadLink);
+
+//   downloadLink.click();
+
+//   document.body.removeChild(downloadLink);
+//   document.body.removeChild(modalNode);
+// }
+
+// const downloadButton = document.querySelector('#download-button');
+// downloadButton.addEventListener('click', downloadModalContent);
+</script>
+
+<script>
+
+    $(function(){
+
+    $('#download-button').on('click',function() {
+        		// Choose the element that your content will be rendered to.
+				const element = document.getElementById('modal-content');
+
+                console.log(element);
+				// Choose the element and save the PDF for your user.
+				html2pdf().from(element).save();
+    });
+
+
+    });
 </script>
 <script src="/static/assets-admin/js/chart.js"></script>
 <script src="/static/assets-admin/js/custom-chart.js" type="text/javascript"></script>
