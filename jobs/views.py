@@ -227,7 +227,7 @@ class EditIndividualSahayak(APIView):
         if not request.user == job.grahak:
             return Response({'error':'unauthorised user !'})
         if job.status == 'Pending':
-            if not  JobBooking.objects.filter(jobsahayak=job).exist():   
+            if not  JobBooking.objects.filter(jobsahayak=job).exists():   
                 job.pay_amount_male = amount_male
                 job.pay_amount_female=amount_female
                 job.save()
