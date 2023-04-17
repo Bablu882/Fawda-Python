@@ -41,7 +41,7 @@ class BookingHistoryMachine(models.Model):
         return f"{self.grahak_name}+{self.machine_malik_name}+{self.job_type} success {self.payment_status_by_admin}"
 
  
-class ClientInformations(models.Model):
+class ClientInformation(models.Model):
     privacy_policy=SummernoteTextField()
     terms_condition=SummernoteTextField()
     phone_no=models.CharField(max_length=20)

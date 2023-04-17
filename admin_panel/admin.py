@@ -27,10 +27,10 @@ class MyModelAdmin(admin.ModelAdmin):
         return custom_urls + urls
     
 
-from .models import ClientInformations
+from .models import ClientInformation
 from django_summernote.admin import SummernoteModelAdmin
 
 class ClientInformationsAdmin(SummernoteModelAdmin):
     summernote_fields = ('privacy_policy', 'terms_condition', 'about_us')
 
-admin.site.register(ClientInformations, ClientInformationsAdmin)
+admin.site.register(ClientInformation, ClientInformationsAdmin)

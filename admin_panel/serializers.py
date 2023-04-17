@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import *
 class ClientInformationsSerializer(serializers.ModelSerializer):
     class Meta:
-        model=ClientInformations
+        model=ClientInformation
         fields='__all__'
 
 
