@@ -13,7 +13,7 @@ import re
 from dateutil import parser
 from authentication.views import BearerTokenAuthentication
 from rest_framework import status
-
+from booking.models import JobBooking
 # Create your views here.
 
 class BookingThekePeKam(APIView):
@@ -99,9 +99,11 @@ class EditThekePeKam(APIView):
         job = get_object_or_404(JobSahayak, pk=job_id, job_type='theke_pe_kam')
         if not request.user == job.grahak:
             return Response({'error':'unauthorised user !'})
-        job.total_amount_theka = amount_decimal
-        job.save()
-
+        if job.status =='Pending':
+            job.total_amount_theka = amount_decimal
+            job.save()
+        else:
+            return Response({'message':'job can not be updated it is not Pending !'})
         return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
@@ -224,9 +226,15 @@ class EditIndividualSahayak(APIView):
         job = get_object_or_404(JobSahayak, pk=job_id, job_type='individuals_sahayak')
         if not request.user == job.grahak:
             return Response({'error':'unauthorised user !'})
-        job.pay_amount_male = amount_male
-        job.pay_amount_female=amount_female
-        job.save()
+        if job.status == 'Pending':
+            if not  JobBooking.objects.filter(jobsahayak=job).exist():   
+                job.pay_amount_male = amount_male
+                job.pay_amount_female=amount_female
+                job.save()
+            else:
+                return Response({'message':'job can not be edited one of the Sahayak Accepted'})    
+        else:
+            return Response({'message':'job can not be updated it is not Pending !'})    
 
         return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
@@ -332,8 +340,11 @@ class EditJobMachine(APIView):
         job = get_object_or_404(JobMachine, pk=job_id, job_type='machine_malik')
         if not request.user == job.grahak:
             return Response({'error':'unauthorised user'})
-        job.total_amount_machine = amount_decimal
-        job.save()
+        if job.status == 'Pending':
+            job.total_amount_machine = amount_decimal
+            job.save()
+        else:
+            return Response({'message':'job can not be updated it is not Pending !'})    
 
         return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
