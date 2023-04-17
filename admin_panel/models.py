@@ -1,6 +1,6 @@
 from django.db import models
 from booking.models import JobBooking
-from django_summernote.fields import SummernoteTextField
+from tinymce.models import HTMLField
 
 # Create your models here.
 
@@ -42,10 +42,10 @@ class BookingHistoryMachine(models.Model):
 
  
 class ClientInformation(models.Model):
-    privacy_policy=SummernoteTextField()
-    terms_condition=SummernoteTextField()
+    privacy_policy=HTMLField()
+    terms_condition=HTMLField()
     phone_no=models.CharField(max_length=20)
-    about_us=SummernoteTextField()
+    about_us=HTMLField()
     client_address=models.TextField()
     gst_no=models.CharField(max_length=100)
     business_name=models.CharField(max_length=200)

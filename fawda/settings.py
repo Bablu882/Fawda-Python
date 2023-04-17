@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'admin_panel',
     'simple_history',
     'whitenoise.runserver_nostatic',
-    'django_summernote',
+    'tinymce'
 
 ]
 
@@ -202,7 +202,3 @@ AUTHENTICATION_BACKENDS = [
     'authentication.views.MobileNoAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
-SUMMERNOTE_CONFIG = {
-    'width': '100%',
-    'height': '480',
-}

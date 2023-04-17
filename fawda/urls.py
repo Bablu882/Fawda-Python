@@ -29,7 +29,7 @@ urlpatterns = [
     path('',include('booking.urls')),
     path('',include('payments.urls')),
     path('',include('admin_panel.urls')),
-    path('summernote/', include('django_summernote.urls')),
+    path('tinymce/', include('tinymce.urls')),
 
 ]
 if settings.DEBUG:
