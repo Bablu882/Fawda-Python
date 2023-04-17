@@ -4,7 +4,7 @@ from booking.models import JobBooking
 from django.http import JsonResponse
 from jobs.models import JobMachine,JobSahayak
 from rest_framework.response import Response
-from .models import BookingHistoryMachine,BookingHistorySahayak
+from .models import BookingHistoryMachine,BookingHistorySahayak,ClientInformation
 import uuid
 import openpyxl
 from django.http import HttpResponse
@@ -447,7 +447,7 @@ def export_booking_history_machine_excel(request):
 class TermsAndCondition(APIView):
     permission_classes=[AllowAny,]
     def get(self,request,format=None):
-        terms=ClientInformations.objects.all()
+        terms=ClientInformation.objects.all()
         serializer=ClientInformationsSerializer(terms,many=True)
         return Response(serializer.data)
 
@@ -456,9 +456,9 @@ class ClientUserInfo(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     def get(self,request,format=None):
         app_version= AppVersion.objects.order_by('-release_date').first()
-        latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+        latest_info = ClientInformation.objects.aggregate(Max('created_at'))
         if latest_info['created_at__max']:
-            latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])
+            latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])
             client_info = {
                 'privacy_policy': latest_info.privacy_policy,
                 'terms_condition': latest_info.terms_condition,
@@ -486,9 +486,9 @@ def BookingInvoiceView(request):
     # if  request.user.is_superuser:
     invoice_data=[]
     bookings=JobBooking.objects.all().filter(is_admin_paid='Paid')
-    latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+    latest_info = ClientInformation.objects.aggregate(Max('created_at'))
     if latest_info['created_at__max']:
-        latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])  
+        latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])  
     for booking in bookings:
         if booking.jobsahayak:
             invoice_data.append({
@@ -526,9 +526,9 @@ def BookingInvoice(request,id):
     print(id)
     if JobBooking.objects.filter(pk=id,is_admin_paid='Paid'):
         booking=JobBooking.objects.get(pk=id)
-        latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+        latest_info = ClientInformation.objects.aggregate(Max('created_at'))
         if latest_info['created_at__max']:
-            latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])  
+            latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])  
         if booking.jobsahayak:
             invoice_data=({
                 'grahak_name':booking.jobsahayak.grahak.profile.name,
@@ -569,16 +569,16 @@ class BookingInvoiceApiView(APIView):
         booking_id=request.GET.get('id')
         if JobBooking.objects.filter(pk=booking_id,is_admin_paid='Paid'):
             booking=JobBooking.objects.get(pk=booking_id)
-            latest_info = ClientInformations.objects.aggregate(Max('created_at'))
+            latest_info = ClientInformation.objects.aggregate(Max('created_at'))
             if latest_info['created_at__max']:
-                latest_info = ClientInformations.objects.get(created_at=latest_info['created_at__max'])  
+                latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])  
             if booking.jobsahayak:
                 invoice_data=({
                     'grahak_name':booking.jobsahayak.grahak.profile.name,
                     'job_number':booking.jobsahayak.job_number,
                     'grahak_address':f"{booking.jobsahayak.grahak.profile.village},{booking.jobsahayak.grahak.profile.mohalla},{booking.jobsahayak.grahak.profile.district},{booking.jobsahayak.grahak.profile.state}",
                     'date_invoice_generation':datetime.now().strftime('%Y-%m-%d'),
-                    'fawda_fee':booking.fawda_fee *2,
+                    'fawda_fee':float(booking.fawda_fee) *2,
                     'busigness_gst':latest_info.gst_no,
                     'busigness_name':latest_info.business_name,
                     'client_address':latest_info.client_address,
@@ -592,7 +592,7 @@ class BookingInvoiceApiView(APIView):
                     'job_number':booking.jobmachine.job_number,
                     'grahak_address':f"{booking.jobmachine.grahak.profile.village},{booking.jobmachine.grahak.profile.mohalla},{booking.jobmachine.grahak.profile.district},{booking.jobmachine.grahak.profile.state}",
                     'date_invoice_generation':datetime.now().strftime('%Y-%m-%d'),
-                    'fawda_fee':booking.fawda_fee *2,
+                    'fawda_fee':float(booking.fawda_fee) *2,
                     'busigness_gst':latest_info.gst_no,
                     'busigness_name':latest_info.business_name,
                     'client_address':latest_info.client_address,
@@ -600,5 +600,7 @@ class BookingInvoiceApiView(APIView):
                     'provider_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
                     'payment':booking.payment_your
                 })
-            print(invoice_data)    
+            print(invoice_data)
+            print(booking.fawda_fee)    
         return Response({'invoice_data':invoice_data})        
+

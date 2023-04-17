@@ -17,5 +17,6 @@ urlpatterns=[
     path('api/client_user_info/',ClientUserInfo.as_view()),
     path('invoice/<int:id>/',BookingInvoice,name='invoice'),
     path('api/invoice/',BookingInvoiceApiView.as_view()),
+    
 
 ]   
