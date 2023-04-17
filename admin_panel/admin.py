@@ -28,9 +28,26 @@ class MyModelAdmin(admin.ModelAdmin):
     
 
 from .models import ClientInformation
-from django_summernote.admin import SummernoteModelAdmin
+# from django_summernote.admin import SummernoteModelAdmin
 
-class ClientInformationsAdmin(SummernoteModelAdmin):
-    summernote_fields = ('privacy_policy', 'terms_condition', 'about_us')
+# class ClientInformationsAdmin(SummernoteModelAdmin):
+#     summernote_fields = ('privacy_policy', 'terms_condition', 'about_us')
+#     summernote_config = {
+#         'styleTags': [
+#             {'title': 'Custom Style', 'tag': 'p', 'class': 'my-custom-style'},
+#             {'title': 'Large Font', 'tag': 'p', 'style': 'font-size: 2em;'}
+#         ]
+#     }
 
-admin.site.register(ClientInformation, ClientInformationsAdmin)
+# admin.site.register(ClientInformation, ClientInformationsAdmin)
+
+from django.contrib import admin
+from .models import ClientInformation
+from tinymce.widgets import TinyMCE
+
+class ClientInformationAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        HTMLField: {'widget': TinyMCE()},
+    }
+
+admin.site.register(ClientInformation, ClientInformationAdmin)
