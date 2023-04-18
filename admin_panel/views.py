@@ -604,3 +604,49 @@ class BookingInvoiceApiView(APIView):
             print(booking.fawda_fee)    
         return Response({'invoice_data':invoice_data})        
 
+
+##--------------------------------expo nortifications------------------------------------------###
+
+
+# import json
+# import requests
+# from rest_framework.views import APIView
+# from rest_framework.response import Response
+# from django.conf import settings
+
+# # Import the expo-server-sdk-python library
+# from expo_server_sdk import PushClient
+# from expo_server_sdk import PushMessage
+# from expo_server_sdk import ExpoPushMessage
+# from expo_server_sdk import PushResponseError
+# from expo_server_sdk import PushServerError
+
+# class PushNotificationView(APIView):
+#     authentication_classes=[IsAuthenticated,]
+#     permission_classes=[BearerTokenAuthentication,]
+#     def post(self, request, format=None):
+#         # Get the user ID from the request data
+#         user_id = request.user.id
+        
+#         # Get the user's expoPushToken from the database
+#         user = User.objects.get(id=user_id)
+#         expo_push_token = user.expo_push_token
+        
+#         # Create the notification message
+#         message = PushMessage(
+#             to=expo_push_token,
+#             title="New Message",
+#             body="You have a new message"
+#         )
+        
+#         # Send the notification using the expo-server-sdk-python package
+#         try:
+#             response = PushClient().publish([message])
+#             print(response)
+#             return Response({"status": "success"})
+#         except PushResponseError as exc:
+#             print(exc.errors)
+#             return Response({"status": "error", "message": "Push notification error"})
+#         except (PushServerError, Exception) as exc:
+#             print(exc)
+#             return Response({"status": "error", "message": "Push notification error"})
