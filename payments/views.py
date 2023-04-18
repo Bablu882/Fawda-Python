@@ -92,7 +92,6 @@ class TestPaymentAPIView(APIView):
             except JobMachine.DoesNotExist:
                 return Response({'error':f"job does not exist with job_id-{job_id}"}) 
             job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak=get_job_sahayak) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine=get_job_machine) & Q(jobmachine__job_number=job_number))))
-
             is_booked = False
             for job in job_bookings:
                 if job.status == 'Booked':
@@ -118,7 +117,6 @@ class TestPaymentAPIView(APIView):
 
                 job.status = 'Booked'
                 job.save()
-
             response_data = {
             'booking_id': job_id,
             'amount': str(amount),

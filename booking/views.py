@@ -543,7 +543,6 @@ class RatingGet(APIView):
 class OngoingStatusApi(APIView):
     authentication_classes = [BearerTokenAuthentication,]
     permission_classes = [IsAuthenticated,]
-
     def post(self, request,format=None):
         job_id=request.data.get('job_id')
         job_number=request.data.get('job_number')
@@ -594,10 +593,10 @@ class OngoingStatusApi(APIView):
 
         return Response({'message': 'changed status to Ongoing successfully!','booking_status':'Ongoing','status':status.HTTP_200_OK})
 
+
 class CompletedStatusApi(APIView):
     authentication_classes = [BearerTokenAuthentication,]
     permission_classes = [IsAuthenticated,]
-
     def post(self, request,format=None):
         job_id=request.data.get('job_id')
         job_number=request.data.get('job_number')
@@ -648,6 +647,7 @@ class CompletedStatusApi(APIView):
 
         return Response({'message': 'changed status to Completed successfully!','booking_status':'Completed','status':status.HTTP_200_OK})
         
+
 
 
 
