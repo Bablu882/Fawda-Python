@@ -417,7 +417,7 @@ class MyBookingDetails(APIView):
                     'pay_for_female': booking.jobsahayak.pay_amount_female,
                     'count_male': booking.count_male,
                     'count_female': booking.count_female,
-                    'job_type':booking.jobsahayak.count_male,
+                    'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
                     'datetime':booking.jobsahayak.datetime,
                     'total_amount':booking.jobsahayak.total_amount,
