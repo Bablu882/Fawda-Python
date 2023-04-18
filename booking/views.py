@@ -414,10 +414,6 @@ class MyBookingDetails(APIView):
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
                     'datetime':booking.jobsahayak.datetime,
-                    'total_amount':booking.total_amount,
-                    'total_amount_sahayak':booking.total_amount_sahayak,
-                    'payment_your':booking.payment_your,
-                    'fawda_fee':booking.fawda_fee,
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type
@@ -439,10 +435,6 @@ class MyBookingDetails(APIView):
                     'datetime':booking.jobsahayak.datetime,
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
-                    'fawda_fee':booking.fawda_fee,
-                    'total_amount':booking.total_amount,
-                    'total_amount_theka':booking.total_amount_theka,
-                    'payment_your':booking.payment_your
                 })
 
         response_data = {
