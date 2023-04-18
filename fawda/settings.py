@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-(h%c9lrv%u%lu)4pr-bqs0x(p49^+jl0^*l5xn$^-il%(7$-lm'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -113,7 +113,7 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'fawdaapi',
+#         'NAME': 'fawdadb',
 #         'USER': 'root',
 #         'PASSWORD': 'XdQ6e2UIIxlzxhg',
 #         'HOST': 'localhost',
