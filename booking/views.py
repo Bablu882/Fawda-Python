@@ -382,6 +382,7 @@ class MyBookingDetails(APIView):
             job_id = booking.jobsahayak.id
             if job_id not in booking_data:
                 booking_data[job_id] = {
+                    'combine_job_id':booking.jobsahayak.id,
                     'total_amount': 0,
                     'count_male': 0,
                     'count_female': 0,
@@ -393,6 +394,7 @@ class MyBookingDetails(APIView):
                     'land_area': booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type,
                     'num_days': booking.jobsahayak.num_days,
+                    'datetime':booking.jobsahayak.datetime,
                     'sahayaks': []
                 }
             if booking.jobsahayak.job_type == 'individuals_sahayak':
@@ -405,6 +407,7 @@ class MyBookingDetails(APIView):
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
+                    'job_number':booking.jobsahayak.job_number,
                     'booking_status':booking.status,
                     'booking_user_id': booking.booking_user.id,
                     'sahayak_name': booking.booking_user.profile.name,
@@ -413,7 +416,15 @@ class MyBookingDetails(APIView):
                     'pay_for_male': booking.jobsahayak.pay_amount_male,
                     'pay_for_female': booking.jobsahayak.pay_amount_female,
                     'count_male': booking.count_male,
-                    'count_female': booking.count_female
+                    'count_female': booking.count_female,
+                    'job_type':booking.jobsahayak.count_male,
+                    'num_days':booking.jobsahayak.num_days,
+                    'datetime':booking.jobsahayak.datetime,
+                    'total_amount':booking.jobsahayak.total_amount,
+                    'total_amount_sahayak':booking.jobsahayak.total_amount_sahayak,
+                    'payment_your':booking.jobsahayak.payment_your,
+                    'fawda_fee':booking.jobsahayak.fawda_fee,
+                    'description':booking.jobsahayak.description
                 })
             else:
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
@@ -423,11 +434,19 @@ class MyBookingDetails(APIView):
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
+                    'job_number':booking.jobsahayak.job_number,
                     'booking_status':booking.jobsahayak.status,
                     'booking_user_id': booking.booking_user.id,
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
-                    'thekedar_mobile_no': booking.booking_user.mobile_no
+                    'thekedar_mobile_no': booking.booking_user.mobile_no,
+                    'datetime':booking.jobsahayak.datetime,
+                    'job_type':booking.jobsahayak.job_type,
+                    'description':booking.jobsahayak.description,
+                    'fawda_fee':booking.jobsahayak.fawda_fee,
+                    'total_amount':booking.jobsahayak.total_amount,
+                    'total_amount_theka':booking.jobsahayak.total_amount_theka,
+                    'payment_your':booking.jobsahayak.payment_your
                 })
 
         response_data = {
@@ -532,51 +551,57 @@ class RatingGet(APIView):
             return Response({'message': f'No rating found for booking_job with id {booking_job_id}'})
 
         
-
 class OngoingStatusApi(APIView):
-    authentication_classes=[BearerTokenAuthentication,]
-    permission_classes=[IsAuthenticated,]
-    def post(self,request,format=None):
-        bookingid=request.data.get('booking_id')
-        if not bookingid:
-            return Response({'error':'booking_id required !'})
-        if not bookingid.isdigit():
-            return Response({'error':'booking_id must be numeric !'}) 
-        if request.user.user_type == 'Grahak':
-            try:
-                job=JobBooking.objects.get(pk=bookingid)
-                if job.status == 'Ongoing':
-                    return Response({'message':'booking status Ongoing already up to date !'})
+    authentication_classes = [BearerTokenAuthentication,]
+    permission_classes = [IsAuthenticated,]
+
+    def post(self, request, format=None):
+        job_id=request.data.get('job_id')
+        if not job_id:
+            return Response({'error': 'job_id required !'})
+        if not job_id.isdigit():
+            return Response({'error': 'job_id must be numeric !'})
+        if request.user.user_type != 'Grahak':
+            return Response({'message': 'you are not Grahak, only Grahak can change status'})
+        try:
+            get_job_sahayak=JobSahayak.objects.get(pk=job_id)
+            get_job_machine=JobMachine.objects.get(pk=job_id)
+        except JobSahayak.DoesNotExist:
+            return Response({'error':f"job does not exist with job_id-{job_id}"})
+        except JobMachine.DoesNotExist:
+            return Response({'error':f"job does not exist with job_id-{job_id}"}) 
+        job_bookings = JobBooking.objects.filter(Q(jobsahayak=get_job_sahayak) | Q(jobmachine=get_job_machine))
+        for job in job_bookings:
+            print(job)
+            if job.status == 'Ongoing':
+                return Response({'message':'booking_status Ongoing already up to date !'})
+            if job.status == 'Booked':
+                # return Response({'message':'booking_status can not be updated it should be Booked before !'})
                 if job.jobsahayak:
                     if job.jobsahayak.grahak == request.user:
+                        job.status ='Ongoing'
+                        job.save()
                         if not job.jobsahayak.status == 'Pending':
-                            job.jobsahayak.status='Ongoing'
+                            job.jobsahayak.status = 'Ongoing'
                             job.jobsahayak.save()
-                        if job.status == 'Booked':   
-                            job.status='Ongoing'
-                            job.save()
-                            return Response({'message':'changed status to Ongoing successfully !','booking-status':job.status,'status':status.HTTP_200_OK})
-                        else:
-                            return Response({'message':'status can not be updated it should be Booked before !'})    
                     else:
-                        return Response({'error':'unauthorised grahak !'})
+                        return Response({'error': 'unauthorized grahak !'})
                 else:
                     if job.jobmachine.grahak == request.user:
+                        job.status='Ongoing'
+                        job.save()
                         if not job.jobmachine.status == 'Pending':
-                            job.jobmachine.status='Ongoing'
+                            job.jobmachine.status = 'Ongoing'
                             job.jobmachine.save()
-                        if job.status =='Booked':
-                            job.status='Ongoing'
-                            job.save()
-                            return Response({'message':'changed status ongoing successfully !','booking-status':job.status,'status':status.HTTP_200_OK})
-                        else:
-                            return Response({'message':'status can not be updated it should be booked before !'})    
                     else:
-                        return Response({'error':'unauthorised grahak !'})        
-            except JobBooking.DoesNotExist:
-                return Response({'error':'Booking does not exist !'})
-        else:
-            return Response({'message':'you are not Grahak,only Grahak can change status'})
+                        return Response({'error': 'unauthorized grahak !'})
+            else:
+                return Response({'message':'booking_status can not be updated it should be booked before !'})
+            # if job.status == 'Booked':
+            #     job.status = 'Ongoing'
+            #     job.save()
+
+        return Response({'message': 'changed status to Ongoing successfully !','booking_status':'Booked','status':status.HTTP_200_OK})
 
 class CompletedStatusApi(APIView):
     authentication_classes=[BearerTokenAuthentication,]
