@@ -390,11 +390,6 @@ class MyBookingDetails(APIView):
                     'payment_your': 0,
                     'fawda_fee': 0,
                     'job_type': booking.jobsahayak.job_type,
-                    'discription': booking.jobsahayak.description,
-                    'land_area': booking.jobsahayak.land_area,
-                    'land_type':booking.jobsahayak.land_type,
-                    'num_days': booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
                     'sahayaks': []
                 }
             if booking.jobsahayak.job_type == 'individuals_sahayak':
@@ -413,8 +408,8 @@ class MyBookingDetails(APIView):
                     'sahayak_name': booking.booking_user.profile.name,
                     'sahayak_village': booking.booking_user.profile.village,
                     'sahayak_mobile_no': booking.booking_user.mobile_no,
-                    'pay_for_male': booking.jobsahayak.pay_amount_male,
-                    'pay_for_female': booking.jobsahayak.pay_amount_female,
+                    'pay_amount_male': booking.jobsahayak.pay_amount_male,
+                    'pay_amount_female': booking.jobsahayak.pay_amount_female,
                     'count_male': booking.count_male,
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
@@ -424,7 +419,9 @@ class MyBookingDetails(APIView):
                     'total_amount_sahayak':booking.jobsahayak.total_amount_sahayak,
                     'payment_your':booking.jobsahayak.payment_your,
                     'fawda_fee':booking.jobsahayak.fawda_fee,
-                    'description':booking.jobsahayak.description
+                    'description':booking.jobsahayak.description,
+                    'land_area':booking.jobsahayak.land_area,
+                    'land_type':booking.jobsahayak.land_type
                 })
             else:
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
