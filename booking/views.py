@@ -377,78 +377,61 @@ class MyBookingDetails(APIView):
         if not request.user.user_type=='Grahak':
             return Response({'message':'you are not Grahak !'})
         bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
-        total_amount = 0
-        count_male = 0
-        count_female = 0
-        total_amount_sahayak = 0
-        payment_your = 0
-        fawda_fee = 0
-        booking_data = []
+        booking_data = {}
         for booking in bookings:
+            job_id = booking.jobsahayak.id
+            if job_id not in booking_data:
+                booking_data[job_id] = {
+                    'total_amount': 0,
+                    'count_male': 0,
+                    'count_female': 0,
+                    'total_amount_sahayak': 0,
+                    'payment_your': 0,
+                    'fawda_fee': 0,
+                    'job_type': booking.jobsahayak.job_type,
+                    'discription': booking.jobsahayak.description,
+                    'land_area': booking.jobsahayak.land_area,
+                    'land_type':booking.jobsahayak.land_type,
+                    'num_days': booking.jobsahayak.num_days,
+                    'sahayaks': []
+                }
             if booking.jobsahayak.job_type == 'individuals_sahayak':
-                total_amount += float(booking.total_amount) if booking.total_amount else 0
-                count_male += int(booking.count_male) if booking.count_male else 0
-                count_female += int(booking.count_female) if booking.count_female else 0
-                total_amount_sahayak += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
-                payment_your += float(booking.payment_your) if booking.payment_your else 0
-                fawda_fee += float(booking.fawda_fee) if booking.fawda_fee else 0
-                booking_data.append({
+                booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
+                booking_data[job_id]['count_male'] += int(booking.count_male) if booking.count_male else 0
+                booking_data[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
+                booking_data[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
+                booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
-                    'id':booking.jobsahayak.id,
-                    'datetime': booking.jobsahayak.datetime,
-                    'booking_status': booking.status,
+                    'job_id':booking.jobsahayak.id,
+                    'booking_status':booking.status,
+                    'booking_user_id': booking.booking_user.id,
+                    'sahayak_name': booking.booking_user.profile.name,
+                    'sahayak_village': booking.booking_user.profile.village,
+                    'sahayak_mobile_no': booking.booking_user.mobile_no,
+                    'pay_for_male': booking.jobsahayak.pay_amount_male,
+                    'pay_for_female': booking.jobsahayak.pay_amount_female,
                     'count_male': booking.count_male,
-                    'count_female': booking.count_female,
-                    'total_amount': booking.total_amount,
-                    'total_amount_sahayak': booking.total_amount_sahayak,
-                    # 'total_amount_theka': booking.total_amount_theka,
-                    # 'total_amount_machine': booking.total_amount_machine,
-                    'payment_your': booking.payment_your,
-                    'fawda_fee': booking.fawda_fee,
-                    'booking_user_id':booking.booking_user.id,
-                    'datetime':booking.jobsahayak.datetime,
-                    'description':booking.jobsahayak.description,
-                    'land_area':booking.jobsahayak.land_area,
-                    'pay_amount_male':booking.pay_amount_male,
-                    'pay_amount_female':booking.pay_amount_female,
-                    'num_days':booking.jobsahayak.num_days,
-                    'job_type':booking.jobsahayak.job_type,
-                    'user_status':booking.booking_user.user_type,
-                    'sahayak_name':booking.booking_user.profile.name,
-                    'sahayak_village':booking.booking_user.profile.village,
-                    'sahayak_mobile_no':booking.booking_user.mobile_no,
-                    'job_number':booking.jobsahayak.job_number,
-                    'land_type':booking.jobsahayak.land_type
+                    'count_female': booking.count_female
                 })
             else:
-                booking_data.append({
-                    'booking_id':booking.id,
-                    'id':booking.jobsahayak.id,
-                    'booking_status':booking.status,
-                    'total_amount':booking.total_amount,
-                    'total_amount_theka':booking.total_amount_theka,
-                    'payment_your':booking.payment_your,
-                    'datetime':booking.jobsahayak.datetime,
-                    'land_area':booking.jobsahayak.land_area,
-                    'description':booking.jobsahayak.description,
-                    'fawda_fee':booking.fawda_fee,
-                    'booking_user_id':booking.booking_user.id,
-                    'job_type':booking.jobsahayak.job_type,
-                    'user_status':booking.booking_user.user_type,
-                    'thekedar_name':booking.booking_user.profile.name,
-                    'thekedar_village':booking.booking_user.profile.village,
-                    'thekedar_mobile_no':booking.booking_user.mobile_no,
-                    'job_number':booking.jobsahayak.job_number,
-                    'land_type':booking.jobsahayak.land_type
-                })    
+                booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
+                booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
+                booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data[job_id]['sahayaks'].append({
+                    'booking_id': booking.id,
+                    'job_id':booking.jobsahayak.id,
+                    'booking_status':booking.jobsahayak.status,
+                    'booking_user_id': booking.booking_user.id,
+                    'thekedar_name': booking.booking_user.profile.name,
+                    'thekedar_village': booking.booking_user.profile.village,
+                    'thekedar_mobile_no': booking.booking_user.mobile_no
+                })
+
         response_data = {
-            'total_amount': total_amount,
-            'count_male': count_male,
-            'count_female': count_female,
-            'total_amount_sahayak': total_amount_sahayak,
-            'payment_your': payment_your,
-            'fawda_fee': fawda_fee,
-            'bookings': booking_data,
+            'bookings': list(booking_data.values())
         }
         bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
         booking_data1=[]
