@@ -382,7 +382,6 @@ class MyBookingDetails(APIView):
             job_id = booking.jobsahayak.id
             if job_id not in booking_data:
                 booking_data[job_id] = {
-                    'combine_job_id':booking.jobsahayak.id,
                     'total_amount': 0,
                     'count_male': 0,
                     'count_female': 0,
