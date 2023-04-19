@@ -445,7 +445,7 @@ class MyBookingDetails(APIView):
         for booking in bookings1:
             booking_data1.append({
                 'booking_id':booking.id,
-                'id':booking.jobmachine.id,
+                'job_id':booking.jobmachine.id,
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
@@ -495,35 +495,62 @@ class RatingCreate(APIView):
     
     def post(self, request):
         if request.user.user_type == 'Grahak':
-            booking_job_id = request.data.get('booking_id')
+            job_id = request.data.get('job_id')
+            job_number=request.data.get('job_number')
             rating_value = request.data.get('rating')
             comment_value = request.data.get('comment', '')
-            try:
-                booking_job = JobBooking.objects.get(id=booking_job_id)
-            except JobBooking.DoesNotExist:
-                return Response({'error': f'Invalid booking_job id {booking_job_id}'})
-            if booking_job.jobsahayak:
-                if not booking_job.jobsahayak.grahak == request.user:
-                    return Response({'error':'unauthorised user !'})
-            else:
-                if not booking_job.jobmachine.grahak == request.user:
-                    return Response({'error':'unauthorised user !'})
+            if not job_id or not job_number:
+                return Response({'message':'job_id and job_number both is required !'})
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+            for booking in job_bookings:
+                if booking.jobsahayak:
+                    if not booking.jobsahayak.grahak == request.user:
+                        return Response({'error':'unauthorised user !'})
+                    if not booking.status == 'Completed':
+                        return Response({'message':'rating can not created it should be completed before !'})    
+                    Rating.objects.create(
+                        booking_job=booking,
+                        rating=rating_value,
+                        comment=comment_value
+                    )    
+                else:
+                    if not booking.jobmachine.grahak == request.user:
+                        return Response({'error':'unauthorised user !'}) 
+                    if not booking.status == 'Completed':
+                        return Response({'message':'rating can not be created it should be Commpleted before !'})  
+                    Rating.objects.create(
+                        booking_job=booking,
+                        rating=rating_value,
+                        comment=comment_value
+                    )         
+            return Response({'message':'Rating created successfully!','status':status.HTTP_201_CREATED})
+
+        #     try:
+        #         booking_job = JobBooking.objects.get(id=booking_job_id)
+        #     except JobBooking.DoesNotExist:
+        #         return Response({'error': f'Invalid booking_job id {booking_job_id}'})
+        #     if booking_job.jobsahayak:
+        #         if not booking_job.jobsahayak.grahak == request.user:
+        #             return Response({'error':'unauthorised user !'})
+        #     else:
+        #         if not booking_job.jobmachine.grahak == request.user:
+        #             return Response({'error':'unauthorised user !'})
                     
-            if not booking_job.status == 'Completed':
-                return Response({'message':'rating can not create,booking status should be Completed before !'})        
-            try:
-                rating = Rating.objects.get(booking_job_id=booking_job_id)
-                return Response({'message': f'A rating has already been created for booking_job with id {booking_job_id}'})
-            except Rating.DoesNotExist:
-                pass
-            rating = Rating.objects.create(
-                booking_job=booking_job,
-                rating=rating_value,
-                comment=comment_value,
-            )
-            return Response({'message': f'Rating added for booking_job with id {booking_job_id}','status':status.HTTP_201_CREATED})
-        else:
-            return Response({'message': 'Only Grahak can post rating'})
+        #     if not booking_job.status == 'Completed':
+        #         return Response({'message':'rating can not create,booking status should be Completed before !'})        
+        #     try:
+        #         rating = Rating.objects.get(booking_job_id=booking_job_id)
+        #         return Response({'message': f'A rating has already been created for booking_job with id {booking_job_id}'})
+        #     except Rating.DoesNotExist:
+        #         pass
+        #     rating = Rating.objects.create(
+        #         booking_job=booking_job,
+        #         rating=rating_value,
+        #         comment=comment_value,
+        #     )
+        #     return Response({'message': f'Rating added for booking_job with id {booking_job_id}','status':status.HTTP_201_CREATED})
+        # else:
+        #     return Response({'message': 'Only Grahak can post rating'})
         
 class RatingGet(APIView):
     permission_classes=[BearerTokenAuthentication,]
