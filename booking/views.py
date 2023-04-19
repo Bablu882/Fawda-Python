@@ -553,14 +553,9 @@ class OngoingStatusApi(APIView):
         if request.user.user_type != 'Grahak':
             return Response({'message': 'you are not Grahak, only Grahak can change status'})
         
-        try:
-            get_job_sahayak=JobSahayak.objects.get(pk=job_id)
-            get_job_machine=JobMachine.objects.get(pk=job_id)
-        except JobSahayak.DoesNotExist:
-            return Response({'error':f"job does not exist with job_id-{job_id}"})
-        except JobMachine.DoesNotExist:
-            return Response({'error':f"job does not exist with job_id-{job_id}"}) 
-        job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak=get_job_sahayak) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine=get_job_machine) & Q(jobmachine__job_number=job_number))))
+        if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
+            return Response({'error':'job_id does not exists'}) 
+        job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
 
         is_booked = False
         for job in job_bookings:
@@ -607,14 +602,9 @@ class CompletedStatusApi(APIView):
         if request.user.user_type != 'Grahak':
             return Response({'message': 'you are not Grahak, only Grahak can change status'})
         
-        try:
-            get_job_sahayak=JobSahayak.objects.get(pk=job_id)
-            get_job_machine=JobMachine.objects.get(pk=job_id)
-        except JobSahayak.DoesNotExist:
-            return Response({'error':f"job does not exist with job_id-{job_id}"})
-        except JobMachine.DoesNotExist:
-            return Response({'error':f"job does not exist with job_id-{job_id}"}) 
-        job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak=get_job_sahayak) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine=get_job_machine) & Q(jobmachine__job_number=job_number))))
+        if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
+            return Response({'error':'job_id does not exists'}) 
+        job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
 
         is_ongoing = False
         for job in job_bookings:
