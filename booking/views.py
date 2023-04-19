@@ -508,6 +508,8 @@ class RatingCreate(APIView):
                         return Response({'error':'unauthorised user !'})
                     if not booking.status == 'Completed':
                         return Response({'message':'rating can not created it should be completed before !'})    
+                    if Rating.objects.filter(booking_job=booking).exists():
+                        return Response({'message':'Rating already created !'})    
                     Rating.objects.create(
                         booking_job=booking,
                         rating=rating_value,
@@ -518,6 +520,8 @@ class RatingCreate(APIView):
                         return Response({'error':'unauthorised user !'}) 
                     if not booking.status == 'Completed':
                         return Response({'message':'rating can not be created it should be Commpleted before !'})  
+                    if Rating.objects.filter(booking_job=booking).exists():
+                        return Response({'message':'Rating already created !'})    
                     Rating.objects.create(
                         booking_job=booking,
                         rating=rating_value,
