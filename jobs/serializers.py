@@ -57,6 +57,15 @@ class JobMachineSerializers(serializers.ModelSerializer):
             'land_type',
             'total_amount_machine',    
         ]
+    def validate_work_type(self, value):
+        if not WorkType.objects.filter(name=value).exists():
+            raise serializers.ValidationError("Invalid work type: {}".format(value))
+        return value
+    
+    def validate_machine(self, value):
+        if not MachineType.objects.filter(machine=value).exists():
+            raise serializers.ValidationError("Invalid machine: {}".format(value))
+        return value    
 class GetJobMachineSerializer(serializers.ModelSerializer):
     class Meta:
         model=JobMachine
