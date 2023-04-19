@@ -104,6 +104,8 @@ class RegisterApi(APIView):
         return Response({
             'success': True,
             'otp': otp_obj.otp,
+            'phone':user.mobile_no,
+            'user_type':user.user_type,
             'status':status.HTTP_201_CREATED
         })
     
@@ -141,7 +143,7 @@ class VerifyMobile(APIView):
         user_get.is_active = True
         user_get.save()
         OTP.objects.filter(user=user_get).delete()
-        return Response({'verified':True,'token': token.key,'status':status.HTTP_200_OK})
+        return Response({'verified':True,'token': token.key,'user_type':user_get.user_type,'status':status.HTTP_200_OK})
     
 @api_view(["POST"])
 @authentication_classes([BearerTokenAuthentication])
@@ -171,7 +173,7 @@ class LoginApi(APIView):
             otps = OTP.objects.create(otp=otp, user=user)
             # send OTP to the user's mobile number for verification
 
-            return Response({'success': True, 'otp': otps.otp, 'user_type': user.user_type,'status': status.HTTP_200_OK})
+            return Response({'success': True, 'otp': otps.otp, 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
         else:
             return Response({'message': 'User not registered !','status':status.HTTP_404_NOT_FOUND})
         
