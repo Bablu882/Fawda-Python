@@ -16,6 +16,14 @@ from rest_framework import status
 from booking.models import JobBooking
 # Create your views here.
 
+from rest_framework.pagination import PageNumberPagination
+
+class CustomPagination(PageNumberPagination):
+    page_size = 10 # the number of results per page
+    page_query_param = 'page' # the query parameter used for pagination
+    page_size_query_param = 'page_size' # the query parameter used for specifying the number of results per page
+    max_page_size = 1000# the maximum number of results per page
+
 class BookingThekePeKam(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
@@ -35,12 +43,12 @@ class BookingThekePeKam(APIView):
                     try:
                         amount = float(amount)
                     except ValueError:
-                        return Response({'error': 'total_amount_theka should be numeric!'})
+                        return Response({'message': 'total_amount_theka should be numeric!'})
                 if not isinstance(amount, (float, int)):
-                    return Response({'error': 'total_amount_theka should be a float or an int!'})
+                    return Response({'message': 'total_amount_theka should be a float or an int!'})
 
                 if amount <= 5:
-                    return Response({'error': 'total_amount_theka should be greater than  5 !'})
+                    return Response({'message': 'total_amount_theka should be greater than  5 !'})
 
                 existing_job = JobSahayak.objects.filter(
                     datetime=datetime,
@@ -78,13 +86,13 @@ class EditThekePeKam(APIView):
         job_id = request.data.get('job_id')
         amount = request.data.get('amount')
         if not job_id or not amount:
-            return Response({'error':'both field is required !'})
+            return Response({'message':'both field is required !'})
         
         if not job_id.isdigit():
-            # return a validation error response if the job_id is not a number
-            return Response({'error': 'job_id should be a number'})
+            # return a validation message response if the job_id is not a number
+            return Response({'message': 'job_id should be a number'})
         if not all(char.isdigit() or char == '.' for char in amount) or amount.count('.') > 1:
-            return Response({'error': 'amount should contain only digits and a single dot (".") as the decimal separator'})
+            return Response({'message': 'amount should contain only digits and a single dot (".") as the decimal separator'})
 
         try:
             amount_decimal = Decimal(amount)
@@ -95,10 +103,10 @@ class EditThekePeKam(APIView):
         if amount_decimal is None:
             amount_decimal = amount
 
-        # Get the JobSahayak object or return a 404 error response
+        # Get the JobSahayak object or return a 404 message response
         job = get_object_or_404(JobSahayak, pk=job_id, job_type='theke_pe_kam')
         if not request.user == job.grahak:
-            return Response({'error':'unauthorised user !'})
+            return Response({'message':'unauthorised user !'})
         if job.status =='Pending':
             job.total_amount_theka = amount_decimal
             job.save()
@@ -124,32 +132,32 @@ class BookingSahayakIndividuals(APIView):
                 except ValueError:
                     return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})
                 if not data['land_area'].isdigit():
-                    return Response({'error':'land_area should be number integer !'})   
+                    return Response({'message':'land_area should be number integer !'})   
                 if not data['count_male'].isdigit():
-                    return Response({'error':'count_male should be integer !'})    
+                    return Response({'message':'count_male should be integer !'})    
                 if not data['count_female'].isdigit():
-                    return Response({'error':'count_female should be integer !'})    
+                    return Response({'message':'count_female should be integer !'})    
                 if not data['num_days'].isdigit():
-                    return Response({'error':'num_days should be integer !'})    
+                    return Response({'message':'num_days should be integer !'})    
                 try:
                     pay_amount_male = int(pay_amount_male)
                 except ValueError:
                     try:
                         pay_amount_male = float(pay_amount_male)
                     except ValueError:
-                        return Response({'error': 'pay_amount_male should be integer!'})
+                        return Response({'message': 'pay_amount_male should be integer!'})
                 try:
                     pay_amount_female = int(pay_amount_female)
                 except ValueError:
                     try:
                         pay_amount_female = float(pay_amount_female)
                     except ValueError:
-                        return Response({'error': 'pay_amount_female should be integer!'})         
+                        return Response({'message': 'pay_amount_female should be integer!'})         
                 if not isinstance(pay_amount_male, (float, int)) or not isinstance(pay_amount_female, (float, int)):
-                    return Response({'error': 'pay_amount_male or pay_amount_female should be a float or an int!'})
+                    return Response({'message': 'pay_amount_male or pay_amount_female should be a float or an int!'})
 
                 if pay_amount_male <= 5 or pay_amount_female <= 5:
-                    return Response({'error': 'pay_amount_male or pay_amount_female should be greater than 5 !'}) 
+                    return Response({'message': 'pay_amount_male or pay_amount_female should be greater than 5 !'}) 
                 # check if a job with the same details already exists
                 existing_jobs = JobSahayak.objects.filter(
                     grahak=request.user,
@@ -166,7 +174,7 @@ class BookingSahayakIndividuals(APIView):
                     # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
                 if existing_jobs.exists():
-                    return Response({'message': 'error', 'message': 'A job with the same details already exists.'})
+                    return Response({'message': 'message', 'message': 'A job with the same details already exists.'})
                 
                 # create a new job if it doesn't already exist
                 unique_id = int(uuid.uuid4().hex[:6], 16)
@@ -201,15 +209,15 @@ class EditIndividualSahayak(APIView):
         pay_amount_male =request.data.get('pay_amount_male')
 
         if not job_id or not pay_amount_female or not pay_amount_male:
-            return Response({'error':'all field is required !'})
+            return Response({'message':'all field is required !'})
         
         if not job_id.isdigit():
-            # return a validation error response if the job_id is not a number
-            return Response({'error': 'job_id should be a integer !'})
+            # return a validation message response if the job_id is not a number
+            return Response({'message': 'job_id should be a integer !'})
         if not all(char.isdigit() or char == '.' for char in pay_amount_female) or pay_amount_female.count('.') > 1:
-            return Response({'error': 'pay_amount_female should contain only digits and a single dot (".") as the decimal separator'})
+            return Response({'message': 'pay_amount_female should contain only digits and a single dot (".") as the decimal separator'})
         if not all(char.isdigit() or char == '.' for char in pay_amount_male) or pay_amount_male.count('.') > 1:
-            return Response({'error': 'pay_amount_male should contain only digits and a single dot (".") as the decimal separator'})
+            return Response({'message': 'pay_amount_male should contain only digits and a single dot (".") as the decimal separator'})
         try:
             amount_female = Decimal(pay_amount_female)
             amount_male = Decimal(pay_amount_male)
@@ -222,10 +230,10 @@ class EditIndividualSahayak(APIView):
             amount_female=pay_amount_female
             amount_male = pay_amount_male
 
-        # Get the JobSahayak object or return a 404 error response
+        # Get the JobSahayak object or return a 404 message response
         job = get_object_or_404(JobSahayak, pk=job_id, job_type='individuals_sahayak')
         if not request.user == job.grahak:
-            return Response({'error':'unauthorised user !'})
+            return Response({'message':'unauthorised user !'})
         if job.status == 'Pending':
             if not  JobBooking.objects.filter(jobsahayak=job).exists():   
                 job.pay_amount_male = amount_male
@@ -256,13 +264,13 @@ class BookingJobMachine(APIView):
                 amount=serializers.data.get('total_amount_machine')
                 grahak=request.user
                 if not worktype or not machine or not datetime or not landarea or not landtype or not amount:
-                    return Response({'error':'all fields are required instead of others !'})  
+                    return Response({'message':'all fields are required instead of others !'})  
                 if not landarea.isdigit():
-                    return Response({'error':'land_area should be integer !'}) 
+                    return Response({'message':'land_area should be integer !'}) 
                 if not re.match(r'^[a-zA-Z\s]+$', worktype):
-                    return Response({'error': 'Invalid work_type, only letters and spaces allowed'})
+                    return Response({'message': 'Invalid work_type, only letters and spaces allowed'})
                 if not re.match(r'^[a-zA-Z\s]+$', machine):
-                    return Response({'error': 'Invalid machine, only letters and spaces allowed'})
+                    return Response({'message': 'Invalid machine, only letters and spaces allowed'})
                 try:
                     # Check if the datetime string is in the correct format
                     datetime_obj = parser.isoparse(datetime)
@@ -274,12 +282,12 @@ class BookingJobMachine(APIView):
                     try:
                         amount = float(amount)
                     except ValueError:
-                        return Response({'error': 'total_amount_theka should be numeric!'}) 
+                        return Response({'message': 'total_amount_theka should be numeric!'}) 
                 if not isinstance(amount, (float, int)):
-                    return Response({'error': 'total_amount_machine should be a float or an int!'})
+                    return Response({'message': 'total_amount_machine should be a float or an int!'})
 
                 if amount <= 5:
-                    return Response({'error': 'total_amount_machine should be greater than 5 !'})     
+                    return Response({'message': 'total_amount_machine should be greater than 5 !'})     
                 existing_job=JobMachine.objects.filter(
                     work_type=worktype,
                     machine=machine,
@@ -319,13 +327,13 @@ class EditJobMachine(APIView):
         job_id = request.data.get('job_id')
         amount = request.data.get('amount')
         if not job_id or not amount:
-            return Response({'error':'both field is required !'})
+            return Response({'message':'both field is required !'})
         
         if not job_id.isdigit():
-            # return a validation error response if the job_id is not a number
-            return Response({'error': 'job_id should be a number'})
+            # return a validation message response if the job_id is not a number
+            return Response({'message': 'job_id should be a number'})
         if not all(char.isdigit() or char == '.' for char in amount) or amount.count('.') > 1:
-            return Response({'error': 'amount should contain only digits and a single dot (".") as the decimal separator'})
+            return Response({'message': 'amount should contain only digits and a single dot (".") as the decimal separator'})
 
         try:
             amount_decimal = Decimal(amount)
@@ -336,10 +344,10 @@ class EditJobMachine(APIView):
         if amount_decimal is None:
             amount_decimal = amount
 
-        # Get the JobSahayak object or return a 404 error response
+        # Get the JobSahayak object or return a 404 message response
         job = get_object_or_404(JobMachine, pk=job_id, job_type='machine_malik')
         if not request.user == job.grahak:
-            return Response({'error':'unauthorised user'})
+            return Response({'message':'unauthorised user'})
         if job.status == 'Pending':
             job.total_amount_machine = amount_decimal
             job.save()
@@ -357,13 +365,13 @@ class GetSahayakJobDetails(APIView):
         if request.user.user_type == 'Sahayak':
             jobid=request.data.get('job_id')
             if not jobid:
-                return Response({'error':'jobid required !'})            
+                return Response({'message':'jobid required !'})            
             if not jobid.isdigit():
-                return Response({'error':'job_id should be numeric !'})    
+                return Response({'message':'job_id should be numeric !'})    
             try:
                getjob = JobSahayak.objects.get(pk=jobid)
             except JobSahayak.DoesNotExist:
-                return Response({'error': 'Job does not exist !'})
+                return Response({'message': 'Job does not exist !'})
             serial=JobSahaykSerialiser(getjob)    
             return Response({'seccess':True,'data':serial.data})
         return Response({'message':'you are not Sahayak'})
@@ -375,13 +383,13 @@ class GetMachineJobDetails(APIView):
         if request.user.user_type == 'MachineMalik':
             jobid=request.data.get('job_id')
             if not jobid:
-                return Response({'error':'jobid required !'})  
+                return Response({'message':'jobid required !'})  
             if not jobid.isdigit():
-                return Response({'error':'job_id should be numeric !'})          
+                return Response({'message':'job_id should be numeric !'})          
             try:
                getjob = JobMachine.objects.get(pk=jobid)
             except JobMachine.DoesNotExist:
-                return Response({'error': 'Job does not exist !'})
+                return Response({'message': 'Job does not exist !'})
             serial=GetJobMachineSerializer(getjob)    
             return Response({'seccess':True,'data':serial.data})
         return Response({'message':'you are not MachineMalik'})
@@ -404,7 +412,7 @@ from django.views.decorators.csrf import csrf_exempt
 class GetAllJob(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
-    # @csrf_exempt
+    PAGE_SIZE=10
     def get(self,request,format=None):
         result = []
         sahayak = request.user
@@ -412,7 +420,7 @@ class GetAllJob(APIView):
         sahayak_lat = sahayak_profile.latitude
         sahayak_lon = sahayak_profile.longitude
         if sahayak.user_type == 'Sahayak':
-            job_posts = JobSahayak.objects.all().filter(status='Pending').order_by('-date')
+            job_posts = JobSahayak.objects.all().filter(status='Pending').order_by('-id')
             for job_post in job_posts:
                 grahak_profile = job_post.grahak.profile
                 grahak_lat = grahak_profile.latitude
@@ -447,7 +455,7 @@ class GetAllJob(APIView):
                         "village":job_post.grahak.profile.village
                     })
         elif sahayak.user_type == 'MachineMalik':
-            job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-date')
+            job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-id')
             for job_post in job_posts_machin:
                 grahak_profile = job_post.grahak.profile
                 # print(grahak_profile)
@@ -478,8 +486,16 @@ class GetAllJob(APIView):
 
                     })        
         else:
-            return Response({'message':'You are not Sahayak or MachinMalik'})            
-        return Response(result)
+            return Response({'message':'You are not Sahayak or MachinMalik'})    
+        paginator = PageNumberPagination()
+        paginator.page_size = self.PAGE_SIZE
+        paginated_result = paginator.paginate_queryset(result, request)
+        response_data = {'page': paginator.page.number, 'total_pages': paginator.page.paginator.num_pages, 'results': paginated_result}
+    # Add next page URL to response
+        if paginator.page.has_next():
+            base_url = request.build_absolute_uri().split('?')[0]
+            response_data['next'] = f"{base_url}?page={paginator.page.next_page_number()}"
+        return Response(response_data)
 
 
 
@@ -515,7 +531,7 @@ class GetMachineDetailArray(APIView):
             serializer=MachineSerializers(get_machine,many=True)
             return Response(serializer.data)
         else:
-            return Response({'error':'work_type required !'})    
+            return Response({'message':'work_type required !'})    
 
 class GetWorkType(APIView):
     authentication_classes=[BearerTokenAuthentication,]

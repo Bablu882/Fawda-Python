@@ -12,6 +12,9 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from authentication.views import BearerTokenAuthentication
 from rest_framework import status
+from jobs.views import CustomPagination
+from rest_framework.pagination import PageNumberPagination
+
 
 class JobAcceptMachin(APIView):
     authentication_classes=[BearerTokenAuthentication,]
@@ -24,7 +27,7 @@ class JobAcceptMachin(APIView):
             try:
                 job = JobMachine.objects.get(pk=job_id)
             except JobMachine.DoesNotExist:
-                return Response({'error': 'Job does not exist !'})
+                return Response({'message': 'Job does not exist !'})
             if JobBooking.objects.filter(jobmachine=job, booking_user=machin_user).exists():
                 return Response({'message': 'Job is already accepted !'})
             booking=JobBooking.objects.create(jobmachine=job,booking_user=machin_user,status='Accepted')
@@ -42,6 +45,8 @@ class JobAcceptedSahayakTheka(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
         job_id=request.data.get('job_id')
+        if not job_id:
+            return Response({'message':'job_id required !'})
         sahayak_user=request.user
         if not request.user.user_type == 'Sahayak':
             return Response({'message':'only sahayak can accept !'})
@@ -49,7 +54,7 @@ class JobAcceptedSahayakTheka(APIView):
         try:
             job = JobSahayak.objects.get(pk=job_id,job_type='theke_pe_kam')
         except JobSahayak.DoesNotExist:
-            return Response({'error': 'Job does not exist !'})
+            return Response({'message': 'Job does not exist !'})
 
         if JobBooking.objects.filter(jobsahayak=job, booking_user=sahayak_user).exists():
             return Response({'message': 'Job is already accepted !'})
@@ -70,50 +75,57 @@ class JobAcceptIndividuals(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def post(self, request, format=None):
-        job_id = request.data.get('job_id')
-        count_male = int(request.data.get('count_male'))
-        count_female = int(request.data.get('count_female'))
-        individual_user = request.user
-        if not request.user.user_type == 'Sahayak':
-            return Response({'message':'only sahayak can accept !'})
-        # Check if job exists
-        try:
-            job = JobSahayak.objects.get(pk=job_id,job_type='individuals_sahayak')
-        except JobSahayak.DoesNotExist:
-            return Response({'error': 'Job does not exist !'})
+       serializer = JobAcceptSerializer(data=request.data)
+       if serializer.is_valid():
+            job_id = serializer.validated_data['job_id']
+            male = serializer.validated_data['count_male']
+            female = serializer.validated_data['count_female']    
+            count_male = int(male)
+            count_female = int(female)
+            individual_user = request.user
+            if not request.user.user_type == 'Sahayak':
+                return Response({'message':'only sahayak can accept !'})
+            # Check if job exists
+            try:
+                job = JobSahayak.objects.get(pk=job_id,job_type='individuals_sahayak')
+            except JobSahayak.DoesNotExist:
+                return Response({'message': 'Job does not exist !'})
 
-        # Check if job is already booked by the user
-        if JobBooking.objects.filter(jobsahayak=job, booking_user=individual_user).exists():
-            return Response({'message': 'Job is already accepted !'})
+            # Check if job is already booked by the user
+            if JobBooking.objects.filter(jobsahayak=job, booking_user=individual_user).exists():
+                return Response({'message': 'Job is already accepted !'})
 
-        # Check if there are enough available workers for the job
-        if int(job.count_male) < count_male or int(job.count_female) < count_female:
-            return Response({'message': 'Not enough sahayak available for this job !'})
+            # Check if there are enough available workers for the job
+            if int(job.count_male) < count_male or int(job.count_female) < count_female:
+                return Response({'message': 'Not enough sahayak available for this job !'})
 
-        # Update the job count
-        job.count_male = int(job.count_male)-count_male
-        job.count_female = int(job.count_female)-count_female
-        job.save()
-        if int(job.count_male) == 0 and int(job.count_female) == 0:
-            job.status ='Accepted'
+            # Update the job count
+            job.count_male = int(job.count_male)-count_male
+            job.count_female = int(job.count_female)-count_female
             job.save()
-        print(job.count_female,job.count_male)
-        # Create the booking object
-        booking = JobBooking.objects.create(booking_user=individual_user,
-                                            count_male=count_male,
-                                            count_female=count_female,
-                                            status='Accepted',
-                                            jobsahayak=job,
-                                            pay_amount_male=job.pay_amount_male,
-                                            pay_amount_female=job.pay_amount_female
-                                            )
-        # booking.jobsahayak.add(job)
-        update_booking_amounts(booking)
+            if int(job.count_male) == 0 and int(job.count_female) == 0:
+                job.status ='Accepted'
+                job.save()
+            print(job.count_female,job.count_male)
+            # Create the booking object
+            booking = JobBooking.objects.create(booking_user=individual_user,
+                                                count_male=count_male,
+                                                count_female=count_female,
+                                                status='Accepted',
+                                                jobsahayak=job,
+                                                pay_amount_male=job.pay_amount_male,
+                                                pay_amount_female=job.pay_amount_female
+                                                )
+            # booking.jobsahayak.add(job)
+            update_booking_amounts(booking)
 
-        # Serialize the booking object
-        serializer = JobBookingSerializers(booking)
+            # Serialize the booking object
+            serializer = JobBookingSerializers(booking)
 
-        return Response({'message': 'Job accepted successfully !', 'data': serializer.data,'status':status.HTTP_200_OK})
+            return Response({'message': 'Job accepted successfully !', 'data': serializer.data,'status':status.HTTP_200_OK})
+       else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
         
         
 def update_booking_amounts(booking):
@@ -186,6 +198,7 @@ def update_booking_amount_machine(booking):
 class MyJobsDetais(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
+    PAGE_SIZE = 10
     def get(self,request,format=None):
         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
             myjob_list=[]
@@ -247,9 +260,16 @@ class MyJobsDetais(APIView):
                         "work_type":job.jobmachine.work_type,
                         "machine":job.jobmachine.machine 
                     })            
-            
-            return Response({'success':True,'data':myjob_list})
-        return Response({'error':'you are not Sahayak or MachineMalik !'})    
+            paginator = PageNumberPagination()
+            paginator.page_size = self.PAGE_SIZE
+            paginated_result = paginator.paginate_queryset(myjob_list, request)
+            response_data = {'page': paginator.page.number, 'total_pages': paginator.page.paginator.num_pages, 'results': paginated_result}
+        # Add next page URL to response
+            if paginator.page.has_next():
+                base_url = request.build_absolute_uri().split('?')[0]
+                response_data['next'] = f"{base_url}?page={paginator.page.next_page_number()}"
+                return Response({'success':True,'data':response_data})
+        return Response({'message':'you are not Sahayak or MachineMalik !'})    
 
 
 class MyBookingDetailsSahayak(APIView):
@@ -326,14 +346,14 @@ class MyBookingDetailsSahayak(APIView):
                 'bookings': booking_data,
             }
             return Response(response_data)
-        return Response({'error':'you are not grahak !'})
+        return Response({'message':'you are not grahak !'})
 
 class MyBookingDetailsMachine(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
     def get(self,request,format=None):
         if request.user.user_type == 'Grahak':
-            return Response({'error':'you are not Grahak !'})
+            return Response({'message':'you are not Grahak !'})
         bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status='Accepted')
         booking_data1=[]
         for booking in bookings1:
@@ -402,7 +422,7 @@ class MyBookingDetails(APIView):
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
                     'job_number':booking.jobsahayak.job_number,
-                    'booking_status':booking.status,
+                    'status':booking.status,
                     'booking_user_id': booking.booking_user.id,
                     'sahayak_name': booking.booking_user.profile.name,
                     'sahayak_village': booking.booking_user.profile.village,
@@ -427,7 +447,7 @@ class MyBookingDetails(APIView):
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
                     'job_number':booking.jobsahayak.job_number,
-                    'booking_status':booking.jobsahayak.status,
+                    'status':booking.jobsahayak.status,
                     'booking_user_id': booking.booking_user.id,
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
@@ -455,7 +475,7 @@ class MyBookingDetails(APIView):
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
                 'fawda_fee':booking.fawda_fee,
-                'booking_status':booking.status,
+                'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
                 'machine_malik_mobile_no':booking.booking_user.mobile_no,
@@ -468,6 +488,7 @@ class MyBookingDetails(APIView):
         serializer1=JobSahaykSerialiser(booking2,many=True)
         booking3=JobMachine.objects.filter(grahak=request.user,status='Pending').order_by('-id')   
         serializer2=GetJobMachineSerializer(booking3,many=True)
+        
         return Response({
             'sahayk_booking_details':response_data,
             'machine_malik_booking_details':booking_data1,
@@ -485,7 +506,7 @@ class RatingCreate(APIView):
         if not request.user.user_type == 'Grahak':
             return Response({'message':'only grahak can give rating !'})
         if not booking_job_id:
-            return Response({'error':'booking_id required !'})
+            return Response({'message':'booking_id required !'})
         try:
             rating = Rating.objects.get(booking_job_id=booking_job_id)
             serializer = RatingSerializer(rating)
@@ -505,7 +526,7 @@ class RatingCreate(APIView):
             for booking in job_bookings:
                 if booking.jobsahayak:
                     if not booking.jobsahayak.grahak == request.user:
-                        return Response({'error':'unauthorised user !'})
+                        return Response({'message':'unauthorised user !'})
                     if not booking.status == 'Completed':
                         return Response({'message':'rating can not created it should be completed before !'})    
                     if Rating.objects.filter(booking_job=booking).exists():
@@ -517,7 +538,7 @@ class RatingCreate(APIView):
                     )    
                 else:
                     if not booking.jobmachine.grahak == request.user:
-                        return Response({'error':'unauthorised user !'}) 
+                        return Response({'message':'unauthorised user !'}) 
                     if not booking.status == 'Completed':
                         return Response({'message':'rating can not be created it should be Commpleted before !'})  
                     if Rating.objects.filter(booking_job=booking).exists():
@@ -529,32 +550,7 @@ class RatingCreate(APIView):
                     )         
             return Response({'message':'Rating created successfully!','status':status.HTTP_201_CREATED})
 
-        #     try:
-        #         booking_job = JobBooking.objects.get(id=booking_job_id)
-        #     except JobBooking.DoesNotExist:
-        #         return Response({'error': f'Invalid booking_job id {booking_job_id}'})
-        #     if booking_job.jobsahayak:
-        #         if not booking_job.jobsahayak.grahak == request.user:
-        #             return Response({'error':'unauthorised user !'})
-        #     else:
-        #         if not booking_job.jobmachine.grahak == request.user:
-        #             return Response({'error':'unauthorised user !'})
-                    
-        #     if not booking_job.status == 'Completed':
-        #         return Response({'message':'rating can not create,booking status should be Completed before !'})        
-        #     try:
-        #         rating = Rating.objects.get(booking_job_id=booking_job_id)
-        #         return Response({'message': f'A rating has already been created for booking_job with id {booking_job_id}'})
-        #     except Rating.DoesNotExist:
-        #         pass
-        #     rating = Rating.objects.create(
-        #         booking_job=booking_job,
-        #         rating=rating_value,
-        #         comment=comment_value,
-        #     )
-        #     return Response({'message': f'Rating added for booking_job with id {booking_job_id}','status':status.HTTP_201_CREATED})
-        # else:
-        #     return Response({'message': 'Only Grahak can post rating'})
+        
         
 class RatingGet(APIView):
     permission_classes=[BearerTokenAuthentication,]
@@ -562,7 +558,7 @@ class RatingGet(APIView):
     def post(self, request,format=None):
         booking_job_id=request.data.get('booking_job')
         if not booking_job_id:
-            return Response({'error':'booking_id required !'})
+            return Response({'message':'booking_id required !'})
         try:
             rating = Rating.objects.get(booking_job_id=booking_job_id)
             serializer = RatingSerializer(rating)
@@ -578,14 +574,14 @@ class OngoingStatusApi(APIView):
         job_id=request.data.get('job_id')
         job_number=request.data.get('job_number')
         if not job_id or not job_number:
-            return Response({'error': 'job_id and job_number both is required !'})
+            return Response({'message': 'job_id and job_number both is required !'})
         if not job_id.isdigit():
-            return Response({'error': 'job_id must be numeric !'})
+            return Response({'message': 'job_id must be numeric !'})
         if request.user.user_type != 'Grahak':
             return Response({'message': 'you are not Grahak, only Grahak can change status'})
         
         # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
-        #     return Response({'error':'job_id does not exists'}) 
+        #     return Response({'message':'job_id does not exists'}) 
         job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
 
         is_booked = False
@@ -602,20 +598,20 @@ class OngoingStatusApi(APIView):
                         job.jobsahayak.status = 'Ongoing'
                         job.jobsahayak.save()
                 else:
-                    return Response({'error': 'unauthorized grahak !'})
+                    return Response({'message': 'unauthorized grahak !'})
             else:
                 if job.jobmachine.grahak == request.user:
                     if not job.jobmachine.status == 'Pending':
                         job.jobmachine.status = 'Ongoing'
                         job.jobmachine.save()
                 else:
-                    return Response({'error': 'unauthorized grahak !'})
+                    return Response({'message': 'unauthorized grahak !'})
 
             job.status = 'Ongoing'
             job.save()
 
         if not is_booked:
-            return Response({'error': 'Booking status cannot be updated it should be Booked before !'})
+            return Response({'message': 'Booking status cannot be updated it should be Booked before !'})
 
         return Response({'message': 'changed status to Ongoing successfully!','booking-status':'Ongoing','status':status.HTTP_200_OK})
 
@@ -627,14 +623,14 @@ class CompletedStatusApi(APIView):
         job_id=request.data.get('job_id')
         job_number=request.data.get('job_number')
         if not job_id or not job_number:
-            return Response({'error': 'job_id and job_number both is required !'})
+            return Response({'message': 'job_id and job_number both is required !'})
         if not job_id.isdigit():
-            return Response({'error': 'job_id must be numeric !'})
+            return Response({'message': 'job_id must be numeric !'})
         if request.user.user_type != 'Grahak':
             return Response({'message': 'you are not Grahak, only Grahak can change status'})
         
         # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
-        #     return Response({'error':'job_id does not exists'}) 
+        #     return Response({'message':'job_id does not exists'}) 
         job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
 
         is_ongoing = False
@@ -651,20 +647,20 @@ class CompletedStatusApi(APIView):
                         job.jobsahayak.status = 'Completed'
                         job.jobsahayak.save()
                 else:
-                    return Response({'error': 'unauthorized grahak !'})
+                    return Response({'message': 'unauthorized grahak !'})
             else:
                 if job.jobmachine.grahak == request.user:
                     if not job.jobmachine.status == 'Pending':
                         job.jobmachine.status = 'Completed'
                         job.jobmachine.save()
                 else:
-                    return Response({'error': 'unauthorized grahak !'})
+                    return Response({'message': 'unauthorized grahak !'})
 
             job.status = 'Completed'
             job.save()
 
         if not is_ongoing:
-            return Response({'error': 'Booking status cannot be updated it should be Ongoing before !'})
+            return Response({'message': 'Booking status cannot be updated it should be Ongoing before !'})
 
         return Response({'message': 'changed status to Completed successfully!','booking-status':'Completed','status':status.HTTP_200_OK})
         
@@ -682,26 +678,26 @@ class RejectedBooking(APIView):
         count_female=request.data.get('count_female')
         status=request.data.get('status')
         if not bookingid:
-            return Response({'error':'booking_id required !'})
+            return Response({'message':'booking_id required !'})
         if not bookingid.isdigit():
-            return Response({'error':'booking_id must be numeric !'})   
+            return Response({'message':'booking_id must be numeric !'})   
         if not status:
-            return Response({'error':'status required !'}) 
+            return Response({'message':'status required !'}) 
         if not status in ['Rejected','Rejected-After-Payment']:
-            return Response({'error':'invilid status'})
+            return Response({'message':'invilid status'})
         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
             try:
                 job=JobBooking.objects.get(pk=bookingid)   
             except JobBooking.DoesNotExist:
-                return Response({'error':'Booking does not exist !'})
+                return Response({'message':'Booking does not exist !'})
             if job.jobsahayak:
                 if not request.user == job.booking_user:
-                    return Response({'error':'you are not existing Sahayak of this booking !'})
+                    return Response({'message':'you are not existing Sahayak of this booking !'})
                 if job.jobsahayak.job_type == 'individuals_sahayak':
                     if not count_male and not count_female:
-                        return Response({'error':'count_male and count_female required !'})
+                        return Response({'message':'count_male and count_female required !'})
                     if not count_male.isdigit() and not count_female.isdigit():
-                        return Response({'error':'count_male and count_female should be numeric !'})
+                        return Response({'message':'count_male and count_female should be numeric !'})
                     if job.status == status:
                         return Response({'message':'status already up to date !'})    
                     if not job.status in ['Accepted','Booked']:
@@ -726,18 +722,18 @@ class RejectedBooking(APIView):
                     job.save()
             else:
                 if not request.user == job.booking_user:
-                    return Response({'error':'you are not existing MachineMalik of this booking !'})
+                    return Response({'message':'you are not existing MachineMalik of this booking !'})
                 job.jobmachine.status='Pending'
                 if job.jobmachine.status == status:
                     return Response({'message':'status already up to date !'})
                 if not job.status in ['Accepted','Booked']:
-                    return Response({'error':'job can not be rejected it should be Accepted or Booked before !'})    
+                    return Response({'message':'job can not be rejected it should be Accepted or Booked before !'})    
                 job.status=status
                 job.jobmachine.save()
                 job.save()
                 return Response({'message':'status updated successfully !'})    
         else:
-            return Response({'error':'you are not Sahayak or MachineMalik'})
+            return Response({'message':'you are not Sahayak or MachineMalik'})
             
         # Add a return statement here
         return Response({'msg':'Booking rejected successfully.'})
@@ -752,48 +748,38 @@ class CancellationBookingJob(APIView):
         jobnumber=request.data.get('job_number')
         status=request.data.get('status')
         if not jobid and not jobid.isdigit():
-            return Response({'error':'job_id is required in numeric !'})
+            return Response({'message':'job_id is required in numeric !'})
         if not jobnumber:
-            return Response({'error':'job_number required !'})
+            return Response({'message':'job_number required !'})
         if JobBooking.objects.filter(Q(jobsahayak__job_number=jobnumber, jobsahayak_id=jobid) | Q(jobmachine__job_number=jobnumber, jobmachine_id=jobid)).exists():
-            booking_id=request.data.get('booking_id')
-            job_booking = get_object_or_404(JobBooking,pk=booking_id)
-            print(job_booking)
-            if job_booking.jobsahayak:
-                if job_booking.jobsahayak.status == 'Cancelled':
-                    return Response({'message':'status already up to date !'})
-                if not job_booking.jobsahayak.status in ['Pending','Accepted','Booked']:
-                    return Response({'message':'status can not be updated it should be Pending or Accepted or Booked before !'})
-                if not request.user == job_booking.jobsahayak.grahak:
-                    return Response({'error':'you are not existing Grahak with this booking !'})
-                job_booking.jobsahayak.status = 'Cancelled'
-                job_booking.jobsahayak.save()
-            else:
-                if job_booking.jobmachine.status == 'Cancelled':
-                    return Response({'message':'status already up to date !'})
-                if not job_booking.jobmachine.status in  ['Pending','Accepted','Booked']:
-                    return Response({'message':'status can not be updated it should be Pending or Accepted or Booked before !'})
-                if not request.user == job_booking.jobmachine.grahak:
-                    return Response({'error':'you are not existing with this booking !'})
-                job_booking.jobmachine.status = 'Cancelled'    
-                job_booking.jobmachine.save()
-            if not status:
-                return Response({'error':'status required'})    
-            if not status in ['Cancelled','Cancelled-After-Payment']:
-                return Response({'error':'invilid status !'})    
-            if job_booking.status == status:
-                return Response({'message':'stauts already up to date !'})
-            job_booking.status = status
-            job_booking.save()
-            return Response({'message':'status updated successfully !'})    
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=jobid) & Q(jobsahayak__job_number=jobnumber)) | (Q(jobmachine__id=jobid) & Q(jobmachine__job_number=jobnumber))))
+            for booking in job_bookings:
+                if booking.jobsahayak:
+                    if not booking.jobsahayak.grahak == request.user:
+                        return Response({'message':'unauthorised user !'})
+                    if not booking.status in ['Accepted','Booked']:
+                        return Response({'message':f"job already {booking.status} you can not cancel the job !"})    
+                    if booking.status == status:
+                        return Response({'message':'status already up to date !'})    
+                    booking.status = status
+                    booking.save()    
+                else:
+                    if not booking.jobmachine.grahak == request.user:
+                        return Response({'message':'unauthorised user !'})
+                    if not booking.status in ['Accepted','Booked']:
+                        return Response({'message':f"job already {booking.status} you can not cancel the job !"})    
+                    if booking.status ==status:
+                        return Response({'message':'status already up to date !'})    
+                    booking.status=status
+                    booking.save()        
         elif JobSahayak.objects.filter(pk=jobid,job_number=jobnumber).exists():
             get_job=get_object_or_404(JobSahayak,pk=jobid,job_number=jobnumber)
             if get_job.status == 'Cancelled':
                 return Response({'message':'status already up to date !'})
             if not request.user == get_job.grahak:
-                    return Response({'error':'you are not existing with this job !'})
+                    return Response({'message':'you are not existing with this job !'})
             if not get_job.status in  ['Pending','Accepted','Booked']:
-                return Response({'message':'status can not be updated it should be Pending or Accepted or Booked before !'})        
+                return Response({'message':f"job already {get_job.status} you can not cancel"})        
             get_job.status='Cencelled'
             get_job.save()
             return Response({'message':'status updated successfully !'})
@@ -802,76 +788,12 @@ class CancellationBookingJob(APIView):
             if get_job1.status == 'Cancelled':
                 return Response({'message':'status already up to date !'})    
             if not request.user == get_job1.grahak:
-                    return Response({'error':'you are not existing with this job !'})
+                    return Response({'message':'you are not existing with this job !'})
             if not get_job1.status in  ['Accepted','Pending','Booked']:
-                return Response({'message':'status can not be updated it should be Accepted or Pending or Booked before !'})        
+                return Response({'message':f"job already {get_job1.status} you can not cancel !"})        
             get_job1.status='Cencelled'
             get_job1.save()
             return Response({'message':'status updated successfully !'})
         else:
-            return Response({'error':'invilid job_id or job_number'}) 
+            return Response({'message':'invilid job_id or job_number'}) 
 
-
-# class CancellationBookingJob(APIView):
-#     def post(self, request, format=None):
-#         job_id = request.data.get('job_id')
-#         job_number = request.data.get('job_number')
-#         status = request.data.get('status')
-
-#         if not job_id or not job_id.isdigit():
-#             return Response({'error': 'job_id is required in numeric!'})
-
-#         job_booking_qs = JobBooking.objects.filter(
-#             jobsahayak__job_number=job_number,
-#             jobsahayak__id=job_id,
-#             jobmachine__job_number=job_number,
-#             jobmachine__id=job_id
-#         )
-#         print(job_booking_qs)
-
-#         if job_booking_qs.exists():
-#             job_booking = job_booking_qs.first()
-
-#             if job_booking.jobsahayak:
-#                 if not request.user == job_booking.jobsahayak.grahak:
-#                     return Response({'error': 'you are not authorized for this booking!'})
-
-#                 job_booking.jobsahayak.status = 'Cancelled'
-#                 job_booking.jobsahayak.save()
-
-#             if job_booking.jobmachine:
-#                 if not request.user == job_booking.jobmachine.grahak:
-#                     return Response({'error': 'you are not authorized for this booking!'})
-
-#                 job_booking.jobmachine.status = 'Cancelled'
-#                 job_booking.jobmachine.save()
-
-#             job_booking.status = 'Cancelled'
-#             job_booking.save()
-
-#             return Response({'success': 'status is updated!'})
-
-#         elif JobSahayak.objects.filter(pk=job_id, job_number=job_number).exists():
-#             job_sahayak = JobSahayak.objects.get(pk=job_id, job_number=job_number)
-
-#             if not request.user == job_sahayak.grahak:
-#                 return Response({'error': 'you are not authorized for this job!'})
-
-#             job_sahayak.status = 'Cancelled'
-#             job_sahayak.save()
-
-#             return Response({'success': 'status is updated!'})
-
-#         elif JobMachine.objects.filter(pk=job_id, job_number=job_number).exists():
-#             job_machine = JobMachine.objects.get(pk=job_id, job_number=job_number)
-
-#             if not request.user == job_machine.grahak:
-#                 return Response({'error': 'you are not authorized for this job!'})
-
-#             job_machine.status = 'Cancelled'
-#             job_machine.save()
-
-#             return Response({'success': 'status is updated!'})
-
-#         else:
-#             return Response({'error': 'invalid job_id or job_number!'})
