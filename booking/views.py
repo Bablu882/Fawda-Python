@@ -586,7 +586,7 @@ class OngoingStatusApi(APIView):
         if not is_booked:
             return Response({'error': 'Booking status cannot be updated it should be Booked before !'})
 
-        return Response({'message': 'changed status to Ongoing successfully!','booking_status':'Ongoing','status':status.HTTP_200_OK})
+        return Response({'message': 'changed status to Ongoing successfully!','booking-status':'Ongoing','status':status.HTTP_200_OK})
 
 
 class CompletedStatusApi(APIView):
@@ -635,7 +635,7 @@ class CompletedStatusApi(APIView):
         if not is_ongoing:
             return Response({'error': 'Booking status cannot be updated it should be Ongoing before !'})
 
-        return Response({'message': 'changed status to Completed successfully!','booking_status':'Completed','status':status.HTTP_200_OK})
+        return Response({'message': 'changed status to Completed successfully!','booking-status':'Completed','status':status.HTTP_200_OK})
         
 
 
