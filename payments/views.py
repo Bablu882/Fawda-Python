@@ -56,8 +56,8 @@ from rest_framework import status
 #                     job.save()
 #                 return Response({'status': 'success'})
 #             else:
-#                 # If payment fails, return an error message to the mobile app
-#                 return Response({'status': 'error', 'message': 'Payment failed'})
+#                 # If payment fails, return an message message to the mobile app
+#                 return Response({'status': 'message', 'message': 'Payment failed'})
 
 
 
@@ -73,19 +73,19 @@ class TestPaymentAPIView(APIView):
             upi_id = 'upi_id'  # Replace with the actual UPI ID
             beneficiary_name = 'beneficiary_name'  # Replace with the actual beneficiary name
             if not job_id:
-                return Response({'error': 'job_id required !'})
+                return Response({'message': 'job_id required !'})
             if not job_number:
-                return Response({'error':'job_number required !'})    
+                return Response({'message':'job_number required !'})    
             if not job_id.isdigit():
-                return Response({'error':'booking_id should be numeric !'})
+                return Response({'message':'booking_id should be numeric !'})
             # if not JobBooking.objects.filter(pk=job_id).exists():
-            #     return Response({'error':'booking_id not exists !'})
+            #     return Response({'message':'booking_id not exists !'})
             # Simulate a successful payment by returning a JSON response with a payment ID and status
             if request.user.user_type != 'Grahak':
                 return Response({'message': 'you are not Grahak, only Grahak can change status'})
             
             # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
-            #     return Response({'error':'job_id does not exists'}) 
+            #     return Response({'message':'job_id does not exists'}) 
             job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
             is_booked = False
             for job in job_bookings:
@@ -101,14 +101,14 @@ class TestPaymentAPIView(APIView):
                             job.jobsahayak.status = 'Booked'
                             job.jobsahayak.save()
                     else:
-                        return Response({'error': 'unauthorized grahak !'})
+                        return Response({'message': 'unauthorized grahak !'})
                 else:
                     if job.jobmachine.grahak == request.user:
                         if not job.jobmachine.status == 'Pending':
                             job.jobmachine.status = 'Booked'
                             job.jobmachine.save()
                     else:
-                        return Response({'error': 'unauthorized grahak !'})
+                        return Response({'message': 'unauthorized grahak !'})
 
                 job.status = 'Booked'
                 job.save()
@@ -131,7 +131,7 @@ class TestPaymentAPIView(APIView):
             )
 
             if not is_booked:
-                return Response({'error': 'Booking status cannot be updated it should be Accepted before !'})
+                return Response({'message': 'Booking status cannot be updated it should be Accepted before !'})
 
             return Response({'message': 'changed status to Booked successfully!','booking-status':'Booked','status':status.HTTP_200_OK})
             

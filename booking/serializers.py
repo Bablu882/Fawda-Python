@@ -33,12 +33,7 @@ class RatingSerializer(serializers.ModelSerializer):
         return data
 
 
-
-# class JobBookingSerializer(serializers.ModelSerializer):
-#     jobsahayak = JobSahaykSerialiser(many=True, read_only=True)
-#     jobmachine = GetJobMachineSerializer(many=True, read_only=True)
-#     booking_user = serializers.PrimaryKeyRelatedField(read_only=True)
-
-#     class Meta:
-#         model = JobBooking
-#         fields = ('id', 'total_amount', 'jobsahayak', 'jobmachine', 'booking_user', 'date_booked', 'status')        
+class JobAcceptSerializer(serializers.Serializer):
+    job_id = serializers.IntegerField(required=True)
+    count_male = serializers.IntegerField(required=True, min_value=1)
+    count_female = serializers.IntegerField(required=True, min_value=1)

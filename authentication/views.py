@@ -115,9 +115,9 @@ class VerifyMobile(APIView):
         otp_input = request.data.get('otp')
         phone=request.data.get('phone')
         if not otp_input or not phone:
-            return Response({'error':'otp and phone both is required !'})
+            return Response({'message':'otp and phone both is required !'})
         if not re.match(r'^\d{10}$', phone):
-            return Response({'error': 'Phone number should be 10 digits.'})
+            return Response({'message': 'Phone number should be 10 digits.'})
         # Revoke any existing tokens for the user
         user = authenticate(request, mobile_no=phone)
         if user is not None:
@@ -134,9 +134,9 @@ class VerifyMobile(APIView):
             otp = OTP.objects.get(otp=otp_input,user=get_user)
             user_get = otp.user
         except User.DoesNotExist:
-            return Response({'error':'User does not exist !'})    
+            return Response({'message':'User does not exist !'})    
         except OTP.DoesNotExist:
-            return Response({'error': 'Invalid OTP'})    
+            return Response({'message': 'Invalid OTP'})    
         token, _ = Token.objects.get_or_create(user=user_get)
         # Update user properties
         user_get.is_verified = True
@@ -268,7 +268,7 @@ class DistrictApiView(APIView):
 
             return Response(district_list)
         else:
-            return Response({'error':'state required !'})  
+            return Response({'message':'state required !'})  
 
 class ProfileApi(APIView):
     authentication_classes=[BearerTokenAuthentication]
