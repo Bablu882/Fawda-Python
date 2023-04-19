@@ -76,16 +76,26 @@ class RegisterSerializer(serializers.Serializer):
     def validate_latitude(self, value):
         if not value:
             raise serializers.ValidationError('Latitude is required.')
-        if not re.match(r'^[-+]?([1-8]?\d(\.\d+)?|90(\.0+)?)$', value):
-            raise serializers.ValidationError('Invalid latitude format.')
-        return value
+        try:
+            float_value = float(value)
+            if -90 <= float_value <= 90:
+                return value
+            else:
+                raise serializers.ValidationError('Latitude must be between -90 and 90.')
+        except ValueError:
+            raise serializers.ValidationError('Latitude must be a valid float.')
 
     def validate_longitude(self, value):
         if not value:
             raise serializers.ValidationError('Longitude is required.')
-        if not re.match(r'^[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)$', value):
-            raise serializers.ValidationError('Invalid longitude format.')
-        return value
+        try:
+            float_value = float(value)
+            if -180 <= float_value <= 180:
+                return value
+            else:
+                raise serializers.ValidationError('Longitude must be between -180 and 180.')
+        except ValueError:
+            raise serializers.ValidationError('Longitude must be a valid float.')
 
     def validate(self, data):
         state = data.get('state')
