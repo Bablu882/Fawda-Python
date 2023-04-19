@@ -553,8 +553,8 @@ class OngoingStatusApi(APIView):
         if request.user.user_type != 'Grahak':
             return Response({'message': 'you are not Grahak, only Grahak can change status'})
         
-        if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
-            return Response({'error':'job_id does not exists'}) 
+        # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
+        #     return Response({'error':'job_id does not exists'}) 
         job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
 
         is_booked = False
@@ -602,8 +602,8 @@ class CompletedStatusApi(APIView):
         if request.user.user_type != 'Grahak':
             return Response({'message': 'you are not Grahak, only Grahak can change status'})
         
-        if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
-            return Response({'error':'job_id does not exists'}) 
+        # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
+        #     return Response({'error':'job_id does not exists'}) 
         job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
 
         is_ongoing = False
