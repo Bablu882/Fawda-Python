@@ -571,8 +571,12 @@ class BookingDetailsAndJobDetails(APIView):
         job_type=request.data.get('job_type')
         jobstatus=request.data.get('job_status')
         array=[]
-        if not job_id or not job_type or not jobstatus:
-            return Response({'message':'All fields are required !'})
+        if not job_id:
+            return Response({'id':{'This field is required !'}})
+        if not job_type:
+            return Response({'job_type':{'This field is required !'}})    
+        if not jobstatus:
+            return Response({'job_status':{'This field is required !'}})    
         if request.user.user_type not in ['Sahayak','MachineMalik']:
             return Response({'message':'you are not Sahayak and MachineMalik'})    
         if job_type =='individuals_sahayak' and jobstatus =='Pending':
