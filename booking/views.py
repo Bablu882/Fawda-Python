@@ -859,7 +859,7 @@ class CancellationBookingJob(APIView):
             if get_job.status == 'Cancelled':
                 return Response({'message': 'status already up to date !'})
             if not request.user == get_job.grahak:
-                return Response({'message': 'you are not existing with this job !'})
+                return Response({'message': 'you are not existing user with this job !'})
             if get_job.status not in ['Pending', 'Accepted', 'Booked']:
                 return Response({'message': f"job already {get_job.status} you can not cancel"})
             get_job.status = 'Cancelled'
@@ -869,7 +869,7 @@ class CancellationBookingJob(APIView):
             if get_job.status == 'Cancelled':
                 return Response({'message': 'status already up to date !'})
             if not request.user == get_job.grahak:
-                return Response({'message': 'you are not existing with this job !'})
+                return Response({'message': 'you are not existing user with this job !'})
             if get_job.status not in ['Accepted', 'Pending', 'Booked']:
                 return Response({'message': f"job already {get_job.status} you can not cancel !"})
             get_job.status = 'Cancelled'

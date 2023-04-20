@@ -36,6 +36,7 @@ class BookingThekePeKam(APIView):
                 landtype=serializers.data.get('land_type')
                 landarea=serializers.data.get('land_area')
                 amount=request.data.get('total_amount_theka')
+                print(amount)
                 grahak=request.user
                 try:
                     amount = int(amount)
@@ -85,14 +86,16 @@ class EditThekePeKam(APIView):
     def post(self, request, format=None):
         job_id = request.data.get('job_id')
         amount = request.data.get('amount')
-        if not job_id or not amount:
-            return Response({'message':'both field is required !'})
+        if not job_id:
+            return Response({'job_id':{'This field is required !'}})
+        if not amount:
+            return Response({'amount':{'This field is required !'}})    
         
         if not job_id.isdigit():
             # return a validation message response if the job_id is not a number
             return Response({'message': 'job_id should be a number'})
         if not all(char.isdigit() or char == '.' for char in amount) or amount.count('.') > 1:
-            return Response({'message': 'amount should contain only digits and a single dot (".") as the decimal separator'})
+            return Response({'message': 'amount should be float or int !'})
 
         try:
             amount_decimal = Decimal(amount)
@@ -131,8 +134,8 @@ class BookingSahayakIndividuals(APIView):
                     datetime_obj = parser.isoparse(datetime)
                 except ValueError:
                     return Response({'detail': 'Invalid datetime format. Please use YYYY-MM-DDTHH:MM:SS.'})
-                if not data['land_area'].isdigit():
-                    return Response({'message':'land_area should be number integer !'})   
+                # if not data['land_area'].isdigit():
+                #     return Response({'message':'land_area should be integer !'})   
                 if not data['count_male'].isdigit():
                     return Response({'message':'count_male should be integer !'})    
                 if not data['count_female'].isdigit():
@@ -208,8 +211,12 @@ class EditIndividualSahayak(APIView):
         pay_amount_female = request.data.get('pay_amount_female')
         pay_amount_male =request.data.get('pay_amount_male')
 
-        if not job_id or not pay_amount_female or not pay_amount_male:
-            return Response({'message':'all field is required !'})
+        if not job_id:
+            return Response({'job_id':{'This field is required !'}})
+        if not pay_amount_female:
+            return Response({'pay_amount_female':{'This field is requird !'}})    
+        if not pay_amount_male:
+            return Response({'pay_amount_male':{'This field is required !'}})    
         
         if not job_id.isdigit():
             # return a validation message response if the job_id is not a number
