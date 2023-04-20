@@ -333,14 +333,16 @@ class EditJobMachine(APIView):
     def post(self, request, format=None):
         job_id = request.data.get('job_id')
         amount = request.data.get('amount')
-        if not job_id or not amount:
-            return Response({'message':'both field is required !'})
+        if not job_id:
+            return Response({'job_id':{'This field is required !'}})
+        if not amount:
+            return Response({'amount':{'This field is required !'}})    
         
         if not job_id.isdigit():
             # return a validation message response if the job_id is not a number
             return Response({'message': 'job_id should be a number'})
         if not all(char.isdigit() or char == '.' for char in amount) or amount.count('.') > 1:
-            return Response({'message': 'amount should contain only digits and a single dot (".") as the decimal separator'})
+            return Response({'message': 'amount should be int or float !'})
 
         try:
             amount_decimal = Decimal(amount)
@@ -559,18 +561,43 @@ class Requestuser(APIView):
         user=request.user
         return Response({'user':user.mobile_no,'user_type':user.user_type,'status':status.HTTP_200_OK})
 
+from .serializers import JobBookingSerializers
+
+class BookingDetailsAndJobDetails(APIView):
+    permission_classes=[IsAuthenticated,]
+    authentication_classes=[BearerTokenAuthentication,]
+    def post(self,request,format=None):
+        job_id=request.data.get('id')
+        job_type=request.data.get('job_type')
+        jobstatus=request.data.get('job_status')
+        array=[]
+        if not job_id or not job_type or not jobstatus:
+            return Response({'message':'All fields are required !'})
+        if request.user.user_type not in ['Sahayak','MachineMalik']:
+            return Response({'message':'you are not Sahayak and MachineMalik'})    
+        if job_type =='individuals_sahayak' and jobstatus =='Pending':
+            try:
+                get_data_sahayak=JobSahayak.objects.get(pk=job_id)
+            except JobSahayak.DoesNotExist:
+                return Response({'message':'Job does not exist !'})    
+            serializer_sahayak=JobSahaykSerialiser(get_data_sahayak)
+            array.append(serializer_sahayak.data)
+        elif job_type == 'machine_malik' and job_type == 'Pending':
+            try:
+               get_data_machine=JobMachine.objects.get(pk=job_id)    
+            except JobMachine.DoesNotExist:
+                return Response({'message':'job does not exist !'})   
+            serializer_machine=JobMachineSerializers(get_data_machine)
+            array.append(serializer_machine.data)
+        else:
+            try:
+               get_data_bookig=JobBooking.objects.get(pk=job_id)    
+            except JobBooking.DoesNotExist:
+                return Response({'message':'booking does not exist !'})   
+            serializer_machine=JobBookingSerializers(get_data_bookig)
+            array.append(serializer_machine.data)
+        return Response({'data':array})    
 
 
 
-
-
-# result.append({
-            #     'id': job_post.id,
-            #     'job_type': job_post.job_type,
-            #     'status': job_post.status,
-            #     'village': job_post.village,
-            #     'datetime': job_post.formatted_datetime(),
-            #     'description': job_post.description,
-            #     'distance': distance
-            # })
 

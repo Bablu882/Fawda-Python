@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from booking.models import JobBooking
 
 class PostJobThekePeKamSerializer(serializers.ModelSerializer):
     land_type = serializers.CharField()
@@ -142,3 +143,11 @@ class MachineSerializers(serializers.ModelSerializer):
         fields='__all__'        
 
  
+class JobBookingSerializers(serializers.ModelSerializer):
+    jobsahayak=JobSahaykSerialiser(many=False,read_only=True)
+    jobmachine=JobMachineSerializers(many=False,read_only=True)
+    class Meta:
+        model=JobBooking
+        fields='__all__'
+
+    # Product=ProductSerializers(many=False,read_only=True)
