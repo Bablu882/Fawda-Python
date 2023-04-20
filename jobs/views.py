@@ -577,8 +577,8 @@ class BookingDetailsAndJobDetails(APIView):
             return Response({'job_type':{'This field is required !'}})    
         if not jobstatus:
             return Response({'job_status':{'This field is required !'}})    
-        if request.user.user_type not in ['Sahayak','MachineMalik']:
-            return Response({'message':'you are not Sahayak and MachineMalik'})    
+        if request.user.user_type not in ['Sahayak','MachineMalik','Grahak']:
+            return Response({'message':'unauthorised user !'})    
         if job_type =='individuals_sahayak' and jobstatus =='Pending':
             try:
                 get_data_sahayak=JobSahayak.objects.get(pk=job_id)
@@ -604,4 +604,29 @@ class BookingDetailsAndJobDetails(APIView):
 
 
 
-
+# class BookingCompletedHistory(APIView):
+#     permission_classes=[IsAuthenticated,]
+#     authentication_classes=[BearerTokenAuthentication,]
+#     def get(self,request,format=None):
+#         array=[]
+#         if request.user.user_type =='Sahayak':
+#             get_booking=JobBooking.objects.all().filter(status='Completed')
+#             for booking in get_booking:
+#                 if booking.jobsahayak:
+#                     if booking.jobsahayak.job_type == 'individuals_sahayak':
+#                         array.append({
+#                             'description',
+#                             'village',
+#                             'datetime',
+#                             'land_area',
+#                             'land_type',
+#                             'pay_amount_male',
+#                             'pay_amount_female',
+#                             'num_days',
+#                             'count_male',
+#                             'count_female',
+#                             'total_amount_sahayak',
+#                             'payment_your',
+#                             'fawda_fee',
+#                             'status',
+#                         })
