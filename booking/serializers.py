@@ -37,3 +37,9 @@ class JobAcceptSerializer(serializers.Serializer):
     job_id = serializers.IntegerField(required=True)
     count_male = serializers.IntegerField(required=True, min_value=1)
     count_female = serializers.IntegerField(required=True, min_value=1)
+
+
+class CancellationBookingJobSerializer(serializers.Serializer):
+    job_id = serializers.IntegerField()
+    job_number = serializers.CharField()
+    status = serializers.ChoiceField(choices=['Cancelled', 'Cancelled-After-Payment'])

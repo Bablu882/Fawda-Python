@@ -22,6 +22,8 @@ class JobAcceptMachin(APIView):
     def post(self,request,format=None):
         if request.user.user_type == 'MachineMalik':
             job_id=request.data.get('job_id')
+            if not job_id:
+                return Response({'message':'job_id required !'})
             machin_user=request.user
             #check job is exist or not 
             try:
@@ -264,11 +266,13 @@ class MyJobsDetais(APIView):
             paginator.page_size = self.PAGE_SIZE
             paginated_result = paginator.paginate_queryset(myjob_list, request)
             response_data = {'page': paginator.page.number, 'total_pages': paginator.page.paginator.num_pages, 'results': paginated_result}
-        # Add next page URL to response
+            # Add next page URL to response
             if paginator.page.has_next():
                 base_url = request.build_absolute_uri().split('?')[0]
                 response_data['next'] = f"{base_url}?page={paginator.page.next_page_number()}"
-                return Response({'success':True,'data':response_data})
+                print(response_data)
+            return Response({'success':True,'data':response_data})
+                
         return Response({'message':'you are not Sahayak or MachineMalik !'})    
 
 
@@ -740,60 +744,137 @@ class RejectedBooking(APIView):
 
 
 
+# class CancellationBookingJob(APIView):
+#     authentication_classes=[BearerTokenAuthentication,]
+#     permission_classes=[IsAuthenticated,]
+#     def post(self,request,format=None):
+#         jobid=request.data.get('job_id')
+#         jobnumber=request.data.get('job_number')
+#         status=request.data.get('status')
+#         if not jobid and not jobid.isdigit():
+#             return Response({'message':'job_id is required in numeric !'})
+#         if not jobnumber:
+#             return Response({'message':'job_number required !'})
+#         if JobBooking.objects.filter(Q(jobsahayak__job_number=jobnumber, jobsahayak_id=jobid) | Q(jobmachine__job_number=jobnumber, jobmachine_id=jobid)).exists():
+#             job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=jobid) & Q(jobsahayak__job_number=jobnumber)) | (Q(jobmachine__id=jobid) & Q(jobmachine__job_number=jobnumber))))
+#             for booking in job_bookings:
+#                 if booking.jobsahayak:
+#                     if not booking.jobsahayak.grahak == request.user:
+#                         return Response({'message':'unauthorised user !'})
+#                     if not booking.status in ['Accepted','Booked']:
+#                         return Response({'message':f"job already {booking.status} you can not cancel the job !"})    
+#                     if booking.status == status:
+#                         return Response({'message':'status already up to date !'})    
+#                     booking.status = status
+#                     booking.save()    
+#                 else:
+#                     if not booking.jobmachine.grahak == request.user:
+#                         return Response({'message':'unauthorised user !'})
+#                     if not booking.status in ['Accepted','Booked']:
+#                         return Response({'message':f"job already {booking.status} you can not cancel the job !"})    
+#                     if booking.status ==status:
+#                         return Response({'message':'status already up to date !'})    
+#                     booking.status=status
+#                     booking.save()        
+#         elif JobSahayak.objects.filter(pk=jobid,job_number=jobnumber).exists():
+#             get_job=get_object_or_404(JobSahayak,pk=jobid,job_number=jobnumber)
+#             if get_job.status == 'Cancelled':
+#                 return Response({'message':'status already up to date !'})
+#             if not request.user == get_job.grahak:
+#                     return Response({'message':'you are not existing with this job !'})
+#             if not get_job.status in  ['Pending','Accepted','Booked']:
+#                 return Response({'message':f"job already {get_job.status} you can not cancel"})        
+#             get_job.status='Cencelled'
+#             get_job.save()
+#             return Response({'message':'status updated successfully !'})
+#         elif JobMachine.objects.filter(pk=jobid,job_number=jobnumber).exists():
+#             get_job1=get_object_or_404(JobMachine,pk=jobid,job_number=jobnumber)
+#             if get_job1.status == 'Cancelled':
+#                 return Response({'message':'status already up to date !'})    
+#             if not request.user == get_job1.grahak:
+#                     return Response({'message':'you are not existing with this job !'})
+#             if not get_job1.status in  ['Accepted','Pending','Booked']:
+#                 return Response({'message':f"job already {get_job1.status} you can not cancel !"})        
+#             get_job1.status='Cencelled'
+#             get_job1.save()
+#             return Response({'message':'status updated successfully !'})
+#         else:
+#             return Response({'message':'invilid job_id or job_number'}) 
+
 class CancellationBookingJob(APIView):
     authentication_classes=[BearerTokenAuthentication,]
     permission_classes=[IsAuthenticated,]
-    def post(self,request,format=None):
-        jobid=request.data.get('job_id')
-        jobnumber=request.data.get('job_number')
-        status=request.data.get('status')
-        if not jobid and not jobid.isdigit():
-            return Response({'message':'job_id is required in numeric !'})
-        if not jobnumber:
-            return Response({'message':'job_number required !'})
-        if JobBooking.objects.filter(Q(jobsahayak__job_number=jobnumber, jobsahayak_id=jobid) | Q(jobmachine__job_number=jobnumber, jobmachine_id=jobid)).exists():
-            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=jobid) & Q(jobsahayak__job_number=jobnumber)) | (Q(jobmachine__id=jobid) & Q(jobmachine__job_number=jobnumber))))
+    def post(self, request, format=None):
+        serializer = CancellationBookingJobSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        job_id = validated_data['job_id']
+        job_number = validated_data['job_number']
+        status = validated_data['status']
+
+        if JobBooking.objects.filter(Q(jobsahayak__job_number=job_number, jobsahayak_id=job_id) | Q(jobmachine__job_number=job_number, jobmachine_id=job_id)).exists():
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
             for booking in job_bookings:
+                if booking.status == status:
+                    return Response({'already up to date'})
                 if booking.jobsahayak:
                     if not booking.jobsahayak.grahak == request.user:
-                        return Response({'message':'unauthorised user !'})
-                    if not booking.status in ['Accepted','Booked']:
-                        return Response({'message':f"job already {booking.status} you can not cancel the job !"})    
-                    if booking.status == status:
-                        return Response({'message':'status already up to date !'})    
-                    booking.status = status
-                    booking.save()    
+                        return Response({'message': 'unauthorised user !'})
+                    if status == 'Cancelled-After-Payment':
+                        if booking.status == 'Booked':
+                            booking.status = status
+                            booking.save()
+                            booking.jobsahayak.status='Cancelled'
+                            booking.jobsahayak.save()
+                        else:
+                            return Response({'message': 'Job must be in Booked status to update to Cancelled-After-Payment'})
+                    else:
+                        if not booking.status == 'Accepted':
+                            return Response({'message': 'Job must be in Accepted status to update to Cancelled'})
+                        booking.status = status
+                        booking.save()
+                        booking.jobsahayak.status='Cancelled'
+                        booking.jobsahayak.save()
                 else:
                     if not booking.jobmachine.grahak == request.user:
-                        return Response({'message':'unauthorised user !'})
-                    if not booking.status in ['Accepted','Booked']:
-                        return Response({'message':f"job already {booking.status} you can not cancel the job !"})    
-                    if booking.status ==status:
-                        return Response({'message':'status already up to date !'})    
-                    booking.status=status
-                    booking.save()        
-        elif JobSahayak.objects.filter(pk=jobid,job_number=jobnumber).exists():
-            get_job=get_object_or_404(JobSahayak,pk=jobid,job_number=jobnumber)
+                        return Response({'message': 'unauthorised user !'})
+                    if status == 'Cancelled-After-Payment':
+                        if booking.status == 'Booked':
+                            booking.status = status
+                            booking.save()
+                            booking.jobmachine.status='Cancelled'
+                            booking.jobmachine.save()
+                        else:
+                            return Response({'message': 'Job must be in Booked status to update to Cancelled-After-Payment'})
+                    else:
+                        if not booking.status == 'Accepted':
+                            return Response({'message': 'Job must be in Accepted status to update to Cancelled'})
+                        booking.status = status
+                        booking.save()
+                        booking.jobmachine.status='Cancelled'
+                        booking.jobmachine.save()
+        elif JobSahayak.objects.filter(pk=job_id, job_number=job_number).exists():
+            get_job = get_object_or_404(JobSahayak, pk=job_id, job_number=job_number)
             if get_job.status == 'Cancelled':
-                return Response({'message':'status already up to date !'})
+                return Response({'message': 'status already up to date !'})
             if not request.user == get_job.grahak:
-                    return Response({'message':'you are not existing with this job !'})
-            if not get_job.status in  ['Pending','Accepted','Booked']:
-                return Response({'message':f"job already {get_job.status} you can not cancel"})        
-            get_job.status='Cencelled'
+                return Response({'message': 'you are not existing with this job !'})
+            if get_job.status not in ['Pending', 'Accepted', 'Booked']:
+                return Response({'message': f"job already {get_job.status} you can not cancel"})
+            get_job.status = 'Cancelled'
             get_job.save()
-            return Response({'message':'status updated successfully !'})
-        elif JobMachine.objects.filter(pk=jobid,job_number=jobnumber).exists():
-            get_job1=get_object_or_404(JobMachine,pk=jobid,job_number=jobnumber)
-            if get_job1.status == 'Cancelled':
-                return Response({'message':'status already up to date !'})    
-            if not request.user == get_job1.grahak:
-                    return Response({'message':'you are not existing with this job !'})
-            if not get_job1.status in  ['Accepted','Pending','Booked']:
-                return Response({'message':f"job already {get_job1.status} you can not cancel !"})        
-            get_job1.status='Cencelled'
-            get_job1.save()
-            return Response({'message':'status updated successfully !'})
+        elif JobMachine.objects.filter(pk=job_id, job_number=job_number).exists():
+            get_job = get_object_or_404(JobMachine, pk=job_id, job_number=job_number)
+            if get_job.status == 'Cancelled':
+                return Response({'message': 'status already up to date !'})
+            if not request.user == get_job.grahak:
+                return Response({'message': 'you are not existing with this job !'})
+            if get_job.status not in ['Accepted', 'Pending', 'Booked']:
+                return Response({'message': f"job already {get_job.status} you can not cancel !"})
+            get_job.status = 'Cancelled'
+            get_job.save()
         else:
-            return Response({'message':'invilid job_id or job_number'}) 
+            return Response({'message': 'invalid job_id or job_number'})
 
+        return Response({'message': 'status updated successfully !'})
