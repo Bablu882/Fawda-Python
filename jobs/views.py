@@ -536,8 +536,6 @@ class GetMachineDetailArray(APIView):
     permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
         worktype=request.data.get('work_type')
-        if not request.user.user_type=='Grahak':
-            return Response({'message':{'Only grahak can access machine !'}})
         if worktype:
             get_machine=MachineType.objects.filter(worktype__name=worktype)    
             serializer=MachineSerializers(get_machine,many=True)
