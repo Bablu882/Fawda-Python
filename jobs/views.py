@@ -772,7 +772,7 @@ class RefreshfMyBookingDetails(APIView):
         machine_job_number=request.data.get('machine_job_number', 0) or 0
         if not request.user.user_type=='Grahak':
             return Response({'message':'you are not Grahak !'})
-        bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=sahayak_job_id) & Q(jobsahayak__job_number=sahayak_job_number)) | (Q(jobmachine__id=machine_job_id) & Q(jobmachine__job_number=machine_job_number))))
+        bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=sahayak_job_id) & Q(jobsahayak__job_number=sahayak_job_number)) & Q(status__in=['Accepted','Booked','Ongoing','Completed'])| (Q(jobmachine__id=machine_job_id) & Q(jobmachine__job_number=machine_job_number)& Q(status__in=['Accepted','Booked','Ongoing','Completed']))))
         total_amount = 0
         count_male = 0
         count_female = 0
@@ -894,3 +894,16 @@ class RefreshfMyBookingDetails(APIView):
 
 
 
+# class RefreshMyjobsDetails(APIView):
+#     permission_classes=[IsAuthenticated,]
+#     authentication_classes=[BearerTokenAuthentication,]
+#     def post(self,request,format=None):
+#         booking_id=request.data.get('booking_id')
+#         if not booking_id:
+#             return Response({'booking_id':{'This field is required !'}})
+#         if request.user.user_type == 'Sahayak':
+#             pass 
+#         elif request.user.user_type == 'MachineMalik':
+#             pass
+#         else:
+#             return Response({'message':'unauthorised user !'})    
