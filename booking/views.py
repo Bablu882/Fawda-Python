@@ -204,7 +204,7 @@ class MyJobsDetais(APIView):
     def get(self,request,format=None):
         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
             myjob_list=[]
-            bookedjob=JobBooking.objects.all().filter(booking_user=request.user)
+            bookedjob=JobBooking.objects.all().filter(booking_user=request.user).order_by('-id')
             for job in bookedjob:
                 if job.jobsahayak:
                     if job.jobsahayak.job_type =='individuals_sahayak':
