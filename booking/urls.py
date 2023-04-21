@@ -17,5 +17,6 @@ urlpatterns=[
        path('api/get-rating/',RatingGet.as_view()),
        path('api/rejected/',RejectedBooking.as_view()),
        path('api/cancel/',CancellationBookingJob.as_view()),
+       path('api/booking-history-grahak/',MyBookingDetailsHistory.as_view()),
 
 ]
