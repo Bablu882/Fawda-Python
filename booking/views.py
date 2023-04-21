@@ -947,6 +947,12 @@ class CancellationBookingJob(APIView):
 
 
 ###-----------------------------------------------------------------------------------###
+def getrating(booking_id):
+    try:
+        rating=Rating.objects.get(booking_job=booking_id)
+    except Rating.DoesNotExist:
+        return Response({'message':'does not exist'}) 
+    return {'rating': rating.rating}   
 
 
 class MyBookingDetailsHistory(APIView):
@@ -970,6 +976,7 @@ class MyBookingDetailsHistory(APIView):
                     'job_type': booking.jobsahayak.job_type,
                     'sahayaks': []
                 }
+                
             if booking.jobsahayak.job_type == 'individuals_sahayak':
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['count_male'] += int(booking.count_male) if booking.count_male else 0
@@ -995,8 +1002,12 @@ class MyBookingDetailsHistory(APIView):
                     'datetime':booking.jobsahayak.datetime,
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
-                    'land_type':booking.jobsahayak.land_type
+                    'land_type':booking.jobsahayak.land_type,
+                    'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
                 })
+                get=getrating(booking.id)
+                print(get)
+               
             else:
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
@@ -1014,6 +1025,7 @@ class MyBookingDetailsHistory(APIView):
                     'datetime':booking.jobsahayak.datetime,
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
+                    'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
                 })
 
         response_data = {
@@ -1040,17 +1052,13 @@ class MyBookingDetailsHistory(APIView):
                 'machine_malik_mobile_no':booking.booking_user.mobile_no,
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
-                'land_type':booking.jobmachine.land_type
+                'land_type':booking.jobmachine.land_type,
+                'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
+
                 
             })
-        # booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending').order_by('-id')
-        # serializer1=JobSahaykSerialiser(booking2,many=True)
-        # booking3=JobMachine.objects.filter(grahak=request.user,status='Pending').order_by('-id')   
-        # serializer2=GetJobMachineSerializer(booking3,many=True)
-        
+               
         return Response({
             'sahayk_booking_details':response_data,
             'machine_malik_booking_details':booking_data1,
-            # 'sahayak_pending_booking_details':serializer1.data,
-            # 'machine_malik_pending_booking_details':serializer2.data
         })

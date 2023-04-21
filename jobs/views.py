@@ -533,9 +533,11 @@ class GetMachineDetails(APIView):
 
 class GetMachineDetailArray(APIView):
     authentication_classes=[BearerTokenAuthentication,]
-    permission_classes=[AllowAny,]
+    permission_classes=[IsAuthenticated,]
     def post(self,request,format=None):
         worktype=request.data.get('work_type')
+        if not request.user.user_type=='Grahak':
+            return Response({'message':{'Only grahak can access machine !'}})
         if worktype:
             get_machine=MachineType.objects.filter(worktype__name=worktype)    
             serializer=MachineSerializers(get_machine,many=True)
@@ -816,7 +818,8 @@ class RefreshfMyBookingDetails(APIView):
                         'user_type':booking.booking_user.user_type,
                         'sahayak_name':booking.booking_user.profile.name,
                         'sahayak_village':booking.booking_user.profile.village,
-                        'sahayak_mobile_no':booking.booking_user.mobile_no
+                        'sahayak_mobile_no':booking.booking_user.mobile_no,
+                        'job_number':booking.jobsahayak.job_number
                     })
                 else:
                     booking_theka.append({
@@ -836,7 +839,8 @@ class RefreshfMyBookingDetails(APIView):
                         'user_type':booking.booking_user.user_type,
                         'thekedar_name':booking.booking_user.profile.name,
                         'thekedar_village':booking.booking_user.profile.village,
-                        'thekedar_mobile_no':booking.booking_user.mobile_no
+                        'thekedar_mobile_no':booking.booking_user.mobile_no,
+                        'job_number':booking.jobsahayak.job_number
                     })    
                 # response_data = {
                 #     'total_amount': total_amount,
@@ -867,7 +871,8 @@ class RefreshfMyBookingDetails(APIView):
                     'machine_malik_name':booking.booking_user.profile.name,
                     'machine_malik_village':booking.booking_user.profile.village,
                     'machine_malik_mobile_no':booking.booking_user.mobile_no,
-                    'booking_user_id':booking.booking_user.id
+                    'booking_user_id':booking.booking_user.id,
+                    'job_number':booking.jobmachine.job_number
                     
                 })
             response_data = {
@@ -894,16 +899,78 @@ class RefreshfMyBookingDetails(APIView):
 
 
 
-# class RefreshMyjobsDetails(APIView):
-#     permission_classes=[IsAuthenticated,]
-#     authentication_classes=[BearerTokenAuthentication,]
-#     def post(self,request,format=None):
-#         booking_id=request.data.get('booking_id')
-#         if not booking_id:
-#             return Response({'booking_id':{'This field is required !'}})
-#         if request.user.user_type == 'Sahayak':
-#             pass 
-#         elif request.user.user_type == 'MachineMalik':
-#             pass
-#         else:
-#             return Response({'message':'unauthorised user !'})    
+class RefreshMyjobsDetails(APIView):
+    permission_classes=[IsAuthenticated,]
+    authentication_classes=[BearerTokenAuthentication,]
+    def post(self,request,format=None):
+        booking_id=request.data.get('booking_id')
+        myjob_list=[]
+        if not booking_id:
+            return Response({'booking_id':{'This field is required !'}})
+        if request.user.user_type not in ['Sahayak','MachineMalik']:
+            return Response({'message':{'you are not Sahayak or MachineMalik !'}})
+        try:
+            job=JobBooking.objects.get(pk=booking_id)
+        except JobBooking.DoesNotExist:
+            return Response({'message':{'job does not exist !'}})   
+        if job.jobsahayak:
+            if job.booking_user == request.user:
+                if job.jobsahayak.job_type =='individuals_sahayak':
+                    myjob_list.append({
+                        "booking_id":job.id,
+                        "job_type":job.jobsahayak.job_type,
+                        "description":job.jobsahayak.description,
+                        "village":job.jobsahayak.grahak.profile.village,
+                        "land_area":job.jobsahayak.land_area,
+                        "land_type":job.jobsahayak.land_type,
+                        "pay_amount_male":job.pay_amount_male,
+                        "pay_amount_female":job.pay_amount_female,
+                        "fawda_fee":job.fawda_fee,
+                        "count_male":job.count_male,
+                        "count_female":job.count_female,
+                        "payment_your":job.payment_your,
+                        "total_amount_sahayak":job.total_amount_sahayak,
+                        "num_days":job.jobsahayak.num_days,
+                        "datetime":job.jobsahayak.datetime,
+                        "grahak_name":job.jobsahayak.grahak.profile.name,
+                        "grahak_phone":job.jobsahayak.grahak.mobile_no,
+                        "status":job.status
+                    })
+                else:
+                    myjob_list.append({
+                        "booking_id":job.id,
+                        "job_type":job.jobsahayak.job_type,
+                        "description":job.jobsahayak.description,
+                        "village":job.jobsahayak.grahak.profile.village,
+                        "datetime":job.jobsahayak.datetime,
+                        "land_area":job.jobsahayak.land_area,
+                        "land_type":job.jobsahayak.land_type,
+                        "fawda_fee":job.fawda_fee,
+                        "payment_your":job.payment_your,
+                        "total_amount_theka":job.total_amount_theka,
+                        "grahak_name":job.jobsahayak.grahak.profile.name,
+                        "grahak_phone":job.jobsahayak.grahak.mobile_no,
+                        "status":job.status
+                    })
+                    
+        else:
+            if job.booking_user == request.user:
+                myjob_list.append({
+                    "booking_id":job.id,
+                    "job_type":job.jobmachine.job_type,
+                    "description":job.jobmachine.description,
+                    "village":job.jobmachine.grahak.profile.village,
+                    "datetime":job.jobmachine.datetime,
+                    "land_area":job.jobmachine.land_area,
+                    "land_type":job.jobmachine.land_type,
+                    "fawda_fee":job.fawda_fee,
+                    "payment_your":job.payment_your,
+                    "total_amount_machine":job.total_amount_machine,
+                    "grahak_name":job.jobmachine.grahak.profile.name,
+                    "grahak_phone":job.jobmachine.grahak.mobile_no,
+                    "status":job.status,
+                    "work_type":job.jobmachine.work_type,
+                    "machine":job.jobmachine.machine 
+                })
+        return Response(myjob_list)
+    
