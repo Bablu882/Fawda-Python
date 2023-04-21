@@ -17,7 +17,8 @@ urlpatterns=[
     path('api/edit_machine/',EditJobMachine.as_view()),
     path('api/machine_detail/',GetMachineDetailArray.as_view()),
     path('api/get_worktype/',GetWorkType.as_view()),
-    path('api/refresh-job-data/',BookingDetailsAndJobDetails.as_view())
+    path('api/refresh-job-data/',BookingDetailsAndJobDetails.as_view()),
+    path('api/refresh-my-booking/',RefreshfMyBookingDetails.as_view()),
     
     
 
