@@ -19,7 +19,7 @@ urlpatterns=[
     path('api/get_worktype/',GetWorkType.as_view()),
     path('api/refresh-job-data/',BookingDetailsAndJobDetails.as_view()),
     path('api/refresh-my-booking/',RefreshfMyBookingDetails.as_view()),
-    path('api/refresh-myjobs/',RefreshMyjobsDetails.as_view())
+    path('api/refresh-myjobs/',RefreshMyjobsDetails.as_view()),
 
 
 ]

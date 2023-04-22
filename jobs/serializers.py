@@ -32,15 +32,16 @@ class GetJobThekePeKamSerializer(serializers.ModelSerializer):
     class Meta:
         model=JobSahayak
         fields='__all__'
+        
 class PostJobIndividualSerializer(serializers.ModelSerializer):
     datetime = serializers.DateTimeField(required=True)
     description = serializers.CharField(required=True)
     land_type = serializers.CharField(required=True)
     land_area = serializers.CharField(required=True)
-    count_male = serializers.CharField(required=True)
-    count_female = serializers.CharField(required=True)
-    pay_amount_male = serializers.CharField(required=True)
-    pay_amount_female = serializers.CharField(required=True)
+    count_male = serializers.CharField(required=False,error_messages={'blank': 'This field may not be blank. if you not need than pass 0'})
+    count_female = serializers.CharField(required=False,error_messages={'blank': 'This field may not be blank. if you not need than pass 0'})
+    pay_amount_male = serializers.CharField(required=False,error_messages={'blank': 'This field may not be blank. if you not need than pass 0'})
+    pay_amount_female = serializers.CharField(required=False,error_messages={'blank': 'This field may not be blank. if you not need than pass 0'})
     num_days = serializers.CharField(required=True)
 
     class Meta:
@@ -54,6 +55,7 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
                   'pay_amount_male',
                   'pay_amount_female',
                   'num_days']
+        
     def validate_land_type(self, value):
         allowed_choices = ['Bigha', 'Killa']
         if value not in allowed_choices:
@@ -77,7 +79,8 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
         if land_area >= 100:
             raise serializers.ValidationError('land_area should be less than 100')
         return land_area
-
+    
+    
 
 class GetJobIndividualsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -151,3 +154,5 @@ class JobBookingSerializers(serializers.ModelSerializer):
         fields='__all__'
 
     # Product=ProductSerializers(many=False,read_only=True)
+
+

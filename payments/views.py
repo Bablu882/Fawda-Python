@@ -73,16 +73,16 @@ class TestPaymentAPIView(APIView):
             upi_id = 'upi_id'  # Replace with the actual UPI ID
             beneficiary_name = 'beneficiary_name'  # Replace with the actual beneficiary name
             if not job_id:
-                return Response({'message': 'job_id required !'})
+                return Response({'message': {'job_id required !'}})
             if not job_number:
-                return Response({'message':'job_number required !'})    
+                return Response({'message':{'job_number required !'}})    
             if not job_id.isdigit():
-                return Response({'message':'booking_id should be numeric !'})
+                return Response({'message':{'booking_id should be numeric !'}})
             # if not JobBooking.objects.filter(pk=job_id).exists():
             #     return Response({'message':'booking_id not exists !'})
             # Simulate a successful payment by returning a JSON response with a payment ID and status
             if request.user.user_type != 'Grahak':
-                return Response({'message': 'you are not Grahak, only Grahak can change status'})
+                return Response({'message': {'you are not Grahak, only Grahak can change status'}})
             
             # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
             #     return Response({'message':'job_id does not exists'}) 
@@ -90,7 +90,7 @@ class TestPaymentAPIView(APIView):
             is_booked = False
             for job in job_bookings:
                 if job.status == 'Booked':
-                    return Response({'message': 'Status already up to date !'})
+                    return Response({'message': {'Status already up to date !'}})
                 if job.status != 'Accepted':
                     continue
                 is_booked = True
@@ -101,14 +101,14 @@ class TestPaymentAPIView(APIView):
                             job.jobsahayak.status = 'Booked'
                             job.jobsahayak.save()
                     else:
-                        return Response({'message': 'unauthorized grahak !'})
+                        return Response({'message': {'unauthorized grahak !'}})
                 else:
                     if job.jobmachine.grahak == request.user:
                         if not job.jobmachine.status == 'Pending':
                             job.jobmachine.status = 'Booked'
                             job.jobmachine.save()
                     else:
-                        return Response({'message': 'unauthorized grahak !'})
+                        return Response({'message': {'unauthorized grahak !'}})
 
                 job.status = 'Booked'
                 job.save()
@@ -131,7 +131,7 @@ class TestPaymentAPIView(APIView):
             )
 
             if not is_booked:
-                return Response({'message': 'Booking status cannot be updated it should be Accepted before !'})
+                return Response({'message': {'Booking status cannot be updated it should be Accepted before !'}})
 
             return Response({'message': 'changed status to Booked successfully!','booking-status':'Booked','status':status.HTTP_200_OK})
             
