@@ -115,9 +115,9 @@ class VerifyMobile(APIView):
         otp_input = request.data.get('otp')
         phone=request.data.get('phone')
         if not otp_input or not phone:
-            return Response({'message':'otp and phone both is required !'})
+            return Response({'message':{'otp and phone both is required !'}})
         if not re.match(r'^\d{10}$', phone):
-            return Response({'message': 'Phone number should be 10 digits.'})
+            return Response({'message': {'Phone number should be 10 digits.'}})
         # Revoke any existing tokens for the user
         user = authenticate(request, mobile_no=phone)
         if user is not None:
@@ -134,9 +134,9 @@ class VerifyMobile(APIView):
             otp = OTP.objects.get(otp=otp_input,user=get_user)
             user_get = otp.user
         except User.DoesNotExist:
-            return Response({'message':'User does not exist !'})    
+            return Response({'message':{'User does not exist !'}})    
         except OTP.DoesNotExist:
-            return Response({'message': 'Invalid OTP'})    
+            return Response({'otp': {'Invalid OTP'}})    
         token, _ = Token.objects.get_or_create(user=user_get)
         # Update user properties
         user_get.is_verified = True
@@ -152,8 +152,7 @@ def User_logout(request):
     request.user.auth_token.delete()
     logout(request)
     response_data = {
-        'msg': 'user logged out successfully !',
-        'msg2':'previous token has been deleted !',
+        'msg': {'user logged out successfully !'},
         'status':status.HTTP_200_OK
 
     }
@@ -268,7 +267,7 @@ class DistrictApiView(APIView):
 
             return Response(district_list)
         else:
-            return Response({'message':'state required !'})  
+            return Response({'message':{'state required !'}})  
 
 class ProfileApi(APIView):
     authentication_classes=[BearerTokenAuthentication]
