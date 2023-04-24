@@ -18,5 +18,6 @@ urlpatterns=[
        path('api/rejected/',RejectedBooking.as_view()),
        path('api/cancel/',CancellationBookingJob.as_view()),
        path('api/booking-history-grahak/',MyBookingDetailsHistory.as_view()),
+       path('api/booking-history-sahayak-machine-malik/',MyjobsHistory.as_view()),
 
 ]
