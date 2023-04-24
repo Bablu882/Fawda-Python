@@ -143,6 +143,7 @@ class BookingSahayakIndividuals(APIView):
                     return Response({'message':{'count_female should be integer !'}})    
                 if not data['num_days'].isdigit():
                     return Response({'message':{'num_days should be integer !'}})    
+                    
                 try:
                     pay_amount_male = int(pay_amount_male)
                 except ValueError:
@@ -438,33 +439,32 @@ class GetAllJob(APIView):
                 grahak_lon = grahak_profile.longitude
                 # print(grahak_lat,grahak_lon)
                 distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
-                print(distance)
                 if distance <= 5:
                     # serial=GetJobIndividualsSerializer(job_post)
-                    
-                    result.append({
-                        "id":job_post.id,
-                        "job_type":job_post.job_type,
-                        "status":job_post.status,
-                        "date":job_post.date,
-                        "datetime":job_post.datetime,
-                        "payment_your":job_post.payment_your,
-                        "fawda_fee":job_post.fawda_fee,
-                        "description":job_post.description,
-                        "count_male":job_post.count_male,
-                        "count_female":job_post.count_female,
-                        "pay_amount_male":job_post.pay_amount_male,
-                        "pay_amount_female":job_post.pay_amount_female,
-                        "total_amount":job_post.total_amount,
-                        "total_amount_theka":job_post.total_amount_theka,
-                        "total_amount_sahayak":job_post.total_amount_sahayak,
-                        "num_days":job_post.num_days,
-                        "land_area":job_post.land_area,
-                        "land_type":job_post.land_type,
-                        "job_number":job_post.job_number,
-                        "grahak":job_post.grahak.profile.name,
-                        "village":job_post.grahak.profile.village
-                    })
+                    if not JobBooking.objects.filter(jobsahayak=job_post,booking_user=request.user).exists():
+                        result.append({
+                            "id":job_post.id,
+                            "job_type":job_post.job_type,
+                            "status":job_post.status,
+                            "date":job_post.date,
+                            "datetime":job_post.datetime,
+                            "payment_your":job_post.payment_your,
+                            "fawda_fee":job_post.fawda_fee,
+                            "description":job_post.description,
+                            "count_male":job_post.count_male,
+                            "count_female":job_post.count_female,
+                            "pay_amount_male":job_post.pay_amount_male,
+                            "pay_amount_female":job_post.pay_amount_female,
+                            "total_amount":job_post.total_amount,
+                            "total_amount_theka":job_post.total_amount_theka,
+                            "total_amount_sahayak":job_post.total_amount_sahayak,
+                            "num_days":job_post.num_days,
+                            "land_area":job_post.land_area,
+                            "land_type":job_post.land_type,
+                            "job_number":job_post.job_number,
+                            "grahak":job_post.grahak.profile.name,
+                            "village":job_post.grahak.profile.village
+                        })
         elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-id')
             for job_post in job_posts_machin:
@@ -476,26 +476,27 @@ class GetAllJob(APIView):
                 # print(distance)
                 if distance <= 10:
                     # serial=GetJobMachineSerializer(job_post)
-                    result.append({
-                        "id":job_post.id,
-                        "job_type":job_post.job_type,
-                        "status":job_post.status,
-                        "date":job_post.date,
-                        "datetime":job_post.datetime,
-                        "payment_your":job_post.payment_your,
-                        "fawda_fee":job_post.fawda_fee,
-                        "description":job_post.description,
-                        "total_amount":job_post.total_amount,
-                        "total_amount_machine":job_post.total_amount_machine,
-                        "land_area":job_post.land_area,
-                        "land_type":job_post.land_type,
-                        "job_number":job_post.job_number,
-                        "work_type":job_post.work_type,
-                        "machine":job_post.machine,
-                        "grahak":job_post.grahak.profile.name,
-                        "village":job_post.grahak.profile.village
+                    if not JobBooking.objects.filter(jobmachine=job_post,booking_user=request.user):
+                        result.append({
+                            "id":job_post.id,
+                            "job_type":job_post.job_type,
+                            "status":job_post.status,
+                            "date":job_post.date,
+                            "datetime":job_post.datetime,
+                            "payment_your":job_post.payment_your,
+                            "fawda_fee":job_post.fawda_fee,
+                            "description":job_post.description,
+                            "total_amount":job_post.total_amount,
+                            "total_amount_machine":job_post.total_amount_machine,
+                            "land_area":job_post.land_area,
+                            "land_type":job_post.land_type,
+                            "job_number":job_post.job_number,
+                            "work_type":job_post.work_type,
+                            "machine":job_post.machine,
+                            "grahak":job_post.grahak.profile.name,
+                            "village":job_post.grahak.profile.village
 
-                    })        
+                        })        
         else:
             return Response({'message':{'You are not Sahayak or MachinMalik'}})    
         paginator = PageNumberPagination()
@@ -980,4 +981,3 @@ class RefreshMyjobsDetails(APIView):
 
 
 
-    

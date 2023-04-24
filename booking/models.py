@@ -51,9 +51,9 @@ class JobBooking(models.Model):
 
     def __str__(self):
         if self.jobsahayak:
-            return f"{self.jobsahayak.job_type}: grahak:{self.jobsahayak.grahak.profile.name}"
+            return f"{self.jobsahayak.job_type}: grahak:{self.jobsahayak.grahak.profile.name}+id{self.id}"
         else:    
-            return f"{self.jobmachine.job_type}: grahak:{self.jobmachine.grahak.profile.name}" 
+            return f"{self.jobmachine.job_type}: grahak:{self.jobmachine.grahak.profile.name}+id{self.id}" 
     def save(self, *args, **kwargs):
     # Set the corresponding date field based on the new status
         if self.status == 'Booked':
@@ -71,4 +71,4 @@ class Rating(models.Model):
     rating=models.IntegerField(null=True,blank=True)
     comment=models.TextField()
     def __str__(self) -> str:
-        return f"{self.booking_job} rating +{self.rating}"
+        return f"{self.booking_job.id} rating +{self.rating}"
