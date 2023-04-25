@@ -254,8 +254,11 @@
                       </div>
                     </div>
 
-                    
-                </table>
+                  </table>
+                  <div class="d-flex justify-content-end">
+                    <button class="btn btn-info mr-2" id="prev-click">Prev</button>
+                    <button class="btn btn-info" id="next-click">Next</button>
+                  </div>
               </div>
             </div>
           </div>
@@ -333,7 +336,7 @@
         console.log(id);
         console.log("sdf");
         $.ajax({
-          url: '/job_details/',
+          url: '/job_details/?page=1',
           type: 'GET',
           data: {status: id},
           dataType: 'json',
@@ -342,7 +345,7 @@
             var tableBody = $(".myTable tbody");
             console.log("abc",tableBody);
             tableBody.empty(); // Remove existing rows
-            response.data.forEach(function(data) { // Access the 'data' key and iterate over the array
+            response.data.results.forEach(function(data) { // Access the 'data' key and iterate over the array
               var row = $("<tr></tr>");
               row.append(`<td>${data.id}</td>`);
               row.append(`<td>${data.job_number}</td>`);
@@ -360,45 +363,57 @@
         });
       };
       
-      function statusfunction(){
-        var id = $("#status-filter").val();
-        console.log(id);
-        console.log("sdf");
-        $.ajax({
-          url: '/job_details/',
-          type: 'GET',
-          data: {status: id},
-          dataType: 'json',
-          success: function(response) {
-            console.log("abc",response);
-            var tableBody = $(".myTable tbody");
-            console.log("abc",tableBody);
-            tableBody.empty(); // Remove existing rows
-            response.data.forEach(function(data) { // Access the 'data' key and iterate over the array
-            console.log(data.job_number)
-              var row = $("<tr></tr>");
-              row.append(`<td>${data.id}</td>`);
-              row.append(`<td>${data.job_number}</td>`);
-              row.append(`<td>${data.Job_type}</td>`);
-              row.append(`<td>${data.Job_posting_date}</td>`);
-              row.append(`<td>${data.Job_booking_date}</td>`);
-              row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-              row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
-              row.append(`<td>${data.payment_to_service_provider}</td>`);
-              row.append(`<td>${data.mobile_no_for_payment}</td>`);
+let currentIntvalue = 1; // default value
 
-              let button = `<td></td>`;
-              if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
-                button = `<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
-              }
+function statusfunction(intvalue=currentIntvalue) {
+  var id = $("#status-filter").val();
+  console.log(id);
+  console.log("sdf");
+  $.ajax({
+    url: `/job_details/?page=${intvalue}`,
+    type: 'GET',
+    data: {status: id},
+    dataType: 'json',
+    success: function(response) {
+      console.log("abc",response);
+      var tableBody = $(".myTable tbody");
+      console.log("abc",tableBody);
+      tableBody.empty(); // Remove existing rows
+      response.data.results.forEach(function(data) { // Access the 'data' key and iterate over the array
+        console.log(data.job_number)
+        var row = $("<tr></tr>");
+        row.append(`<td>${data.id}</td>`);
+        row.append(`<td>${data.job_number}</td>`);
+        row.append(`<td>${data.Job_type}</td>`);
+        row.append(`<td>${data.Job_posting_date}</td>`);
+        row.append(`<td>${data.Job_booking_date}</td>`);
+        row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
+        row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
+        row.append(`<td>${data.payment_to_service_provider}</td>`);
+        row.append(`<td>${data.mobile_no_for_payment}</td>`);
 
-              row.append(button);
-              tableBody.append(row); // Append new row
-            });
-          }
-        });
-      }
-     
+        let button = `<td></td>`;
+        if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
+          button = `<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
+        }
+
+        row.append(button);
+        tableBody.append(row); // Append new row
+      });
+      // Update currentIntvalue based on button clicks
+      currentIntvalue = intvalue;
+      $('#prev-click').off('click').on('click', function() {
+        statusfunction(currentIntvalue - 1);
+      });
+      $('#next-click').off('click').on('click', function() {
+        statusfunction(currentIntvalue + 1);
+      });
+    }
+  });
+}
+
+// Call statusfunction with default value
+statusfunction();     
       function getJobDetails(id,job_number) {
         
         console.log("sdf", id,job_number);

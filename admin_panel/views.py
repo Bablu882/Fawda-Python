@@ -16,14 +16,16 @@ from .serializers import *
 from authentication.views import BearerTokenAuthentication
 from django.db.models import Max
 from datetime import datetime
+from rest_framework.pagination import PageNumberPagination
 
 
 
 class JobDetailsAdmin(APIView):
     permission_classes=[AllowAny,]
+    PAGE_SIZE=10
     def get(self,request,format=None):
         status = request.GET.get('status')
-        print(status)
+        # print(status)
         data=[]
         if status == 'Pending' or status == 'Timeout':
             job_sahayak=JobSahayak.objects.filter(status=status)
@@ -97,8 +99,15 @@ class JobDetailsAdmin(APIView):
 
 
                     })    
-
-        return Response({'data': data})
+        paginator = PageNumberPagination()
+        paginator.page_size = self.PAGE_SIZE
+        paginated_result = paginator.paginate_queryset(data, request)
+        response_data = {'page': paginator.page.number, 'total_pages': paginator.page.paginator.num_pages, 'results': paginated_result}
+    # Add next page URL to response
+        if paginator.page.has_next():
+            base_url = request.build_absolute_uri().split('?')[0]
+            response_data['next'] = f"{base_url}?page={paginator.page.next_page_number()}"            
+        return Response({'data':response_data})
 
 
 
@@ -253,7 +262,7 @@ class AdminPaymentStatus(APIView):
                 get.status = 'Admin-Refunded'
                 get.save()
                             
-        return Response({'msg':'Payment status updated successfully !'})    
+        return Response({'msg':{'Payment status updated successfully !'}})    
 
 
 def booking_history_sahayak(request):
