@@ -564,8 +564,8 @@ class RatingCreate(APIView):
         
         
 class RatingGet(APIView):
-    permission_classes=[BearerTokenAuthentication,]
-    permission_classes=[AllowAny,]
+    permission_classes=[IsAuthenticated,]
+    authentication_classes=[BearerTokenAuthentication,]
     def post(self, request,format=None):
         booking_job_id=request.data.get('booking_job')
         if not booking_job_id:
@@ -573,7 +573,7 @@ class RatingGet(APIView):
         try:
             rating = Rating.objects.get(booking_job_id=booking_job_id)
             serializer = RatingSerializer(rating)
-            return Response(serializer.data)
+            return Response({'data':serializer.data,'status':status.HTTP_200_OK})
         except Rating.DoesNotExist:
             return Response({'message': f'No rating found for booking_job with id {booking_job_id}'})
 
