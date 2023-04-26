@@ -572,6 +572,8 @@ class RatingGet(APIView):
             return Response({'message':{'booking_id required !'}})
         try:
             rating = Rating.objects.get(booking_job_id=booking_job_id)
+            if not rating.booking_job.booking_user == request.user:
+                return Response({'message':{'unauthorised user !'}})
             serializer = RatingSerializer(rating)
             return Response({'data':serializer.data,'status':status.HTTP_200_OK})
         except Rating.DoesNotExist:
