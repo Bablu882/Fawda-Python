@@ -1508,7 +1508,7 @@ class MyjobsHistory(APIView):
                             'grahak_village': booking_data.jobsahayak.grahak.profile.village,
                             'grahak_mobile_no': booking_data.booking_user.mobile_no,
                             'payment_your':booking_data.payment_your,
-                            'total_amont_sahayak':booking_data.total_amount_sahayak,
+                            'total_amount_sahayak':booking_data.total_amount_sahayak,
                             'total_amount':booking_data.total_amount,
                             'fawda_fee':booking_data.fawda_fee,
                             'pay_amount_male': booking_data.jobsahayak.pay_amount_male,
