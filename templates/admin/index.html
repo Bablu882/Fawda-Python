@@ -331,12 +331,16 @@
 
     </div>
     <script>
-     window.onload = function() {
+    // var currentvalue = 1;
+    var currentIntvalue = 1; // default value
+
+     window.onload = function(intvalue=currentIntvalue) {
       var id = "Pending";
         console.log(id);
-        console.log("sdf");
+        // console.log('-------',intvalue.currentTarget.currentIntvalue)
+        let value_id =intvalue.currentTarget.currentIntvalue;
         $.ajax({
-          url: '/job_details/?page=1',
+          url: `/job_details/?page=${value_id}`,
           type: 'GET',
           data: {status: id},
           dataType: 'json',
@@ -359,16 +363,24 @@
               row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
               tableBody.append(row); // Append new row
             });
+            currentvalue = value_id;
+      $('#prev-click').off('click').on('click', function() {
+        statusfunction(currentvalue - 1);
+      });
+      $('#next-click').off('click').on('click', function() {
+        statusfunction(currentvalue + 1);
+      });
           }
         });
       };
       
-let currentIntvalue = 1; // default value
+let current = 1; // default value
 
-function statusfunction(intvalue=currentIntvalue) {
+function statusfunction(intvalue=current) {
   var id = $("#status-filter").val();
   console.log(id);
   console.log("sdf");
+  console.log("ssd",intvalue);
   $.ajax({
     url: `/job_details/?page=${intvalue}`,
     type: 'GET',
