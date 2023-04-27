@@ -1082,7 +1082,7 @@ class MyBookingDetailsHistory(APIView):
         booking_data_rejected = {}
         for booking in bookings_rejected:
             job_id = booking.jobsahayak.id
-            if job_id not in booking_data:
+            if job_id not in booking_data_rejected:
                 booking_data_rejected[job_id] = {
                     'total_amount': 0,
                     'count_male': 0,
