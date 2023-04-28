@@ -1,53 +1,99 @@
 {% load adminlte_helpers %}
 {%load static %}
 <!-- Left side column. contains the sidebar -->
-<aside class="main-sidebar sidebar-dark-primary elevation-4">
-     <!-- Brand Logo -->
+<aside class="main-sidebar w-100 d-flex flex-column sidebar-dark-primary elevation-4 position-fixed left-0">
+  <div>
+    <!-- Brand Logo -->
     {% block logo %}
-        <a href="/admin" class="brand-link">
-            <img src="{{site_info.favicon.url}}" alt="{{site_info.site_name}}" class="brand-image img-circle elevation-3" style="opacity: .8">
-            {% block logo_text %}<span class="brand-text font-weight-light">{{site_info.site_name}} Admin Panel</span>{% endblock %}
-        </a>
+    <a href="/admin" class="brand-link">
+      <img src="{{site_info.favicon.url}}" alt="{{site_info.site_name}}" class="brand-image img-circle elevation-3"
+        style="opacity: .8">
+      {% block logo_text %}<span class="brand-text logo-title">{{site_info.site_name}} Admin Panel</span>
+      {% endblock %}
+    </a>
+
     {% endblock %}
+
     <!-- sidebar: style can be found in sidebar.less -->
-    <div class="sidebar">
-        <!-- Sidebar user panel -->
-        {% block user_panel %}
-        <!-- Sidebar user panel (optional) -->
-      <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-        <div class="image">
-          <img src="{% avatar_url size=90 %}" class="img-circle elevation-2" alt="User Image">
-        </div>
-        <div class="info">
-          <a href="" class="d-block">{% firstof request.user.get_full_name request.user.username %}</a>
-        </div>
+
+    <!-- Sidebar user panel -->
+    {% block user_panel %}
+    <!-- Sidebar user panel (optional) -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+      <div class="image">
+        <img src="{% avatar_url size=90 %}" class="img-circle elevation-2" alt="User Image">
       </div>
-        {% endblock %}
-
-        {% block form %}{% endblock %}
-
-        <!-- sidebar menu: : style can be found in sidebar.less -->
-        {% block nav_links_ul %}
-        <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-            {% block nav_links_outer %}
-            <li class="nav-header">{% block nav_heading %}MAIN NAVIGATION{% endblock %}</li>
-            <li class="nav-header" style="padding: 2px;">
-              <a href="{% url 'booking_history' %}" class="btn btn-primary nav-link active">Booking History</a>
-            </li>
-            <li class="nav-header" style="padding: 2px; margin-bottom: 0px;">
-              <a href="{% url 'user_list' %}" class="btn btn-primary nav-link active">Registration History</a>
-            </li>
-            <li class="nav-header" style="padding: 2px; margin-bottom: 3px;">
-              <a href="{% url 'booking_log' %}" class="btn btn-primary nav-link active">Booking Log History</a>
-            </li>
-
-            {% block nav_links %}
-            {% endblock nav_links %}
-            {% endblock nav_links_outer %}
-            </ul>
-            </nav>
-        {% endblock nav_links_ul %}
+      <div class="info">
+        <a href="" class="d-block text-white">{% firstof request.user.get_full_name request.user.username %}</a>
+      </div>
     </div>
-    <!-- /.sidebar -->
+  </div>
+  {% endblock %}
+  <style>
+    .f-16 {
+      font-size: 16px;
+    }
+
+    :not(.layout-fixed) .main-sidebar {
+      height: 100vh !important;
+    }
+
+    .main-sidebar {
+      max-width: 250px !important;
+      transition: max-width 0.3s ease;
+
+    }
+    .logo-title{
+      font-size: 20px;
+      font-weight: 400px!important;
+    }
+
+    .sidebar {
+      height: calc(100vh - 172px) !important;
+      overflow-y: auto;
+
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 0%;
+    }
+
+    .nav-pills .nav-link:not(.active):hover {
+      color: white;
+    }
+    .nav-active{
+      background-color: red;
+      color: white;
+    }
+  </style>
+
+  {% block form %}{% endblock %}
+
+  <!-- sidebar menu: : style can be found in sidebar.less -->
+  {% block nav_links_ul %}
+
+  <nav class="mt-2 sidebar">
+    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+      {% block nav_links_outer %}
+      <li class="nav-header nav-item ">{% block nav_heading %}MAIN NAVIGATION{% endblock %}</li>
+      <li class="nav-header nav-item " style="padding: 2px;">
+        <a href="{% url 'booking_history' %}" class="nav-link text-center f-16">Booking History</a>
+      </li>
+      <li class="nav-header nav-item " style="padding: 2px; margin-bottom: 0px;">
+        <a href="{% url 'user_list' %}" class="nav-link text-center f-16">Registration History</a>
+      </li>
+      <li class="nav-header nav-item " style="padding: 2px; margin-bottom: 3px;">
+        <a href="{% url 'booking_log' %}" class="nav-link text-center f-16">Booking Log History</a>
+      </li>
+
+      {% block nav_links %}
+      {% endblock nav_links %}
+      {% endblock nav_links_outer %}
+    </ul>
+  </nav>
+  {% endblock nav_links_ul %}
+
+  <div class="sidebar-footer p-4"></div>
+  <!-- /.sidebar --> 
+
 </aside>
