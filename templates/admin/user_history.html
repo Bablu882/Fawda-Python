@@ -32,6 +32,13 @@
         background-color: #f2f2f2;
         color: black;
     }
+    @media(max-width:576px){
+    .table-heading h1{
+    font-size: 25px!important;
+}
+
+}
+
 </style>
 <body class="hold-transition sidebar-mini {% block body_class %}{% block bodyclass %}{% endblock %}{% endblock %}">
 
@@ -68,16 +75,16 @@
 
             {% block content_outer %}
             <section class="content">
-                <div class=" justify-content-between d-flex align-items-center">
+                <div class=" justify-content-between d-flex align-items-center table-heading flex-wrap">
                     <h1>User Registration History</h1>
                     <a href="{% url 'export_users_excel' %}" class="btn btn-primary">Download</a>
 
                 </div>
-                
+                <div class="table-responsive">
 
-                <table class="table table-bordered table-striped table-hover table-sm table-dark border-dark">
+                <table class="table table-bordered table-striped table-hover table-sm table-dark border-dark mt-3">
                     <thead class="bg-primary text-white">
-                      <tr>
+                      <tr class="text-nowrap">
                         <th scope="col">Sr.No.</th>
                         <th scope="col">Name</th>
                         <th scope="col">Address</th>
@@ -99,6 +106,7 @@
                       {% endfor %}
                     </tbody>
                   </table>
+                </div>
 
             </section>
             {% endblock %}

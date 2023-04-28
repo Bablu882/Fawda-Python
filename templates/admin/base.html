@@ -8,8 +8,7 @@
 <link rel="stylesheet" type="text/css"
     href="{% block stylesheet_rtl %}{% static 'admin/css/rtl.css' %}{% endblock %}" />
 {% endif %}
-<link rel="stylesheet" type="text/css"
-    href="{% static 'admin/css/base.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/base.css' %}" />
 {% block extrastyle %}{% endblock %}
 {% block extrahead %}{% endblock %}
 {% block blockbots %}
@@ -25,12 +24,26 @@
 {% endblock %}
 
 {% block content_header %}
+<style>
+    .content-header .breadcrumb {
+        margin-left: auto;
+    }
+
+    @media(max-width:320px) {
+
+        .content-header .breadcrumb {
+            margin-left: 0px;
+        }
+
+    }
+</style>
 <section class="content-header">
-    <div class="container-fluid">
+    <div class="container-fluid d-flex flex-wrap ">
         {% block breadcrumbs %}
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
-            {% if title %}  {{ title }}{% endif %}
+        <ol class="breadcrumb ml-lg-auto">
+            <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans
+                    'Home' %}</a></li>
+            {% if title %} {{ title }}{% endif %}
         </ol>
         {% endblock %}
     </div>
@@ -40,11 +53,11 @@
 
 {% block content_block_wrap %}
 
-    {% block content %}
-        {% block object-tools %}{% endblock %}
-        {{ content }}
-        {% block sidebar %}{% endblock %}
-    {% endblock %}
+{% block content %}
+{% block object-tools %}{% endblock %}
+{{ content }}
+{% block sidebar %}{% endblock %}
+{% endblock %}
 
 
 {% endblock %}
