@@ -264,8 +264,11 @@
                       </div>
                     </div>
 
-                    
-                </table>
+                  </table>
+                  <div class="d-flex justify-content-end">
+                    <button class="btn btn-info mr-2" id="prev-click">Prev</button>
+                    <button class="btn btn-info" id="next-click">Next</button>
+                  </div>
               </div>
             </div>
           </div>
@@ -338,12 +341,16 @@
 
     </div>
     <script>
-     window.onload = function() {
+    // var currentvalue = 1;
+    var currentIntvalue = 1; // default value
+
+     window.onload = function(intvalue=currentIntvalue) {
       var id = "Pending";
         console.log(id);
-        console.log("sdf");
+        // console.log('-------',intvalue.currentTarget.currentIntvalue)
+        let value_id =intvalue.currentTarget.currentIntvalue;
         $.ajax({
-          url: '/job_details/',
+          url: `/job_details/?page=${value_id}`,
           type: 'GET',
           data: {status: id},
           dataType: 'json',
@@ -352,7 +359,7 @@
             var tableBody = $(".myTable tbody");
             console.log("abc",tableBody);
             tableBody.empty(); // Remove existing rows
-            response.data.forEach(function(data) { // Access the 'data' key and iterate over the array
+            response.data.results.forEach(function(data) { // Access the 'data' key and iterate over the array
               var row = $("<tr></tr>");
               row.append(`<td>${data.id}</td>`);
               row.append(`<td>${data.job_number}</td>`);
@@ -366,6 +373,13 @@
               row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
               tableBody.append(row); // Append new row
             });
+            currentvalue = value_id;
+      $('#prev-click').off('click').on('click', function() {
+        statusfunction(currentvalue - 1);
+      });
+      $('#next-click').off('click').on('click', function() {
+        statusfunction(currentvalue + 1);
+      });
           }
         });
       };
@@ -402,13 +416,28 @@
                 button = `<td><button class="btn btn-danger" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
               }
 
-              row.append(button);
-              tableBody.append(row); // Append new row
-            });
-          }
-        });
-      }
-     
+        let button = `<td></td>`;
+        if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
+          button = `<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
+        }
+
+        row.append(button);
+        tableBody.append(row); // Append new row
+      });
+      // Update currentIntvalue based on button clicks
+      currentIntvalue = intvalue;
+      $('#prev-click').off('click').on('click', function() {
+        statusfunction(currentIntvalue - 1);
+      });
+      $('#next-click').off('click').on('click', function() {
+        statusfunction(currentIntvalue + 1);
+      });
+    }
+  });
+}
+
+// Call statusfunction with default value
+statusfunction();     
       function getJobDetails(id,job_number) {
         
         console.log("sdf", id,job_number);
