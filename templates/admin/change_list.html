@@ -30,18 +30,22 @@
 
 {% if not is_popup %}
     {% block breadcrumbs %}
-    <div class="row mb-2">
+    <h2>{{title}}</h2>
+    <ol class="breadcrumb float-sm-right">
+        <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
+        <li class="breadcrumb-item active">{{ cl.opts.verbose_name_plural|capfirst }}</li>  
+    </ol>
+  
+    <!-- <div class="row mb-2">
+
         <div class="col-sm-6">
-            <h2>{{title}}</h2>
+            
         </div>
         <div class="col-sm-6">
-            <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
-                <li class="breadcrumb-item active">{{ cl.opts.verbose_name_plural|capfirst }}</li>  
-            </ol>
+          
         </div>
-    </div>    
+    </div>     -->
     {% endblock %}
 {% endif %}
 
@@ -74,7 +78,7 @@
                         {% endif %}
                     {% block object-tools-items %}
                         {% if has_add_permission %}
-                            <span class="float-sm-right">
+                            <span class="">
                                 {% url cl.opts|admin_urlname:'add' as add_url %}
                                 <a href="{% add_preserved_filters add_url is_popup to_field %}"
                                 class="btn btn-primary btn-sm text-light">

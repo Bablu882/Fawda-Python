@@ -1,88 +1,151 @@
 {% load adminlte_helpers i18n %}
-{% load static %}<!DOCTYPE html>
+{% load static %}
+<!DOCTYPE html>
 <html>
+
 <head>
     {% block title_outer %}
-        <!-- <title>{% block title %}{{ site.name }}{% endblock %}</title> -->
-        <title>{{site_info.site_title}}</title>
+    <!-- <title>{% block title %}{{ site.name }}{% endblock %}</title> -->
+    <title>{{site_info.site_title}}</title>
     {% endblock %}
 
     {% block meta %}
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-COMPATIBLE" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     {% endblock %}
-<link rel="icon" href="{{site_info.favicon.url}}">
+    <link rel="icon" href="{{site_info.favicon.url}}">
     {% block stylesheets %}
-        {% include 'adminlte/lib/_styles.html' %}
+    {% include 'adminlte/lib/_styles.html' %}
     {% endblock %}
 
     {% block extra_head %}{% endblock %}
 </head>
+<style>
+    .wrapper {
+        min-height: 100%;
+    }
+
+    .content-wrapper {
+        max-width: calc(100% - 250px);
+        margin-left: auto !important;
+
+    }
+
+    #content-main {
+        float: none;
+    }
+
+    .main-footer {
+        margin-left: 0px !important;
+
+    }
+
+    .content-header {
+        background-color: #f4f6f9;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .main-header {
+        margin-left: 0px !important;
+    }
+
+    @media(max-width:991px) {
+        .content-wrapper {
+            max-width: 100%;
+        }
+    }
+
+    @media(max-width:767px) {
+        .content-wrapper {
+            max-width: 100%;
+        }
+
+    }
+</style>
+
 <body class="hold-transition sidebar-mini {% block body_class %}{% block bodyclass %}{% endblock %}{% endblock %}">
-
-{% block body %}
-    <div class="wrapper">
-        {% block nav_header %}
-            {% include 'adminlte/lib/_main_header.html' %}
-        {% endblock %}
-
-        {% block nav_sidebar %}
+    {% block body %}
+    <div class="wrapper vh-100 d-flex flex-column">
+        <main class="dashboard  d-sm-flex flex-grow-1">
+            {% block nav_sidebar %}
             {% include 'adminlte/lib/_main_sidebar.html' %}
-        {% endblock %}
+            {% endblock %}
 
-        {% block content_wrapper %}
-        <div class="content-wrapper">
-            {% block content_header %}
+            {% block content_wrapper %}
+            <div class="content-wrapper bg-white w-100">
+                {% block nav_header %}
+                {% include 'adminlte/lib/_main_header.html' %}
+                {% endblock %}
+                {% block content_header %}
                 <section class="content-header">
                     {% block no_heading %}
-                        <h1>
-                            {% block page_name %}{% endblock %}
-                            <div class="header-actions">
-                                {% block page_actions %}{% endblock %}
-                            </div>
-                            {% block no_description %}
-                            <small>{% block page_description %}{% endblock %}</small>
-                            {% endblock %}
-                        </h1>
-                        {% block breadcrumbs %}
-                            {# Breadcrumb implementation left to developers #}
+                    <h1>
+                        {% block page_name %}{% endblock %}
+                        <div class="header-actions">
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                        {% block no_description %}
+                        <small>{% block page_description %}{% endblock %}</small>
                         {% endblock %}
+                    </h1>
+                    {% block breadcrumbs %}
+                    {# Breadcrumb implementation left to developers #}
+                    {% endblock %}
                     {% endblock no_heading %}
                 </section>
-            {% endblock %}
-
-            {% block content_outer %}
-            <section class="content">
-                {% block messages %}
+                {% endblock %}
+                {% block content_outer %}
+                <section class="content bg-white">
+                    {% block messages %}
                     {% include 'adminlte/lib/_messages.html' %}
-                {% endblock %}
+                    {% endblock %}
 
-                {% block content_block_wrap %}
+                    {% block content_block_wrap %}
                     {% block content %}{% endblock %}
+                    {% endblock %}
+                </section>
                 {% endblock %}
-            </section>
-            {% endblock %}
+                <footer class="main-footer vhgvgc">
+                    <div class="float-right d-none d-sm-block">
+                        {% block footer_right %}
+                        <b>Version</b> {% block version %}0.1{% endblock %}
+                        {% endblock %}
+                    </div>
 
-        </div>
-        {% endblock content_wrapper %}
-        
-        {% block nav_footer %}
+                    {% block footer_left %}
+                    {% block legal %}
+                    <strong>Copyright &copy; {% now "Y" %}{% if not site %}.{% endif %}
+                        {% if site %}
+                        <a href="http://{{ site.domain }}">{{ site.name }}</a>
+                        {% endif %}
+                    </strong> All rights
+                    reserved.
+                    {% endblock %}
+                    {% endblock %}
+                </footer>
+            </div>
+            {% endblock content_wrapper %}
+            {% block nav_footer %}
             {% include 'adminlte/lib/_main_footer.html' %}
-        {% endblock %}
-
+            {% endblock %}
     </div>
-{% endblock body %}
+    </main>
+    {% endblock body %}
 
-{% block javascript %}
-{% include 'adminlte/lib/_scripts.html' %}
-<script src="/static/assets-admin/js/chart.js"></script>
-<script src="/static/assets-admin/js/custom-chart.js" type="text/javascript"></script>
+    {% block javascript %}
+    {% include 'adminlte/lib/_scripts.html' %}
 
-{% endblock %}
+    <script src="/static/assets-admin/js/chart.js"></script>
+    <script src="/static/assets-admin/js/custom-chart.js" type="text/javascript"></script>
 
-{% block extra_js %}{% endblock %}
+    {% endblock %}
 
-{% block extra_foot %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+
+    {% block extra_foot %}{% endblock %}
+
+
 </body>
+
 </html>

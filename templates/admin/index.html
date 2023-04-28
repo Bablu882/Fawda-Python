@@ -35,40 +35,50 @@
   white-space: nowrap;
 }
 .Borders {
-        border: 1px solid rgb(192, 189, 184);
-        padding: 10px;
-        border-radius: 5px;
+  border: 1px solid rgb(192, 189, 184);
+  padding: 10px;
+  border-radius: 5px;
     }
     
 </style>
-<div class="row mb-2">
+<h2 class="text-nowrap">{{site_info.site_name}} Fawda Administration</h2>
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
+  <!-- {% for app in app_list %}
+  <li class="breadcrumb-item active">{{ app.name }}</li>
+  {% endfor %} -->
+</ol>
+<!-- <div class="row mb-2">
     <div class="col-sm-6">
-        <h2>{{site_info.site_name}} Fawda Administration</h2>
+        
     </div>
     <div class="col-sm-8">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
-            <!-- {% for app in app_list %}
-            <li class="breadcrumb-item active">{{ app.name }}</li>
-            {% endfor %} -->
-        </ol>
+        
     </div>
-</div>
+</div> -->
 {% endblock %}
 {% endif %}
 
 
 {% block content %}
+<style>
+  .small-box h4{
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+  }
+</style>
+
 <div id="content-main" class="container-fluid">
-    	<div class="row">
+    	<div class="row mt-3">
             <div class="col">
                 <!-- small box -->
                 <div class="small-box bg-info">
                   <div class="inner">
                     <h4>Revenue</h4>
                     <b>
-                    <p>Total:{{total_revenue}}</p>
-                    <p>Today:{{today_revenue}}</p>
+                    <p class="mb-0">Total:{{total_revenue}}</p>
+                    <p class="mb-0">Today:{{today_revenue}}</p>
                     </b>
                   </div>
                   <div class="icon">
@@ -82,7 +92,7 @@
                 <!-- small box -->
                 <div class="small-box bg-success">
                   <div class="inner">
-                    <h4>Grahak Registration</h4>
+                    <h4 class="text-nowrap">Grahak Registration</h4>
                   <b>
                     <p>Total:{{total_registrations_grahak}}</p>
                     <p>Today:{{today_registrations_grahak}}</p>
@@ -100,7 +110,7 @@
                 <!-- small box -->
                 <div class="small-box bg-warning">
                   <div class="inner">
-                    <h4>Sahayak Registration</h4>
+                    <h4 class="text-nowrap">Sahayak Registration</h4>
                   <b>
                     <p>Total:{{total_registrations_sahayak}}</p>
                     <p>Today:{{today_registrations_sahayak}}</p>
@@ -117,7 +127,7 @@
                 <!-- small box -->
                 <div class="small-box bg-danger">
                   <div class="inner">
-                    <h4>Machine Registration</h4>
+                    <h4 class="text-nowrap">Machine Registration</h4>
                     <b>
                     <p>Total:{{total_registrations_machine}}</p>
                     <p>Today:{{today_registrations_machine}}</p>
@@ -134,7 +144,7 @@
                 <!-- small box -->
                 <div class="small-box bg-secondary">
                   <div class="inner">
-                    <h4>Job Booking</h4>
+                    <h4 class="text-nowrap">Job Booking</h4>
                   <b>
                     <p>Total:{{total_booking}}</p>
                     <p>Today:{{today_booking}}</p>
@@ -264,7 +274,7 @@
 
         {% block sidebar %}
 
-        <div class="card card-widget col-md-12">
+        <div class="card card-widget col-md-12 mt-3">
             <div class="card-header ">
                 <h2 class="card-title">{% trans 'Recent actions' %} / </h2>
                 <h3 class="card-title"> {% trans 'My actions' %}</h3>
@@ -350,7 +360,7 @@
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-              row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
+              row.append(`<td><button class="btn btn-secondary border-0" >${data.Job_status}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
@@ -383,13 +393,13 @@
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-              row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
+              row.append(`<td><button class="btn btn-secondary">${data.Job_status}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
 
               let button = `<td></td>`;
               if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
-                button = `<td><button class="btn btn-primary" style="background-color: red;" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
+                button = `<td><button class="btn btn-danger" onclick='GetJobID(${data.id})'>${data.Payment_status}</button></td>`;
               }
 
               row.append(button);
