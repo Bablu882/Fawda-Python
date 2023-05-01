@@ -41,26 +41,28 @@
     }
     
 </style>
-<div class="row mb-2">
+<h2>{{site_info.site_name}} Fawda Administration</h2>
+<ol class="breadcrumb">
+  <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
+  <!-- {% for app in app_list %}
+  <li class="breadcrumb-item active">{{ app.name }}</li>
+  {% endfor %} -->
+</ol>
+<!-- <div class="row mb-2">
     <div class="col-sm-6">
-        <h2>{{site_info.site_name}} Fawda Administration</h2>
+     
     </div>
     <div class="col-sm-8">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
-            <!-- {% for app in app_list %}
-            <li class="breadcrumb-item active">{{ app.name }}</li>
-            {% endfor %} -->
-        </ol>
+       
     </div>
-</div>
+</div> -->
 {% endblock %}
 {% endif %}
 
 
 {% block content %}
 <div id="content-main" class="container-fluid">
-    	<div class="row">
+    	<div class="row mt-3">
             <div class="col">
                 <!-- small box -->
                 <div class="small-box bg-info">
@@ -254,11 +256,11 @@
                       </div>
                     </div>
 
-                  </table>
-                  <div class="d-flex justify-content-end">
-                    <button class="btn btn-info mr-2" id="prev-click">Prev</button>
-                    <button class="btn btn-info" id="next-click">Next</button>
-                  </div>
+                  </table>                  
+              </div>
+              <div class="d-flex justify-content-end mt-3">
+                <button class="btn btn-info mr-2" id="prev-click">Prev</button>
+                <button class="btn btn-info" id="next-click">Next</button>
               </div>
             </div>
           </div>
@@ -294,7 +296,7 @@
                             <div>
                                 <i
                                     class="fas fa-{% if entry.is_addition %}plus bg-blue{% endif %}{% if entry.is_change %}edit bg-green{% endif %}{% if entry.is_deletion %}minus bg-red{% endif %} "></i>
-                                <div class="timeline-item">
+                                <div class="timeline-item"> 
                                     <span class="time"><i class="fas fa-clock"></i> {{entry.action_time}}</span>
 
                                     <div class="timeline-body">
@@ -357,7 +359,7 @@
               row.append(`<td>${data.Job_posting_date}</td>`);
               row.append(`<td>${data.Job_booking_date}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-              row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
+              row.append(`<td><button class="btn btn-secondary">${data.Job_status}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
@@ -400,7 +402,7 @@ function statusfunction(intvalue=current) {
         row.append(`<td>${data.Job_posting_date}</td>`);
         row.append(`<td>${data.Job_booking_date}</td>`);
         row.append(`<td><button class="btn btn-primary" onclick="getJobDetails('${data.id}', '${data.job_number}')" data-toggle="modal" data-target="#myModal">Details</button></td>`);
-        row.append(`<td><button class="btn btn-primary" style="background-color: gray;">${data.Job_status}</button></td>`);
+        row.append(`<td><button class="btn btn-secondary">${data.Job_status}</button></td>`);
         row.append(`<td>${data.payment_to_service_provider}</td>`);
         row.append(`<td>${data.mobile_no_for_payment}</td>`);
 
