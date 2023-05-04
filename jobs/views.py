@@ -77,6 +77,7 @@ class BookingThekePeKam(APIView):
                     job_number=job_number
                 )
                 serial=GetJobThekePeKamSerializer(job)
+                #send nortification here
                 return Response({'message':'Booking created !','data':serial.data,'status':status.HTTP_201_CREATED})
         else:
             return Response({'message':{'You are not Grahak'}})  
@@ -116,6 +117,7 @@ class EditThekePeKam(APIView):
             job.save()
         else:
             return Response({'message':{'job can not be updated it is not Pending !'}})
+        #send nortification here     
         return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
@@ -202,6 +204,7 @@ class BookingSahayakIndividuals(APIView):
                 )
                 job.save()
                 serial=GetJobIndividualsSerializer(job)
+                #send nortification here
                 return Response({'message': 'success','data':serial.data,'status':status.HTTP_201_CREATED})
         return Response({'message': {'You are not Grahak'}})
 
@@ -253,7 +256,7 @@ class EditIndividualSahayak(APIView):
                 return Response({'message':{'job can not be edited one of the Sahayak Accepted'}})    
         else:
             return Response({'message':{'job can not be updated it is not Pending !'}})    
-
+        #send nortification here 
         return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
@@ -325,7 +328,8 @@ class BookingJobMachine(APIView):
                     grahak=grahak,
                     job_number=job_number
                 )
-                serial=GetJobMachineSerializer(job)    
+                serial=GetJobMachineSerializer(job) 
+                #send nortification  here   
                 return Response({'message':'job created successfully !','status':status.HTTP_201_CREATED,'data':serial.data})
         else:
             return Response({'message':{'You are not Grahak !'}})        
@@ -365,7 +369,7 @@ class EditJobMachine(APIView):
             job.save()
         else:
             return Response({'message':{'job can not be updated it is not Pending !'}})    
-
+        #send nortification here
         return Response({'message': 'Amount updated successfully!','status':status.HTTP_200_OK})
  
 
@@ -432,7 +436,11 @@ class GetAllJob(APIView):
         sahayak_lat = sahayak_profile.latitude
         sahayak_lon = sahayak_profile.longitude
         if sahayak.user_type == 'Sahayak':
-            job_posts = JobSahayak.objects.all().filter(status='Pending').order_by('-id')
+            job_posts = JobSahayak.objects.filter(
+                Q(status='Pending') &
+                ~Q(jobbooking__booking_user=request.user) &
+                ~Q(jobbooking__status__in=['Booked', 'Ongoing', 'Completed', 'Cancelled', 'Cancelled-After-Payment'])
+                ).order_by('-id')
             for job_post in job_posts:
                 grahak_profile = job_post.grahak.profile
                 grahak_lat = grahak_profile.latitude
@@ -441,30 +449,30 @@ class GetAllJob(APIView):
                 distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
                 if distance <= 5:
                     # serial=GetJobIndividualsSerializer(job_post)
-                    if not JobBooking.objects.filter(jobsahayak=job_post,booking_user=request.user).exists():
-                        result.append({
-                            "id":job_post.id,
-                            "job_type":job_post.job_type,
-                            "status":job_post.status,
-                            "date":job_post.date,
-                            "datetime":job_post.datetime,
-                            "payment_your":job_post.payment_your,
-                            "fawda_fee":job_post.fawda_fee,
-                            "description":job_post.description,
-                            "count_male":job_post.count_male,
-                            "count_female":job_post.count_female,
-                            "pay_amount_male":job_post.pay_amount_male,
-                            "pay_amount_female":job_post.pay_amount_female,
-                            "total_amount":job_post.total_amount,
-                            "total_amount_theka":job_post.total_amount_theka,
-                            "total_amount_sahayak":job_post.total_amount_sahayak,
-                            "num_days":job_post.num_days,
-                            "land_area":job_post.land_area,
-                            "land_type":job_post.land_type,
-                            "job_number":job_post.job_number,
-                            "grahak":job_post.grahak.profile.name,
-                            "village":job_post.grahak.profile.village
-                        })
+                    # if not JobBooking.objects.filter(jobsahayak=job_post,booking_user=request.user).exists() or not JobBooking.objects.filter(jobsahayak=job_post).filter(status__in=['Booked','Ongoing','Completed','Cancelled','Cancelled-After-Payment']).exists():
+                    result.append({
+                        "id":job_post.id,
+                        "job_type":job_post.job_type,
+                        "status":job_post.status,
+                        "date":job_post.date,
+                        "datetime":job_post.datetime,
+                        "payment_your":job_post.payment_your,
+                        "fawda_fee":job_post.fawda_fee,
+                        "description":job_post.description,
+                        "count_male":job_post.count_male,
+                        "count_female":job_post.count_female,
+                        "pay_amount_male":job_post.pay_amount_male,
+                        "pay_amount_female":job_post.pay_amount_female,
+                        "total_amount":job_post.total_amount,
+                        "total_amount_theka":job_post.total_amount_theka,
+                        "total_amount_sahayak":job_post.total_amount_sahayak,
+                        "num_days":job_post.num_days,
+                        "land_area":job_post.land_area,
+                        "land_type":job_post.land_type,
+                        "job_number":job_post.job_number,
+                        "grahak":job_post.grahak.profile.name,
+                        "village":job_post.grahak.profile.village
+                    })
         elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-id')
             for job_post in job_posts_machin:
