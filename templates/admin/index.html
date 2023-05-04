@@ -477,6 +477,7 @@ statusfunction();
       $.ajax({
           url: '/payment_status/',
           type: 'POST',
+          headers: { "X-CSRFToken": '{{csrf_token}}' },
           data: {id: id},
           dataType: 'json',
         })}  
