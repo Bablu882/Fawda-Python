@@ -17,19 +17,21 @@ from authentication.views import BearerTokenAuthentication
 from django.db.models import Max
 from datetime import datetime
 from rest_framework.pagination import PageNumberPagination
-
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import IsAdminUser
 
 
 class JobDetailsAdmin(APIView):
-    permission_classes=[AllowAny,]
+    authentication_classes=[SessionAuthentication]
+    permission_classes=[IsAdminUser,]
     PAGE_SIZE=10
     def get(self,request,format=None):
         status = request.GET.get('status')
         # print(status)
         data=[]
         if status == 'Pending' or status == 'Timeout':
-            job_sahayak=JobSahayak.objects.filter(status=status)
-            job_machine=JobMachine.objects.filter(status=status)
+            job_sahayak=JobSahayak.objects.filter(status=status).order_by('-id')
+            job_machine=JobMachine.objects.filter(status=status).order_by('-id')
             for jobs in job_sahayak:
                 data.append({
                     'id':jobs.id,
@@ -56,7 +58,7 @@ class JobDetailsAdmin(APIView):
 
                 })
         else:
-            job_booking=JobBooking.objects.filter(status=status,is_admin_paid='Pending')
+            job_booking=JobBooking.objects.filter(status=status,is_admin_paid='Pending').order_by('-id')
             for jobs in job_booking:
                 if jobs.jobsahayak:
                     if jobs.jobsahayak.job_type == 'theke_pe_kam':
@@ -112,7 +114,8 @@ class JobDetailsAdmin(APIView):
 
 
 class JobDetailsAdminPanel(APIView):
-    permission_classes=[AllowAny,]
+    authentication_classes=[SessionAuthentication]
+    permission_classes=[IsAdminUser,]
     def get(self,request,format=None):
         data=request.GET.get('id')
         job_number=request.GET.get('job_number')
@@ -216,7 +219,8 @@ class JobDetailsAdminPanel(APIView):
     
 
 class AdminPaymentStatus(APIView):
-    permission_classes=[AllowAny,]
+    authentication_classes=[SessionAuthentication,]
+    permission_classes=[IsAdminUser,]
     def post(self,request,format=None):
         get_id=request.POST.get('id')
         # if request.user.is_superuser:
@@ -573,7 +577,8 @@ def BookingInvoice(request,id):
 
 
 class BookingInvoiceApiView(APIView):
-    permission_classes=[AllowAny,]
+    authentication_classes=[SessionAuthentication]
+    permission_classes=[IsAdminUser,]
     def get(self,request,format=None):
         booking_id=request.GET.get('id')
         if JobBooking.objects.filter(pk=booking_id,is_admin_paid='Paid'):
