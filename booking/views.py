@@ -41,6 +41,7 @@ class JobAcceptMachin(APIView):
             get_job.status= 'Accepted'
             get_job.save()
             serial=JobBookingSerializers(booking)
+            #send nortification here
             return Response({'message':'Job accepted successfully !','data':serial.data,'status':status.HTTP_200_OK})
         else:
             return Response({'message':{'you are not MachineMalik'}})    
@@ -75,6 +76,7 @@ class JobAcceptedSahayakTheka(APIView):
         get_job.status='Accepted'
         get_job.save()
         serial=JobBookingSerializers(booking)
+        #send nortification here
         return Response({'message':'Job accepted !','data':serial.data,'status':status.HTTP_200_OK})
         
 class JobAcceptIndividuals(APIView):
@@ -130,7 +132,7 @@ class JobAcceptIndividuals(APIView):
 
             # Serialize the booking object
             serializer = JobBookingSerializers(booking)
-
+            #send nortification here
             return Response({'message': 'Job accepted successfully !', 'data': serializer.data,'status':status.HTTP_200_OK})
        else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -465,6 +467,8 @@ class MyBookingDetails(APIView):
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
                     'datetime':booking.jobsahayak.datetime,
                     'job_type':booking.jobsahayak.job_type,
+                    'land_type':booking.jobsahayak.land_type,
+                    'land_area':booking.jobsahayak.land_area,
                     'description':booking.jobsahayak.description,
                 })
 
@@ -625,7 +629,7 @@ class OngoingStatusApi(APIView):
 
         if not is_booked:
             return Response({'message': {'Booking status cannot be updated it should be Booked before !'}})
-
+        #send nortification here
         return Response({'message': 'changed status to Ongoing successfully!','booking-status':'Ongoing','status':status.HTTP_200_OK})
 
 
@@ -674,7 +678,7 @@ class CompletedStatusApi(APIView):
 
         if not is_ongoing:
             return Response({'message': {'Booking status cannot be updated it should be Ongoing before !'}})
-
+        #send nortification here  
         return Response({'message': 'changed status to Completed successfully!','booking-status':'Completed','status':status.HTTP_200_OK})
         
 
@@ -745,6 +749,7 @@ class RejectedBooking(APIView):
                 # job.save()
         else:
             return Response({'errror':{'you are not sahayak or machine malik'}})
+        #send nortification here
         return Response({'message': {'Booking rejected successfully.'}})
 
 ###-------------------------------------------------------------------------------------###
@@ -955,7 +960,7 @@ class CancellationBookingJob(APIView):
             get_job.save()
         else:
             return Response({'message': {'invalid job_id or job_number'}})
-
+        #send noerification here
         return Response({'message': {'status updated successfully !'}})
 
 
