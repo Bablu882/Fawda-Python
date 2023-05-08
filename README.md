@@ -40,7 +40,7 @@ sudo apt-get install libmysqlclient-dev
 
 #Create and activate a virtual environment:
 ```
-python -m venv env
+python3 -m venv env
 source env/bin/activate
 ```
 
@@ -71,17 +71,17 @@ DATABASES = {
 
 #Run database migrations to create the required tables:
 ```
-python manage.py migrate
+python3 manage.py migrate
 ```
 
 #Create a superuser account to access the Django admin site
 ```
-python manage.py createsuperuser
+python3 manage.py createsuperuser
 ```
 
 #Run the development server:
 ```
-python manage.py runserver
+python3 manage.py runserver
 ```
 
 
