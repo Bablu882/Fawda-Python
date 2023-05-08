@@ -26,27 +26,37 @@ git push -uf origin main
 
 ## Installation
 
-Clone the project repository using the following command:
+#Clone the project repository using the following command:
+```
 git clone https://gitlab.webnyxa.com/webnyxa/fawda-python.git
+```
 
-create MySql database in your system if not already installed:
-if MySql will show error than run this command 
+#create MySql database in your system if not already installed:
+#if MySql will show error than run this command 
+```
 sudo apt-get install libmysqlclient-dev
+```
+#python3.8 should be preinstalled 
 
-python3.8 should be preinstalled 
-
-Create and activate a virtual environment:
+#Create and activate a virtual environment:
+```
 python -m venv env
 source env/bin/activate
+```
 
-Install the project requirements using pip:
+#Install the project requirements using pip:
+```
 pip install -r requirements.txt
+```
 
-Still showing error No Module Found pakage than run the command 
+#Still showing error No Module Found pakage than run the command 
+```
 pip install pakage-name
+```
 
-Update the DATABASES setting in settings.py with the database details:
+#Update the DATABASES setting in settings.py with the database details:
 
+```
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -57,15 +67,21 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+```
 
-
-Run database migrations to create the required tables:
+#Run database migrations to create the required tables:
+```
 python manage.py migrate
+```
 
-Create a superuser account to access the Django admin site
+#Create a superuser account to access the Django admin site
+```
 python manage.py createsuperuser
+```
 
-Run the development server:
+#Run the development server:
+```
 python manage.py runserver
+```
 
 
