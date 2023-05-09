@@ -13,18 +13,21 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(h%c9lrv%u%lu)4pr-bqs0x(p49^+jl0^*l5xn$^-il%(7$-lm'
+SECRET_KEY =os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG =os.getenv('DEBUG')
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,7 +53,8 @@ INSTALLED_APPS = [
     'admin_panel',
     'simple_history',
     'whitenoise.runserver_nostatic',
-    'tinymce'
+    'tinymce',
+    # 'django_cron'
 
 ]
 
@@ -99,27 +103,27 @@ WSGI_APPLICATION = 'fawda.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'demoserver_fawda',
-         'USER': 'demoserver',
-         'PASSWORD': 'oT7cZIle[iRyhxkq',
-         'HOST': 'localhost',
-         'PORT': '3306',
-     }
- }
-
 # DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'fawdadb',
-#         'USER': 'root',
-#         'PASSWORD': 'XdQ6e2UIIxlzxhg',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#     }
-# }
+#      'default': {
+#          'ENGINE': 'django.db.backends.mysql',
+#          'NAME': 'demoserver_fawda',
+#          'USER': 'demoserver',
+#          'PASSWORD': 'oT7cZIle[iRyhxkq',
+#          'HOST': 'localhost',
+#          'PORT': '3306',
+#      }
+#  }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+}
 
 
 # Password validation
@@ -146,7 +150,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -171,25 +175,6 @@ MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# JWT authentication settings
-# SIMPLE_JWT = {
-#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1000),
-#     'REFRESH_TOKEN_LIFETIME': timedelta(minutes=1000),
-#     'ROTATE_REFRESH_TOKENS': True,
-#     'BLACKLIST_AFTER_ROTATION': True,
-#     'UPDATE_LAST_LOGIN': True,
-#     'ALGORITHM': 'HS256',
-#     'SIGNING_KEY': SECRET_KEY,
-#     'VERIFYING_KEY': None,
-#     'AUDIENCE': None,
-#     'ISSUER': None,
-#     'AUTH_HEADER_TYPES': ('Bearer',),
-#     'USER_ID_FIELD': 'id',
-#     'USER_ID_CLAIM': 'user_id',
-#     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-#     'TOKEN_TYPE_CLAIM': 'token_type',
-# }
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
          'rest_framework.authentication.TokenAuthentication',    ],
@@ -202,3 +187,6 @@ AUTHENTICATION_BACKENDS = [
     'authentication.views.MobileNoAuthBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+
+# CRON_CLASSES = ['jobs.cron.TimeoutPendingJobs',]
