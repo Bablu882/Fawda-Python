@@ -6,13 +6,14 @@
             {% if request.user.is_authenticated %}
             <li class="nav-item dropdown user-menu">
                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
-                  <img src="{%avatar_url 128 %}" class="user-image img-circle elevation-2" alt="User Image">
+                  <!-- <img src="{%avatar_url 128 %}" class="user-image img-circle elevation-2" alt="User Image"> -->
+                  <img src="/static/assets-admin/images/Ajay-1.png" class="user-image img-circle elevation-2" alt="User Image">
                   <span class="d-none d-md-inline">{% firstof request.user.get_short_name request.user.get_username %}</span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                   <!-- User image -->
                   <li class="user-header bg-primary">
-                    <img src="{%avatar_url size=160 %}" class="img-circle elevation-2" alt="User Image">
+                    <img src="/static/assets-admin/images/Ajay-1.png" class="img-circle elevation-2" alt="User Image">
         
                     <p>
                         {% firstof request.user.get_short_name request.user.get_username %} - {% firstof request.user.get_role %}

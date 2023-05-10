@@ -31,13 +31,13 @@
 {% if not is_popup %}
     {% block breadcrumbs %}
     <h2>{{title}}</h2>
-    <ol class="breadcrumb float-sm-right">
+    <!-- <ol class="breadcrumb float-sm-right">
         <li class="breadcrumb-item"><a href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> {% trans 'Home' %}</a></li>
         <li class="breadcrumb-item"><a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a></li>
         <li class="breadcrumb-item active">{{ cl.opts.verbose_name_plural|capfirst }}</li>  
-    </ol>
+    </ol> 
   
-    <!-- <div class="row mb-2">
+     <div class="row mb-2">
 
         <div class="col-sm-6">
             
