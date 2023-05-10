@@ -1,11 +1,16 @@
 from rest_framework import serializers
 from .models import *
 from booking.models import JobBooking
+from django.utils import timezone
+
 
 class PostJobThekePeKamSerializer(serializers.ModelSerializer):
     land_type = serializers.CharField()
-
-
+    def validate_datetime(self, value):
+        current_datetime = timezone.localtime(timezone.now())
+        if value <= current_datetime + timezone.timedelta(hours=3):
+            raise serializers.ValidationError('Datetime should be at least 3 hours greater than the current datetime')
+        return value
     class Meta:
         model = JobSahayak
         fields = ['datetime', 'description', 'land_area', 'land_type', 'total_amount_theka']
@@ -79,6 +84,11 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
         if land_area >= 100:
             raise serializers.ValidationError('land_area should be less than 100')
         return land_area
+    def validate_datetime(self, value):
+        current_datetime = timezone.localtime(timezone.now())
+        if value <= current_datetime + timezone.timedelta(hours=3):
+            raise serializers.ValidationError('Datetime should be at least 3 hours greater than the current datetime')
+        return value
     
     
 
@@ -97,6 +107,11 @@ class JobMachineSerializers(serializers.ModelSerializer):
             'machine',
             'others',
             'datetime',
+            'status',
+            'job_type',
+            'job_number',
+            'payment_your',
+            'total_amount',
             'land_area',
             'land_type',
             'total_amount_machine',    
@@ -127,6 +142,12 @@ class JobMachineSerializers(serializers.ModelSerializer):
         if land_area >= 100:
             raise serializers.ValidationError('land_area should be less than 100')
         return land_area
+    def validate_datetime(self, value):
+        current_datetime = timezone.localtime(timezone.now())
+        if value <= current_datetime + timezone.timedelta(hours=3):
+            raise serializers.ValidationError('Datetime should be at least 3 hours greater than the current datetime')
+        return value
+    
     
 class GetJobMachineSerializer(serializers.ModelSerializer):
     class Meta:
@@ -154,5 +175,6 @@ class JobBookingSerializers(serializers.ModelSerializer):
         fields='__all__'
 
     # Product=ProductSerializers(many=False,read_only=True)
+
 
 
