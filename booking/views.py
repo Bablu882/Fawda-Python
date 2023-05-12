@@ -14,7 +14,9 @@ from authentication.views import BearerTokenAuthentication
 from rest_framework import status
 from jobs.views import CustomPagination
 from rest_framework.pagination import PageNumberPagination
-
+from django.utils import timezone
+import pytz
+import datetime
 
 
 class JobAcceptMachin(APIView):
@@ -31,6 +33,17 @@ class JobAcceptMachin(APIView):
                 job = JobMachine.objects.get(pk=job_id)
             except JobMachine.DoesNotExist:
                 return Response({'message': {'Job does not exist !'}})
+            local_tz = pytz.timezone('Asia/Kolkata')
+            utc_tz = pytz.timezone('UTC')
+            # Get the current time and convert it to the local timezone
+            current_time = datetime.datetime.now(pytz.utc).astimezone(local_tz)
+            # Get the job time from the database and convert it to the local timezone
+            job_time = job.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+            # Calculate the difference in hours
+            hours_diff = (job_time - current_time).total_seconds() / 3600
+            # Check if the difference is less than 2 hours
+            if hours_diff < 2:
+                return Response({'message':{'job can not be accepted, it is timed out'}})
             if not job.status == 'Pending':
                 return Response({'message':{'job already Accepted !'}})
             if JobBooking.objects.filter(jobmachine=job, booking_user=machin_user).exists():
@@ -61,6 +74,20 @@ class JobAcceptedSahayakTheka(APIView):
             job = JobSahayak.objects.get(pk=job_id,job_type='theke_pe_kam')
         except JobSahayak.DoesNotExist:
             return Response({'message': {'Job does not exist !'}})
+        local_tz = pytz.timezone('Asia/Kolkata')
+        utc_tz = pytz.timezone('UTC')
+        # Get the current time and convert it to the local timezone
+        current_time = datetime.datetime.now(pytz.utc).astimezone(local_tz)
+        # Get the job time from the database and convert it to the local timezone
+        job_time = job.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+        # Calculate the difference in hours
+        print('--------jobtime',job_time)
+        print('--------currenttime',current_time)
+        hours_diff = (job_time - current_time).total_seconds() / 3600
+        print(hours_diff)
+        # Check if the difference is less than 2 hours
+        if hours_diff < 2:
+            return Response({'message':{'job can not be accepted, it is timed out'}})
         if not job.status == 'Pending':
             return Response({'message':{'job already accepted !'}}) 
         if JobBooking.objects.filter(jobsahayak=job, booking_user=sahayak_user).exists():
@@ -88,7 +115,6 @@ class JobAcceptIndividuals(APIView):
             job_id = serializer.validated_data['job_id']
             male = serializer.validated_data['count_male']
             female = serializer.validated_data['count_female']
-            print(male,female)    
             count_male = int(male)
             count_female = int(female)
             individual_user = request.user
@@ -101,6 +127,20 @@ class JobAcceptIndividuals(APIView):
                 job = JobSahayak.objects.get(pk=job_id,job_type='individuals_sahayak')
             except JobSahayak.DoesNotExist:
                 return Response({'message': {'Job does not exist !'}})
+            local_tz = pytz.timezone('Asia/Kolkata')
+            utc_tz = pytz.timezone('UTC')
+            # Get the current time and convert it to the local timezone
+            current_time = datetime.datetime.now(pytz.utc).astimezone(local_tz)
+            print('---curenttime',current_time)
+            # Get the job time from the database and convert it to the local timezone
+            job_time = job.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+            print('jobtime--',job_time)
+            # Calculate the difference in hours
+            hours_diff = (job_time - current_time).total_seconds() / 3600
+            print('hours diff',hours_diff)
+            # Check if the difference is less than 2 hours
+            if hours_diff < 2:
+                return Response({'message':{'job can not be accepted, it is timed out'}})
             if not job.status == 'Pending':
                 return Response({'message':{'job already Accepted !'}})
             # Check if job is already booked by the user
@@ -117,7 +157,6 @@ class JobAcceptIndividuals(APIView):
             if int(job.count_male) == 0 and int(job.count_female) == 0:
                 job.status ='Accepted'
                 job.save()
-            print(job.count_female,job.count_male)
             # Create the booking object
             booking = JobBooking.objects.create(booking_user=individual_user,
                                                 count_male=count_male,
@@ -409,10 +448,14 @@ class MyBookingDetails(APIView):
     def get(self,request,format=None):
         if not request.user.user_type=='Grahak':
             return Response({'message':{'you are not Grahak !'}})
-        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
+        bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing']).order_by('-id')
         booking_data = {}
         for booking in bookings:
+            diff=limitedtime(booking.jobsahayak.datetime)
+            if booking.status == 'Accepted' and diff < 2.5:
+                continue # Skip this booking
             job_id = booking.jobsahayak.id
+            print('jobid------',job_id)
             if job_id not in booking_data:
                 booking_data[job_id] = {
                     'total_amount': 0,
@@ -451,7 +494,45 @@ class MyBookingDetails(APIView):
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type
                 })
-            else:
+            # else:
+            #     booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
+            #     booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
+            #     booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
+            #     booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+            #     booking_data[job_id]['sahayaks'].append({
+            #         'booking_id': booking.id,
+            #         'job_id':booking.jobsahayak.id,
+            #         'job_number':booking.jobsahayak.job_number,
+            #         'status':booking.jobsahayak.status,
+            #         'booking_user_id': booking.booking_user.id,
+            #         'thekedar_name': booking.booking_user.profile.name,
+            #         'thekedar_village': booking.booking_user.profile.village,
+            #         'thekedar_mobile_no': booking.booking_user.mobile_no,
+            #         'datetime':booking.jobsahayak.datetime,
+            #         'job_type':booking.jobsahayak.job_type,
+            #         'land_type':booking.jobsahayak.land_type,
+            #         'land_area':booking.jobsahayak.land_area,
+            #         'description':booking.jobsahayak.description,
+            #     })
+                ####---------
+        bookingsx = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing']).order_by('-id')
+        for booking in bookingsx:
+            diff=limitedtime(booking.jobsahayak.datetime)
+            if booking.status == 'Accepted' and diff < 2:
+                continue # Skip this booking
+            job_id = booking.jobsahayak.id
+            if job_id not in booking_data:
+                booking_data[job_id] = {
+                    'total_amount': 0,
+                    'count_male': 0,
+                    'count_female': 0,
+                    'total_amount_sahayak': 0,
+                    'payment_your': 0,
+                    'fawda_fee': 0,
+                    'job_type': booking.jobsahayak.job_type,
+                    'sahayaks': []
+                }
+            if booking.jobsahayak.job_type == 'theke_pe_kam':  
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
@@ -471,13 +552,16 @@ class MyBookingDetails(APIView):
                     'land_area':booking.jobsahayak.land_area,
                     'description':booking.jobsahayak.description,
                 })
-
+        
         response_data = {
             'bookings': list(booking_data.values())
         }
-        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
+        bookings1=JobBooking.objects.filter(jobmachine__grahak=request.user,status__in=['Accepted','Booked','Ongoing']).order_by('-id')
         booking_data1=[]
         for booking in bookings1:
+            diff=limitedtime(booking.jobmachine.datetime)
+            if booking.status == 'Accepted' and diff < 2:
+                continue # Skip this booking
             booking_data1.append({
                 'booking_id':booking.id,
                 'job_id':booking.jobmachine.id,
@@ -1478,9 +1562,9 @@ class MyBookingDetailsHistory(APIView):
         cancelled_sahayak_job=JobSahayak.objects.filter(grahak=request.user,status='Cancelled')       
         cancelled_machine_job=JobMachine.objects.filter(grahak=request.user,status='Cancelled')
         serializer_sahayak=JobSahaykSerialiser(cancelled_sahayak_job,many=True)
-        serializer_machine=JobMachineSerializers(cancelled_machine_job,many=True)
+        serializer_machine=GetJobMachineSerializer(cancelled_machine_job,many=True)
         return Response({
-            'sahayk_booking_details':[response_data_completed,response_data_rejected,response_data_rejected_after,response_data_cancelled,response_data_cancelled_after],
+            'sahayak_booking_details':[response_data_completed,response_data_rejected,response_data_rejected_after,response_data_cancelled,response_data_cancelled_after],
             'machine_malik_booking_details':booking_data_machine,
             'sahayak_job_details':serializer_sahayak.data,
             'machine_malik_job_details':serializer_machine.data
@@ -1591,3 +1675,16 @@ class MyjobsHistory(APIView):
 
 
 
+def limitedtime(job_datetime):
+    local_tz = pytz.timezone('Asia/Kolkata')
+    utc_tz = pytz.timezone('UTC')
+    # Get the current time and convert it to the local timezone
+    current_time = datetime.datetime.now(pytz.utc).astimezone(local_tz)
+    print('----current',current_time)
+    # Get the job time from the database and convert it to the local timezone   
+    job_time = job_datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+    print('jobtime',job_time)
+    # Calculate the difference in hours
+    hours_diff = (job_time - current_time).total_seconds() / 3600
+    print(hours_diff)
+    return hours_diff
