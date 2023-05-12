@@ -20,6 +20,9 @@ urlpatterns=[
     path('api/refresh-job-data/',BookingDetailsAndJobDetails.as_view()),
     path('api/refresh-my-booking/',RefreshfMyBookingDetails.as_view()),
     path('api/refresh-myjobs/',RefreshMyjobsDetails.as_view()),
+    path('api/push-nortification/',PushNotificationAPIView.as_view()),
+    path('api/expotoken-save/',UserPushTokenAPIView.as_view()),
+   
 
 
 ]

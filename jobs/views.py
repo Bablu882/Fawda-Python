@@ -16,8 +16,11 @@ from rest_framework import status
 from booking.models import JobBooking
 # Create your views here.
 from django.db.models import Q
-
+from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
+import datetime
+import pytz
+import requests
 
 class CustomPagination(PageNumberPagination):
     page_size = 10 # the number of results per page
@@ -51,7 +54,7 @@ class BookingThekePeKam(APIView):
 
                 if amount <= 5:
                     return Response({'message': {'total_amount_theka should be greater than  5 !'}})
-
+                  
                 existing_job = JobSahayak.objects.filter(
                     datetime=datetime,
                     description=description,
@@ -439,7 +442,7 @@ class GetAllJob(APIView):
             job_posts = JobSahayak.objects.filter(
                 Q(status='Pending') &
                 ~Q(jobbooking__booking_user=request.user) &
-                ~Q(jobbooking__status__in=['Booked', 'Ongoing', 'Completed', 'Cancelled', 'Cancelled-After-Payment'])
+                ~Q(jobbooking__status__in=['Booked', 'Ongoing', 'Completed', 'Cancelled', 'Cancelled-After-Payment','Rejected-After-Payment'])
                 ).order_by('-id')
             for job_post in job_posts:
                 grahak_profile = job_post.grahak.profile
@@ -450,29 +453,42 @@ class GetAllJob(APIView):
                 if distance <= 5:
                     # serial=GetJobIndividualsSerializer(job_post)
                     # if not JobBooking.objects.filter(jobsahayak=job_post,booking_user=request.user).exists() or not JobBooking.objects.filter(jobsahayak=job_post).filter(status__in=['Booked','Ongoing','Completed','Cancelled','Cancelled-After-Payment']).exists():
-                    result.append({
-                        "id":job_post.id,
-                        "job_type":job_post.job_type,
-                        "status":job_post.status,
-                        "date":job_post.date,
-                        "datetime":job_post.datetime,
-                        "payment_your":job_post.payment_your,
-                        "fawda_fee":job_post.fawda_fee,
-                        "description":job_post.description,
-                        "count_male":job_post.count_male,
-                        "count_female":job_post.count_female,
-                        "pay_amount_male":job_post.pay_amount_male,
-                        "pay_amount_female":job_post.pay_amount_female,
-                        "total_amount":job_post.total_amount,
-                        "total_amount_theka":job_post.total_amount_theka,
-                        "total_amount_sahayak":job_post.total_amount_sahayak,
-                        "num_days":job_post.num_days,
-                        "land_area":job_post.land_area,
-                        "land_type":job_post.land_type,
-                        "job_number":job_post.job_number,
-                        "grahak":job_post.grahak.profile.name,
-                        "village":job_post.grahak.profile.village
-                    })
+                    local_tz = pytz.timezone('Asia/Kolkata')
+                    utc_tz = pytz.timezone('UTC')
+                    # Get the current time and convert it to the local timezone
+                    current_time = datetime.datetime.now().replace(tzinfo=utc_tz).astimezone(local_tz)
+                    # Get the job time from the database and convert it to the local timezone
+                    job_time = job_post.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+                    # Calculate the difference in hours
+                    hours_diff = (job_time - current_time).total_seconds() / 3600
+                    # print(hours_diff)
+                    if hours_diff >=2:
+                        result.append({
+                            "id":job_post.id,
+                            "job_type":job_post.job_type,
+                            "status":job_post.status,
+                            "date":job_post.date,
+                            "datetime":job_post.datetime,
+                            "payment_your":job_post.payment_your,
+                            "fawda_fee":job_post.fawda_fee,
+                            "description":job_post.description,
+                            "count_male":job_post.count_male,
+                            "count_female":job_post.count_female,
+                            "pay_amount_male":job_post.pay_amount_male,
+                            "pay_amount_female":job_post.pay_amount_female,
+                            "total_amount":job_post.total_amount,
+                            "total_amount_theka":job_post.total_amount_theka,
+                            "total_amount_sahayak":job_post.total_amount_sahayak,
+                            "num_days":job_post.num_days,
+                            "land_area":job_post.land_area,
+                            "land_type":job_post.land_type,
+                            "job_number":job_post.job_number,
+                            "grahak":job_post.grahak.profile.name,
+                            "village":job_post.grahak.profile.village
+                        })
+                    else:
+                        job_post.status='Timeout'    
+                        job_post.save()
         elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-id')
             for job_post in job_posts_machin:
@@ -485,26 +501,39 @@ class GetAllJob(APIView):
                 if distance <= 10:
                     # serial=GetJobMachineSerializer(job_post)
                     if not JobBooking.objects.filter(jobmachine=job_post,booking_user=request.user):
-                        result.append({
-                            "id":job_post.id,
-                            "job_type":job_post.job_type,
-                            "status":job_post.status,
-                            "date":job_post.date,
-                            "datetime":job_post.datetime,
-                            "payment_your":job_post.payment_your,
-                            "fawda_fee":job_post.fawda_fee,
-                            "description":job_post.description,
-                            "total_amount":job_post.total_amount,
-                            "total_amount_machine":job_post.total_amount_machine,
-                            "land_area":job_post.land_area,
-                            "land_type":job_post.land_type,
-                            "job_number":job_post.job_number,
-                            "work_type":job_post.work_type,
-                            "machine":job_post.machine,
-                            "grahak":job_post.grahak.profile.name,
-                            "village":job_post.grahak.profile.village
+                        local_tz = pytz.timezone('Asia/Kolkata')
+                        utc_tz = pytz.timezone('UTC')
+                        # Get the current time and convert it to the local timezone
+                        current_time = datetime.datetime.now().replace(tzinfo=utc_tz).astimezone(local_tz)
+                        # Get the job time from the database and convert it to the local timezone
+                        job_time = job_post.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+                        # Calculate the difference in hours
+                        hours_diff = (job_time - current_time).total_seconds() / 3600
+                        # print(hours_diff)
+                        if hours_diff >=2:
+                            result.append({
+                                "id":job_post.id,
+                                "job_type":job_post.job_type,
+                                "status":job_post.status,
+                                "date":job_post.date,
+                                "datetime":job_post.datetime,
+                                "payment_your":job_post.payment_your,
+                                "fawda_fee":job_post.fawda_fee,
+                                "description":job_post.description,
+                                "total_amount":job_post.total_amount,
+                                "total_amount_machine":job_post.total_amount_machine,
+                                "land_area":job_post.land_area,
+                                "land_type":job_post.land_type,
+                                "job_number":job_post.job_number,
+                                "work_type":job_post.work_type,
+                                "machine":job_post.machine,
+                                "grahak":job_post.grahak.profile.name,
+                                "village":job_post.grahak.profile.village
 
-                        })        
+                            }) 
+                        else:
+                            job_post.status='Timeout'
+                            job_post.save()           
         else:
             return Response({'message':{'You are not Sahayak or MachinMalik'}})    
         paginator = PageNumberPagination()
@@ -989,3 +1018,75 @@ class RefreshMyjobsDetails(APIView):
 
 
 
+##------------------------------push token-------------------------------------------------###
+
+
+import requests
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+class PushNotificationAPIView(APIView):
+    permission_classes=[AllowAny,]
+    def post(self, request):
+        # Get the push message from the request data
+        push_message = request.data.get('push_message')
+        if not push_message:
+            return Response({'push_message':{'This field is required !'}})
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer YOUR_ACCESS_TOKEN_HERE'
+        }
+
+        # Send the push notification using the Expo API
+        # response = requests.post('https://exp.host/--/api/v2/push/send', json=push_message,headers=headers)
+        response = requests.post('https://exp.host/--/api/v2/push/send', json=push_message)
+        print(response.text)
+
+        # Return the response from the Expo API
+        return Response(response.json())
+
+
+
+class UserPushTokenAPIView(APIView):
+    permission_classes=[AllowAny,]
+    def post(self, request):
+        phone_no = request.data.get('phone')
+        push_token = request.data.get('push_token')
+        if not phone_no:
+            return Response({'phone':{'This field is required'}})
+        if not push_token:
+            return Response({'push_token':{'This field is required !'}})
+        try:
+            user = User.objects.get(mobile_no=phone_no)
+        except User.DoesNotExist:
+            # If the user doesn't exist, return an error response
+            return Response({
+                'status': 'error',
+                'message': 'User does not exist'
+            })
+        # Check that the push token is valid by sending a test notification to the device
+        response = requests.post('https://exp.host/--/api/v2/push/send', json={
+            'to': push_token,
+            'title': 'Test notification',
+            'body': 'This is a test notification'
+        })
+        print(response.text)
+        response_json = response.json()
+        if 'data' in response_json and 'status' in response_json['data']:
+            if response_json['data']['status'] == 'error' and 'details' in response_json['data'] and 'expoPushToken' in response_json['data']['details']:
+                # If the test notification failed, return an error response
+                return Response({
+                    'status': 'error',
+                    'message': response_json
+                })        
+
+        # Save or update the push token for the user
+        user.push_token = push_token
+        user.save()
+
+        # Return a success response
+        return Response({
+            'status': status.HTTP_201_CREATED,
+            'message': 'Push token saved'
+        })
