@@ -40,7 +40,7 @@ class BookingThekePeKam(APIView):
                 landtype=serializers.data.get('land_type')
                 landarea=serializers.data.get('land_area')
                 amount=request.data.get('total_amount_theka')
-                print(amount)
+                print('-----',datetime)
                 grahak=request.user
                 try:
                     amount = int(amount)
@@ -445,50 +445,84 @@ class GetAllJob(APIView):
                 ~Q(jobbooking__status__in=['Booked', 'Ongoing', 'Completed', 'Cancelled', 'Cancelled-After-Payment','Rejected-After-Payment'])
                 ).order_by('-id')
             for job_post in job_posts:
+                print('--time--job-0-',job_post.datetime)
                 grahak_profile = job_post.grahak.profile
                 grahak_lat = grahak_profile.latitude
                 grahak_lon = grahak_profile.longitude
                 # print(grahak_lat,grahak_lon)
                 distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
+                print(distance)
                 if distance <= 5:
                     # serial=GetJobIndividualsSerializer(job_post)
                     # if not JobBooking.objects.filter(jobsahayak=job_post,booking_user=request.user).exists() or not JobBooking.objects.filter(jobsahayak=job_post).filter(status__in=['Booked','Ongoing','Completed','Cancelled','Cancelled-After-Payment']).exists():
                     local_tz = pytz.timezone('Asia/Kolkata')
                     utc_tz = pytz.timezone('UTC')
                     # Get the current time and convert it to the local timezone
-                    current_time = datetime.datetime.now().replace(tzinfo=utc_tz).astimezone(local_tz)
+                    current_time = datetime.datetime.now(pytz.utc).astimezone(local_tz)
+                    print('current-time---',current_time)
                     # Get the job time from the database and convert it to the local timezone
                     job_time = job_post.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
                     # Calculate the difference in hours
+                    print('job-time--',job_time)
                     hours_diff = (job_time - current_time).total_seconds() / 3600
                     # print(hours_diff)
-                    if hours_diff >=2:
-                        result.append({
-                            "id":job_post.id,
-                            "job_type":job_post.job_type,
-                            "status":job_post.status,
-                            "date":job_post.date,
-                            "datetime":job_post.datetime,
-                            "payment_your":job_post.payment_your,
-                            "fawda_fee":job_post.fawda_fee,
-                            "description":job_post.description,
-                            "count_male":job_post.count_male,
-                            "count_female":job_post.count_female,
-                            "pay_amount_male":job_post.pay_amount_male,
-                            "pay_amount_female":job_post.pay_amount_female,
-                            "total_amount":job_post.total_amount,
-                            "total_amount_theka":job_post.total_amount_theka,
-                            "total_amount_sahayak":job_post.total_amount_sahayak,
-                            "num_days":job_post.num_days,
-                            "land_area":job_post.land_area,
-                            "land_type":job_post.land_type,
-                            "job_number":job_post.job_number,
-                            "grahak":job_post.grahak.profile.name,
-                            "village":job_post.grahak.profile.village
-                        })
+                    if job_post.job_type =='individuals_sahayak':
+
+                        if hours_diff >=2.5:
+                            result.append({
+                                "id":job_post.id,
+                                "job_type":job_post.job_type,
+                                "status":job_post.status,
+                                "date":job_post.date,
+                                "datetime":job_time,
+                                "payment_your":job_post.payment_your,
+                                "fawda_fee":job_post.fawda_fee,
+                                "description":job_post.description,
+                                "count_male":job_post.count_male,
+                                "count_female":job_post.count_female,
+                                "pay_amount_male":job_post.pay_amount_male,
+                                "pay_amount_female":job_post.pay_amount_female,
+                                "total_amount":job_post.total_amount,
+                                # "total_amount_theka":job_post.total_amount_theka,
+                                "total_amount_sahayak":job_post.total_amount_sahayak,
+                                "num_days":job_post.num_days,
+                                "land_area":job_post.land_area,
+                                "land_type":job_post.land_type,
+                                "job_number":job_post.job_number,
+                                "grahak":job_post.grahak.profile.name,
+                                "village":job_post.grahak.profile.village
+                            })
+                        else:
+                            job_post.status='Timeout'    
+                            job_post.save()
                     else:
-                        job_post.status='Timeout'    
-                        job_post.save()
+                        if hours_diff >=2:
+                            result.append({
+                                "id":job_post.id,
+                                "job_type":job_post.job_type,
+                                "status":job_post.status,
+                                "date":job_post.date,
+                                "datetime":job_time,
+                                "payment_your":job_post.payment_your,
+                                "fawda_fee":job_post.fawda_fee,
+                                "description":job_post.description,
+                                # "count_male":job_post.count_male,
+                                # "count_female":job_post.count_female,
+                                # "pay_amount_male":job_post.pay_amount_male,
+                                # "pay_amount_female":job_post.pay_amount_female,
+                                "total_amount":job_post.total_amount,
+                                "total_amount_theka":job_post.total_amount_theka,
+                                # "total_amount_sahayak":job_post.total_amount_sahayak,
+                                # "num_days":job_post.num_days,
+                                "land_area":job_post.land_area,
+                                "land_type":job_post.land_type,
+                                "job_number":job_post.job_number,
+                                "grahak":job_post.grahak.profile.name,
+                                "village":job_post.grahak.profile.village
+                            })
+                        else:
+                            job_post.status='Timeout'    
+                            job_post.save()      
         elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-id')
             for job_post in job_posts_machin:
@@ -504,11 +538,14 @@ class GetAllJob(APIView):
                         local_tz = pytz.timezone('Asia/Kolkata')
                         utc_tz = pytz.timezone('UTC')
                         # Get the current time and convert it to the local timezone
-                        current_time = datetime.datetime.now().replace(tzinfo=utc_tz).astimezone(local_tz)
+                        current_time = datetime.datetime.now(pytz.utc).astimezone(local_tz)
+                        print('currenttime----',current_time)
                         # Get the job time from the database and convert it to the local timezone
                         job_time = job_post.datetime.replace(tzinfo=utc_tz).astimezone(local_tz)
+                        print('jobtime-----',job_time)
                         # Calculate the difference in hours
                         hours_diff = (job_time - current_time).total_seconds() / 3600
+                        print('hoursdiff----',hours_diff)
                         # print(hours_diff)
                         if hours_diff >=2:
                             result.append({
@@ -516,7 +553,7 @@ class GetAllJob(APIView):
                                 "job_type":job_post.job_type,
                                 "status":job_post.status,
                                 "date":job_post.date,
-                                "datetime":job_post.datetime,
+                                "datetime":job_time,
                                 "payment_your":job_post.payment_your,
                                 "fawda_fee":job_post.fawda_fee,
                                 "description":job_post.description,

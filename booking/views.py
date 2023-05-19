@@ -139,7 +139,7 @@ class JobAcceptIndividuals(APIView):
             hours_diff = (job_time - current_time).total_seconds() / 3600
             print('hours diff',hours_diff)
             # Check if the difference is less than 2 hours
-            if hours_diff < 2:
+            if hours_diff < 2.5:
                 return Response({'message':{'job can not be accepted, it is timed out'}})
             if not job.status == 'Pending':
                 return Response({'message':{'job already Accepted !'}})
@@ -252,10 +252,13 @@ class MyJobsDetais(APIView):
     def get(self,request,format=None):
         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
             myjob_list=[]
-            bookedjob=JobBooking.objects.all().filter(booking_user=request.user,status__in=['Accepted','Booked','Ongoing','Completed']).order_by('-id')
+            bookedjob=JobBooking.objects.all().filter(booking_user=request.user,status__in=['Accepted','Booked','Ongoing']).order_by('-id')
             for job in bookedjob:
                 if job.jobsahayak:
                     if job.jobsahayak.job_type =='individuals_sahayak':
+                        diff=limitedtime(job.jobsahayak.datetime)
+                        if job.status == 'Accepted' and diff < 2.5:
+                            continue # Skip this booking
                         myjob_list.append({
                             "booking_id":job.id,
                             "job_type":job.jobsahayak.job_type,
@@ -277,6 +280,9 @@ class MyJobsDetais(APIView):
                             "status":job.status
                         })
                     else:
+                        diff=limitedtime(job.jobsahayak.datetime)
+                        if job.status == 'Accepted' and diff < 2:
+                            continue # Skip this booking
                         myjob_list.append({
                             "booking_id":job.id,
                             "job_type":job.jobsahayak.job_type,
@@ -293,6 +299,9 @@ class MyJobsDetais(APIView):
                             "status":job.status
                         })
                 else:
+                    diff=limitedtime(job.jobmachine.datetime)
+                    if job.status == 'Accepted' and diff < 2:
+                        continue # Skip this booking
                     myjob_list.append({
                         "booking_id":job.id,
                         "job_type":job.jobmachine.job_type,
@@ -318,7 +327,6 @@ class MyJobsDetais(APIView):
             if paginator.page.has_next():
                 base_url = request.build_absolute_uri().split('?')[0]
                 response_data['next'] = f"{base_url}?page={paginator.page.next_page_number()}"
-                print(response_data)
             return Response({'success':True,'data':response_data})
                 
         return Response({'message':{'you are not Sahayak or MachineMalik !'}})    
@@ -448,6 +456,8 @@ class MyBookingDetails(APIView):
     def get(self,request,format=None):
         if not request.user.user_type=='Grahak':
             return Response({'message':{'you are not Grahak !'}})
+        local_tz = pytz.timezone('Asia/Kolkata')
+        utc_tz = pytz.timezone('UTC')
         bookings = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing']).order_by('-id')
         booking_data = {}
         for booking in bookings:
@@ -489,50 +499,12 @@ class MyBookingDetails(APIView):
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type
                 })
-            # else:
-            #     booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
-            #     booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
-            #     booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-            #     booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
-            #     booking_data[job_id]['sahayaks'].append({
-            #         'booking_id': booking.id,
-            #         'job_id':booking.jobsahayak.id,
-            #         'job_number':booking.jobsahayak.job_number,
-            #         'status':booking.jobsahayak.status,
-            #         'booking_user_id': booking.booking_user.id,
-            #         'thekedar_name': booking.booking_user.profile.name,
-            #         'thekedar_village': booking.booking_user.profile.village,
-            #         'thekedar_mobile_no': booking.booking_user.mobile_no,
-            #         'datetime':booking.jobsahayak.datetime,
-            #         'job_type':booking.jobsahayak.job_type,
-            #         'land_type':booking.jobsahayak.land_type,
-            #         'land_area':booking.jobsahayak.land_area,
-            #         'description':booking.jobsahayak.description,
-            #     })
-                ####---------
-        bookingsx = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Accepted','Booked','Ongoing']).order_by('-id')
-        for booking in bookingsx:
-            diff=limitedtime(booking.jobsahayak.datetime)
-            if booking.status == 'Accepted' and diff < 2:
-                continue # Skip this booking
-            job_id = booking.jobsahayak.id
-            if job_id not in booking_data:
-                booking_data[job_id] = {
-                    'total_amount': 0,
-                    'count_male': 0,
-                    'count_female': 0,
-                    'total_amount_sahayak': 0,
-                    'payment_your': 0,
-                    'fawda_fee': 0,
-                    'job_type': booking.jobsahayak.job_type,
-                    'sahayaks': []
-                }
-            if booking.jobsahayak.job_type == 'theke_pe_kam':  
+            else:
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
@@ -546,13 +518,13 @@ class MyBookingDetails(APIView):
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'land_type':booking.jobsahayak.land_type,
                     'land_area':booking.jobsahayak.land_area,
                     'description':booking.jobsahayak.description,
                 })
-        
+
         response_data = {
             'bookings': list(booking_data.values())
         }
@@ -568,7 +540,7 @@ class MyBookingDetails(APIView):
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
-                'datetime':booking.jobmachine.datetime,
+                'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
