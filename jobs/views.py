@@ -883,7 +883,7 @@ class RefreshfMyBookingDetails(APIView):
                         'payment_your': booking.payment_your,
                         'fawda_fee': booking.fawda_fee,
                         'booking_user_id':booking.booking_user.id,
-                        'datetime':booking.jobsahayak.datetime,
+                        # 'datetime':booking.jobsahayak.datetime,
                         'description':booking.jobsahayak.description,
                         'land_area':booking.jobsahayak.land_area,
                         'land_type':booking.jobsahayak.land_type,
