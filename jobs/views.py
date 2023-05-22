@@ -976,8 +976,6 @@ class RefreshfMyBookingDetails(APIView):
         })
 
 
-
-
 class RefreshMyjobsDetails(APIView):
     permission_classes=[IsAuthenticated,]
     authentication_classes=[BearerTokenAuthentication,]
