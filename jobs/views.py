@@ -848,6 +848,8 @@ class RefreshfMyBookingDetails(APIView):
         machine_job_number=request.data.get('machine_job_number', 0) or 0
         if not request.user.user_type=='Grahak':
             return Response({'message':{'you are not Grahak !'}})
+        local_tz = pytz.timezone('Asia/Kolkata')
+        utc_tz = pytz.timezone('UTC')    
         bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=sahayak_job_id) & Q(jobsahayak__job_number=sahayak_job_number)) & Q(status__in=['Accepted','Booked','Ongoing','Completed'])| (Q(jobmachine__id=machine_job_id) & Q(jobmachine__job_number=machine_job_number)& Q(status__in=['Accepted','Booked','Ongoing','Completed']))))
         total_amount = 0
         count_male = 0
@@ -870,7 +872,7 @@ class RefreshfMyBookingDetails(APIView):
                     booking_data.append({
                         'booking_id': booking.id,
                         'job_id':booking.jobsahayak.id,
-                        'datetime': booking.jobsahayak.datetime,
+                        'datetime': booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         'status': booking.status,
                         'count_male': booking.count_male,
                         'count_female': booking.count_female,
@@ -903,7 +905,7 @@ class RefreshfMyBookingDetails(APIView):
                         'total_amount':booking.total_amount,
                         'total_amount_theka':booking.total_amount_theka,
                         'payment_your':booking.payment_your,
-                        'datetime':booking.jobsahayak.datetime,
+                        'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         'land_area':booking.jobsahayak.land_area,
                         'land_type':booking.jobsahayak.land_type,
                         'description':booking.jobsahayak.description,
@@ -934,7 +936,7 @@ class RefreshfMyBookingDetails(APIView):
                     'work_type':booking.jobmachine.work_type,
                     'description':booking.jobmachine.description,
                     'machine':booking.jobmachine.machine,
-                    'datetime':booking.jobmachine.datetime,
+                    'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'land_area':booking.jobmachine.land_area,
                     'land_type':booking.jobmachine.land_type,
                     'total_amount':booking.jobmachine.total_amount,
@@ -990,6 +992,8 @@ class RefreshMyjobsDetails(APIView):
             job=JobBooking.objects.get(pk=booking_id)
         except JobBooking.DoesNotExist:
             return Response({'message':{'job does not exist !'}})   
+        local_tz = pytz.timezone('Asia/Kolkata')
+        utc_tz = pytz.timezone('UTC')     
         if job.jobsahayak:
             if job.booking_user == request.user:
                 if job.jobsahayak.job_type =='individuals_sahayak':
@@ -1008,7 +1012,7 @@ class RefreshMyjobsDetails(APIView):
                         "payment_your":job.payment_your,
                         "total_amount_sahayak":job.total_amount_sahayak,
                         "num_days":job.jobsahayak.num_days,
-                        "datetime":job.jobsahayak.datetime,
+                        "datetime":job.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         "grahak_name":job.jobsahayak.grahak.profile.name,
                         "grahak_phone":job.jobsahayak.grahak.mobile_no,
                         "status":job.status
@@ -1019,7 +1023,7 @@ class RefreshMyjobsDetails(APIView):
                         "job_type":job.jobsahayak.job_type,
                         "description":job.jobsahayak.description,
                         "village":job.jobsahayak.grahak.profile.village,
-                        "datetime":job.jobsahayak.datetime,
+                        "datetime":job.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         "land_area":job.jobsahayak.land_area,
                         "land_type":job.jobsahayak.land_type,
                         "fawda_fee":job.fawda_fee,
@@ -1037,7 +1041,7 @@ class RefreshMyjobsDetails(APIView):
                     "job_type":job.jobmachine.job_type,
                     "description":job.jobmachine.description,
                     "village":job.jobmachine.grahak.profile.village,
-                    "datetime":job.jobmachine.datetime,
+                    "datetime":job.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     "land_area":job.jobmachine.land_area,
                     "land_type":job.jobmachine.land_type,
                     "fawda_fee":job.fawda_fee,
