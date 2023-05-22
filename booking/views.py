@@ -252,12 +252,16 @@ class MyJobsDetais(APIView):
     def get(self,request,format=None):
         if request.user.user_type == 'Sahayak' or request.user.user_type == 'MachineMalik':
             myjob_list=[]
+            local_tz = pytz.timezone('Asia/Kolkata')
+            utc_tz = pytz.timezone('UTC')
             bookedjob=JobBooking.objects.all().filter(booking_user=request.user,status__in=['Accepted','Booked','Ongoing']).order_by('-id')
             for job in bookedjob:
                 if job.jobsahayak:
                     if job.jobsahayak.job_type =='individuals_sahayak':
                         diff=limitedtime(job.jobsahayak.datetime)
-                        if job.status == 'Accepted' and diff < 2.5:
+                        if job.status == 'Accepted' and diff < 2:
+                            job.status='Cancelled'
+                            job.save()
                             continue # Skip this booking
                         myjob_list.append({
                             "booking_id":job.id,
@@ -274,7 +278,7 @@ class MyJobsDetais(APIView):
                             "payment_your":job.payment_your,
                             "total_amount_sahayak":job.total_amount_sahayak,
                             "num_days":job.jobsahayak.num_days,
-                            "datetime":job.jobsahayak.datetime,
+                            "datetime":job.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                             "grahak_name":job.jobsahayak.grahak.profile.name,
                             "grahak_phone":job.jobsahayak.grahak.mobile_no,
                             "status":job.status
@@ -282,13 +286,15 @@ class MyJobsDetais(APIView):
                     else:
                         diff=limitedtime(job.jobsahayak.datetime)
                         if job.status == 'Accepted' and diff < 2:
+                            job.status ='Cancelled'
+                            job.save()
                             continue # Skip this booking
                         myjob_list.append({
                             "booking_id":job.id,
                             "job_type":job.jobsahayak.job_type,
                             "description":job.jobsahayak.description,
                             "village":job.jobsahayak.grahak.profile.village,
-                            "datetime":job.jobsahayak.datetime,
+                            "datetime":job.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                             "land_area":job.jobsahayak.land_area,
                             "land_type":job.jobsahayak.land_type,
                             "fawda_fee":job.fawda_fee,
@@ -301,13 +307,15 @@ class MyJobsDetais(APIView):
                 else:
                     diff=limitedtime(job.jobmachine.datetime)
                     if job.status == 'Accepted' and diff < 2:
+                        job.status='Cancelled'
+                        job.save()
                         continue # Skip this booking
                     myjob_list.append({
                         "booking_id":job.id,
                         "job_type":job.jobmachine.job_type,
                         "description":job.jobmachine.description,
                         "village":job.jobmachine.grahak.profile.village,
-                        "datetime":job.jobmachine.datetime,
+                        "datetime":job.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         "land_area":job.jobmachine.land_area,
                         "land_type":job.jobmachine.land_type,
                         "fawda_fee":job.fawda_fee,
@@ -462,7 +470,9 @@ class MyBookingDetails(APIView):
         booking_data = {}
         for booking in bookings:
             diff=limitedtime(booking.jobsahayak.datetime)
-            if booking.status == 'Accepted' and diff < 2.5:
+            if booking.status == 'Accepted' and diff < 2:
+                booking.status = 'Cancelled'
+                booking.save()
                 continue # Skip this booking
             job_id = booking.jobsahayak.id
             print('jobid------',job_id)
@@ -533,6 +543,8 @@ class MyBookingDetails(APIView):
         for booking in bookings1:
             diff=limitedtime(booking.jobmachine.datetime)
             if booking.status == 'Accepted' and diff < 2:
+                booking.status = 'Cancelled'
+                booking.save()
                 continue # Skip this booking
             booking_data1.append({
                 'booking_id':booking.id,
@@ -556,10 +568,35 @@ class MyBookingDetails(APIView):
                 
             })
         booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending').order_by('-id')
-        serializer1=JobSahaykSerialiser(booking2,many=True)
+        # serializer1=JobSahaykSerialiser(booking2,many=True)
         booking3=JobMachine.objects.filter(grahak=request.user,status='Pending').order_by('-id')   
-        serializer2=GetJobMachineSerializer(booking3,many=True)
-        
+        # serializer2=GetJobMachineSerializer(booking3,many=True)
+        serializer1_data = []
+        for booking in booking2:
+            if booking.job_type == 'individuals_sahayak':
+                hours_diff = limitedtime(booking.datetime)
+                if hours_diff > 2.5:
+                    serializer1_data.append(booking)
+                else:
+                    booking.status='Timeout'
+                    booking.save()    
+            else:
+                hours_diff = limitedtime(booking.datetime)
+                if hours_diff > 2:
+                    serializer1_data.append(booking)
+                else:
+                    booking.status='Timeout'    
+                    booking.save()
+
+        serializer1 = JobSahaykSerialiser(serializer1_data, many=True)
+
+        serializer2_data = []
+        for booking in booking3:
+            hours_diff = limitedtime(booking.datetime)
+            if hours_diff > 2:
+                serializer2_data.append(booking)
+
+        serializer2 = GetJobMachineSerializer(serializer2_data, many=True)
         return Response({
             'sahayk_booking_details':response_data,
             'machine_malik_booking_details':booking_data1,
@@ -1039,6 +1076,8 @@ class MyBookingDetailsHistory(APIView):
         ##booking history Completed--------------Sahayak
         booking_data_machine=[]
         booking_data_sahayak=[]
+        local_tz = pytz.timezone('Asia/Kolkata')
+        utc_tz = pytz.timezone('UTC')
         bookings_completed = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Completed']).order_by('-id')
         booking_data = {}
         for booking in bookings_completed:
@@ -1077,7 +1116,7 @@ class MyBookingDetailsHistory(APIView):
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type,
@@ -1101,7 +1140,7 @@ class MyBookingDetailsHistory(APIView):
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
                     'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
@@ -1120,7 +1159,7 @@ class MyBookingDetailsHistory(APIView):
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
-                'datetime':booking.jobmachine.datetime,
+                'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
@@ -1177,7 +1216,7 @@ class MyBookingDetailsHistory(APIView):
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type,
@@ -1199,7 +1238,7 @@ class MyBookingDetailsHistory(APIView):
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
                     'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
@@ -1218,7 +1257,7 @@ class MyBookingDetailsHistory(APIView):
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
-                'datetime':booking.jobmachine.datetime,
+                'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
@@ -1275,7 +1314,7 @@ class MyBookingDetailsHistory(APIView):
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type,
@@ -1297,7 +1336,7 @@ class MyBookingDetailsHistory(APIView):
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
                     'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
@@ -1317,7 +1356,7 @@ class MyBookingDetailsHistory(APIView):
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
-                'datetime':booking.jobmachine.datetime,
+                'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
@@ -1374,7 +1413,7 @@ class MyBookingDetailsHistory(APIView):
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type,
@@ -1396,7 +1435,7 @@ class MyBookingDetailsHistory(APIView):
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
                     'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
@@ -1416,7 +1455,7 @@ class MyBookingDetailsHistory(APIView):
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
-                'datetime':booking.jobmachine.datetime,
+                'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
@@ -1473,7 +1512,7 @@ class MyBookingDetailsHistory(APIView):
                     'count_female': booking.count_female,
                     'job_type':booking.jobsahayak.job_type,
                     'num_days':booking.jobsahayak.num_days,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'description':booking.jobsahayak.description,
                     'land_area':booking.jobsahayak.land_area,
                     'land_type':booking.jobsahayak.land_type,
@@ -1495,7 +1534,7 @@ class MyBookingDetailsHistory(APIView):
                     'thekedar_name': booking.booking_user.profile.name,
                     'thekedar_village': booking.booking_user.profile.village,
                     'thekedar_mobile_no': booking.booking_user.mobile_no,
-                    'datetime':booking.jobsahayak.datetime,
+                    'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
                     'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
@@ -1514,7 +1553,7 @@ class MyBookingDetailsHistory(APIView):
                 'work_type':booking.jobmachine.work_type,
                 'job_type':booking.jobmachine.job_type,
                 'machine':booking.jobmachine.machine,
-                'datetime':booking.jobmachine.datetime,
+                'datetime':booking.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                 'land_area':booking.jobmachine.land_area,
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
@@ -1553,7 +1592,9 @@ class MyjobsHistory(APIView):
     def get(self,request,format=None):
         if not request.user.user_type in ['Sahayak','MachineMalik']:
             return Response({'message':{'you are not sahayak and MachineMalik'}})
-        booking_array=[]    
+        booking_array=[]  
+        local_tz = pytz.timezone('Asia/Kolkata')
+        utc_tz = pytz.timezone('UTC')  
         get_bookings_data=JobBooking.objects.filter(booking_user=request.user,status__in=['Completed','Rejected','Rejected-After-Payment','Cancelled','Cancelled-After-Payment']).order_by('-id')
         for booking_data in get_bookings_data:
             if booking_data.jobsahayak:
@@ -1578,7 +1619,7 @@ class MyjobsHistory(APIView):
                             'count_female': booking_data.count_female,
                             'job_type':booking_data.jobsahayak.job_type,
                             'num_days':booking_data.jobsahayak.num_days,
-                            'datetime':booking_data.jobsahayak.datetime,
+                            'datetime':booking_data.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                             'description':booking_data.jobsahayak.description,
                             'land_area':booking_data.jobsahayak.land_area,
                             'land_type':booking_data.jobsahayak.land_type,
@@ -1601,7 +1642,7 @@ class MyjobsHistory(APIView):
                             'grahak_name':booking_data.jobsahayak.grahak.profile.name,
                             'grahak_village': booking_data.jobsahayak.grahak.profile.village,
                             'grahak_mobile_no':booking_data.jobsahayak.grahak.mobile_no,
-                            'datetime':booking_data.jobsahayak.datetime,
+                            'datetime':booking_data.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                             'job_type':booking_data.jobsahayak.job_type,
                             'description':booking_data.jobsahayak.description,
                             'rating':getrating(booking_data.id)['rating'] if Rating.objects.filter(booking_job=booking_data.id).exists() else "",
@@ -1615,7 +1656,7 @@ class MyjobsHistory(APIView):
                         'work_type':booking_data.jobmachine.work_type,
                         'job_type':booking_data.jobmachine.job_type,
                         'machine':booking_data.jobmachine.machine,
-                        'datetime':booking_data.jobmachine.datetime,
+                        'datetime':booking_data.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         'land_area':booking_data.jobmachine.land_area,
                         'total_amount':booking_data.total_amount,
                         'total_amount_machine':booking_data.total_amount_machine,
