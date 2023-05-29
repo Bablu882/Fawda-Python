@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import *
 from booking.models import JobBooking
 from django.utils import timezone
-
+from datetime import datetime
 
 class PostJobThekePeKamSerializer(serializers.ModelSerializer):
     land_type = serializers.CharField()
@@ -10,7 +10,9 @@ class PostJobThekePeKamSerializer(serializers.ModelSerializer):
         current_datetime = timezone.localtime(timezone.now())
         if value <= current_datetime + timezone.timedelta(hours=3):
             raise serializers.ValidationError('Datetime should be at least 3 hours greater than the current datetime')
+        print('serializer----',value)    
         return value
+    
     class Meta:
         model = JobSahayak
         fields = ['datetime', 'description', 'land_area', 'land_type', 'total_amount_theka']
