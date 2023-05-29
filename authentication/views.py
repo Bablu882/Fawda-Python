@@ -27,7 +27,7 @@ from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework import exceptions
 from rest_framework import status
-
+import requests
 
 class BearerTokenAuthentication(TokenAuthentication):
     keyword = 'Bearer'
@@ -97,17 +97,42 @@ class RegisterApi(APIView):
         )
 
         # Send OTP to user's phone number (use your own SMS gateway or API)
-        # TODO: Implement SMS gateway/API integration to send OTP to user's phone number
-        # ...
+        # Implement SMS gateway/API integration to send OTP to user's phone number
+        url = "https://api.kaleyra.io/v1/HXIN1764336232IN/messages"
+        headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "api-key": "Adefe782a8aa063fab307422eba489684"
+            }
+        data = {
+            "to":f"+91{phone_number}",
+            "sender": "FAWDAA",
+            "type": "OTP",
+            "body": f"{otp}- FAWDA company par register karne ke liye OTP. Suraksha ke liye kisi aur ko na batayein. OTP 10 min tak valid hai.",
+            "source": "API",
+            "template_id":"1007540737168050295",
+            "variables": {
+                "var": otp
+            }
+        }   
+        response = requests.post(url, headers=headers, data=data)
+        print(response.text,response.status_code)
+        if response.status_code == 202:
 
-        # Return success response with OTP and tokens
-        return Response({
-            'success': True,
-            'otp': otp_obj.otp,
-            'phone':user.mobile_no,
-            'user_type':user.user_type,
-            'status':status.HTTP_201_CREATED
-        })
+        # Return success response if otp sent 
+            return Response({
+                'success': True,
+                'message': 'otp has been sent to mobile no !',
+                'phone':user.mobile_no,
+                'user_type':user.user_type,
+                'status':status.HTTP_201_CREATED
+            })
+        else:
+            # Return error response if SMS failed to send
+            return Response({
+                'success': False,
+                'message': 'Failed to send verification code.',
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR
+            })
     
 class VerifyMobile(APIView):
     permission_classes=[AllowAny,]
@@ -171,8 +196,31 @@ class LoginApi(APIView):
             otp = random.randint(100000, 999999)
             otps = OTP.objects.create(otp=otp, user=user)
             # send OTP to the user's mobile number for verification
-
-            return Response({'success': True, 'otp': otps.otp, 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
+            url = "https://api.kaleyra.io/v1/HXIN1764336232IN/messages"
+            headers = {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "api-key": "Adefe782a8aa063fab307422eba489684"
+                }
+            data = {
+                "to":f"+91{phone}",
+                "sender": "FAWDAA",
+                "type": "OTP",
+                "body": f"{otp}-FAWDA company me login karne ke liye OTP. Suraksha ke liye kisi aur ko na batayein. OTP 10 min tak valid hai.",
+                "source": "API",
+                "template_id":"1007978247228401905",
+                "variables": {
+                    "var": otp
+                }
+            }   
+            response = requests.post(url, headers=headers, data=data)
+            if response.status_code == 202:
+                return Response({'success': True, 'message': 'otp has been sent to mobile no', 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
+            else:
+                return Response({
+                'success': False,
+                'message': 'Failed to send verification code.',
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR
+                })
         else:
             return Response({'message': 'User not registered !','status':status.HTTP_404_NOT_FOUND})
         
@@ -282,3 +330,114 @@ def logout_view(request):
     admin_login_url = reverse('admin:login') # generate URL for admin login page
     return redirect(admin_login_url)
 
+
+###---------------------------------------push token---------------------------------------------###
+# def send_push_notification(push_message, push_token):
+#     # Set up the headers for the API request
+#     headers = {
+#         'Accept': 'application/json',
+#         'Content-Type': 'application/json',
+#         'Authorization': 'Bearer YOUR_ACCESS_TOKEN_HERE'
+#     }
+
+#     # Set up the payload for the push notification
+#     payload = {
+#         'to': push_token,
+#         'sound': 'default',
+#         'title': push_message['title'],
+#         'body': push_message['body'],
+#         'data': push_message['data'],
+#     }
+
+#     # Send the push notification using the Expo API
+#     response = requests.post('https://exp.host/--/api/v2/push/send', json=payload, headers=headers)
+
+#     # Return the response from the Expo API
+#     return response.json()    
+
+
+
+###---------------------------------------------------------------------------OTP-------------------###
+# import requests
+# class RegisterApi(APIView):
+#     permission_classes = [AllowAny]
+
+#     def post(self, request, format=None):
+#         serializer = RegisterSerializer(data=request.data)
+#         serializer.is_valid(raise_exception=True)
+
+#         # Get validated data from serializer
+#         validated_data = serializer.validated_data
+#         name = validated_data['name']
+#         gender = validated_data['gender']
+#         phone_number = validated_data['phone']
+#         mohalla = validated_data['mohalla']
+#         village = validated_data['village']
+#         user_type = validated_data['user_type']
+#         state = validated_data['state']
+#         district = validated_data['district']
+#         latitude = validated_data['latitude']
+#         longitude = validated_data['longitude']
+
+#         # Generate OTP and create user, profile, and OTP objects
+#         otp = random.randint(100000, 999999)
+#         # user = User.objects.create(
+#         #     username=phone_number,
+#         #     mobile_no=phone_number,
+#         #     user_type=user_type,
+#         #     is_active=False,
+#         #     is_verified=False,
+#         # )
+#         # profile = Profile.objects.create(
+#         #     user=user,
+#         #     name=name,
+#         #     gender=gender,
+#         #     mohalla=mohalla,
+#         #     village=village,
+#         #     state=state,
+#         #     district=district,
+#         #     latitude=latitude,
+#         #     longitude=longitude
+#         # )
+#         # otp_obj = OTP.objects.create(
+#         #     otp=otp,
+#         #     user=user
+#         # )
+
+#         # Send OTP to user's phone number using Kaleyra API
+#         url = "https://api.kaleyra.io/v1/HXIN1764336232IN/messages"
+#         headers = {
+#                 "Content-Type": "application/x-www-form-urlencoded",
+#                 "api-key": "Adefe782a8aa063fab307422eba489684"
+#             }
+#         data = {
+#             "to":"+918427262631",
+#             "sender": "FAWDAA",
+#             "type": "OTP",
+#             "body": f"{otp}- FAWDA company par register karne ke liye OTP. Suraksha ke liye kisi aur ko na batayein. OTP 10 min tak valid hai.",
+#             "source": "API",
+#             "template_id":"1007540737168050295",
+#             "variables": {
+#                 "var": otp
+#             }
+#         }   
+#         response = requests.post(url, headers=headers, data=data)
+#         print(response.text,response.status_code)
+        
+#         # Check if the SMS was successfully sent
+#         if response.status_code == 202:
+#             # Return success response with OTP and tokens
+#             return Response({
+#                 'success': True,
+#                 'otp': otp,
+#                 # 'phone': user.mobile_no,
+#                 # 'user_type': user.user_type,
+#                 'status': status.HTTP_201_CREATED
+#             })
+#         else:
+#             # Return error response if SMS failed to send
+#             return Response({
+#                 'success': False,
+#                 'message': 'Failed to send verification code.',
+#                 'status': status.HTTP_500_INTERNAL_SERVER_ERROR
+#             })

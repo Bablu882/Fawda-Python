@@ -39,3 +39,11 @@ class ClientInformationAdmin(admin.ModelAdmin):
     }
 
 admin.site.register(ClientInformation, ClientInformationAdmin)
+
+
+
+# class CustomAdminSite(AdminSite):
+#     def each_context(self, request):
+#         context = super().each_context(request)
+#         context['favicon'] = '/static/assets-admin/images/FAWDA-LOGO.png'
+#         return context

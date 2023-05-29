@@ -132,6 +132,6 @@ class TestPaymentAPIView(APIView):
 
             if not is_booked:
                 return Response({'message': {'Booking status cannot be updated it should be Accepted before !'}})
-
+            #send nortification here
             return Response({'message': 'changed status to Booked successfully!','booking-status':'Booked','status':status.HTTP_200_OK})
             
