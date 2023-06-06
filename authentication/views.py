@@ -151,7 +151,7 @@ class VerifyMobile(APIView):
                 token, _ = Token.objects.get_or_create(user=user)
                 user.is_active=True
                 user.save()
-                return Response({'message':'User verified !','token':token.key})
+                return Response({'verified':True,'token': token.key,'user_type':user.user_type,'status':status.HTTP_200_OK})
             # get all sessions of the user and delete them
             sessions = Session.objects.filter(expire_date__gte=timezone.now(), session_key__contains=str(user.id))
             for session in sessions:
@@ -199,7 +199,9 @@ class LoginApi(APIView):
         user = authenticate(request, mobile_no=phone)
         if user is not None: 
             if phone == '8427262640':
-                return Response({'message':'login success','otp':'524525'})
+                otp_demo='524525'
+                otps_demo = OTP.objects.create(otp=otp_demo, user=user)
+                return Response({'success': True, 'message': 'otp has been sent to mobile no', 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
             if not user.is_active:
                 return Response({'message': 'User is deactivated or deleted!','deactivate':True, 'status': status.HTTP_403_FORBIDDEN})          
             # create OTP and send it to the user
