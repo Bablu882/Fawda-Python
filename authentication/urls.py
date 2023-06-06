@@ -18,6 +18,7 @@ urlpatterns = [
     path('logout/',logout_view,name='logout'),
     path('api/districts/',DistrictApiView.as_view()),
     path('api/logout/',User_logout,name='User_logout'),
+    path('api/delete-account/',DeleteAccountAPIView.as_view()),
     
 
 
