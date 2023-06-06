@@ -193,7 +193,7 @@ class LoginApi(APIView):
         user = authenticate(request, mobile_no=phone)
         if user is not None: 
             if not user.is_active:
-                return Response({'message': 'User is deactivated or deleted!', 'status': status.HTTP_403_FORBIDDEN})          
+                return Response({'message': 'User is deactivated or deleted!','deactivate':True, 'status': status.HTTP_403_FORBIDDEN})          
             # create OTP and send it to the user
             otp = random.randint(100000, 999999)
             otps = OTP.objects.create(otp=otp, user=user)
