@@ -198,7 +198,7 @@ class LoginApi(APIView):
         phone = serializer.validated_data['phone']
         user = authenticate(request, mobile_no=phone)
         if user is not None: 
-            if phone == '8427262640':
+            if phone == '1111111111' or phone == '9999999999' or phone == '3333333333':
                 otp_demo='524525'
                 otps_demo = OTP.objects.create(otp=otp_demo, user=user)
                 return Response({'success': True, 'message': 'otp has been sent to mobile no', 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
