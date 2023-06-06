@@ -191,9 +191,9 @@ class LoginApi(APIView):
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data['phone']
         user = authenticate(request, mobile_no=phone)
-        if user.is_active == False:
-            return Response({'message':'User is deactive or delete !'})
-        if user is not None:           
+        if user is not None: 
+            if not user.is_active:
+                return Response({'message': 'User is deactivated or deleted!', 'status': status.HTTP_403_FORBIDDEN})          
             # create OTP and send it to the user
             otp = random.randint(100000, 999999)
             otps = OTP.objects.create(otp=otp, user=user)
