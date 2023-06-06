@@ -191,6 +191,8 @@ class LoginApi(APIView):
         serializer.is_valid(raise_exception=True)
         phone = serializer.validated_data['phone']
         user = authenticate(request, mobile_no=phone)
+        if user.is_active == False:
+            return Response({'message':'User is deactive or delete !'})
         if user is not None:           
             # create OTP and send it to the user
             otp = random.randint(100000, 999999)
@@ -213,6 +215,7 @@ class LoginApi(APIView):
                 }
             }   
             response = requests.post(url, headers=headers, data=data)
+            print('--->',response.text)
             if response.status_code == 202:
                 return Response({'success': True, 'message': 'otp has been sent to mobile no', 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
             else:
@@ -441,3 +444,41 @@ def logout_view(request):
 #                 'message': 'Failed to send verification code.',
 #                 'status': status.HTTP_500_INTERNAL_SERVER_ERROR
 #             })
+
+
+###---------------------------------Account-deletion api-------------------------------------###
+from jobs.models import JobSahayak,JobMachine
+from booking.models import JobBooking
+from django.db.models import Q
+
+class DeleteAccountAPIView(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[BearerTokenAuthentication]
+    def post(self,request,format=None):
+        user=request.user
+        if user.user_type=='Grahak':
+            bookings_sahayak=  JobBooking.objects.filter(Q(jobsahayak__grahak=user)|Q(jobmachine__grahak=user))
+            for booking in bookings_sahayak:
+                print('boking---',booking) 
+                if booking.status in ['Booked', 'Ongoing']:
+                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.'})       
+            user.is_active=False
+            user.save()
+
+        elif user.user_type=='Sahayak':
+            bookings_sahayak=  JobBooking.objects.filter(Q(booking_user=user)|Q(booking_user=user))
+            for booking in bookings_sahayak:
+                print('boking---',booking) 
+                if booking.status in ['Booked', 'Ongoing']:
+                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.'})       
+            user.is_active=False
+            user.save()
+        elif user.user_type=='MachineMalik':
+            bookings_sahayak=  JobBooking.objects.filter(Q(jobsahayak__grahak=user)|Q(jobmachine__grahak=user))
+            for booking in bookings_sahayak:
+                print('boking---',booking) 
+                if booking.status in ['Booked', 'Ongoing']:
+                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.'})       
+            user.is_active=False
+            user.save()
+        return Response({'message':'User account deleted successfully !'})
