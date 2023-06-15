@@ -17,6 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.utils import timezone
 import pytz
 import datetime
+from jobs.views import send_push_notification
 
 
 class JobAcceptMachin(APIView):
@@ -55,6 +56,16 @@ class JobAcceptMachin(APIView):
             get_job.save()
             serial=JobBookingSerializers(booking)
             #send nortification here
+            push_message = {
+                            'to':job.grahak.push_token,
+                            'title': 'काम स्वीकार किया गया है',
+                            'body': 'आपका काम मशीनमालिक के द्वारा स्वीकार किया गया है!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Grahak'  # Add additional key-value pair
+                            }
+                        }
+            send_push_notification(push_message)
             return Response({'message':'Job accepted successfully !','data':serial.data,'status':status.HTTP_200_OK})
         else:
             return Response({'message':{'you are not MachineMalik'}})    
@@ -104,6 +115,16 @@ class JobAcceptedSahayakTheka(APIView):
         get_job.save()
         serial=JobBookingSerializers(booking)
         #send nortification here
+        push_message = {
+                            'to':job.grahak.push_token,
+                            'title': 'काम स्वीकार किया गया है',
+                            'body': 'आपका ठेके पे काम सहायक द्वारा स्वीकार किया गया है!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Grahak'  # Add additional key-value pair
+                            }
+                        }
+        send_push_notification(push_message)
         return Response({'message':'Job accepted !','data':serial.data,'status':status.HTTP_200_OK})
         
 class JobAcceptIndividuals(APIView):
@@ -172,6 +193,17 @@ class JobAcceptIndividuals(APIView):
             # Serialize the booking object
             serializer = JobBookingSerializers(booking)
             #send nortification here
+            push_message = {
+                            'to':job.grahak.push_token,
+                            'title': 'काम स्वीकार किया गया है',
+                            'body': f'आपका काम व्यक्ति-सहायक के द्वारा स्वीकार किया गया है! महिला सहायकों की संख्या: {count_female}, पुरुष सहायकों की संख्या: {count_male}!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Grahak'  # Add additional key-value pair
+                            }
+                        }
+            send_push_notification(push_message)
+
             return Response({'message': 'Job accepted successfully !', 'data': serializer.data,'status':status.HTTP_200_OK})
        else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -719,10 +751,22 @@ class OngoingStatusApi(APIView):
 
             job.status = 'Ongoing'
             job.save()
+            push_message = {
+                            'to':job.booking_user.push_token,
+                            'title': 'काम शुरू हो गया है!',
+                            'body': 'आपका काम शुरू हो गया है! जल्दी से जाँच करें।',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Started'  # Add additional key-value pair
+                            }
+                        }
+            send_push_notification(push_message)
+            
 
         if not is_booked:
             return Response({'message': {'Booking status cannot be updated it should be Booked before !'}})
         #send nortification here
+
         return Response({'message': 'changed status to Ongoing successfully!','booking-status':'Ongoing','status':status.HTTP_200_OK})
 
 
@@ -768,6 +812,16 @@ class CompletedStatusApi(APIView):
 
             job.status = 'Completed'
             job.save()
+            push_message = {
+                            'to':job.booking_user.push_token,
+                            'title': 'काम पूरा हो गया है!',
+                            'body': 'काम पूरा हो गया है! धन्यवाद!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Completed'  # Add additional key-value pair
+                            }
+                        }
+            send_push_notification(push_message)
 
         if not is_ongoing:
             return Response({'message': {'Booking status cannot be updated it should be Ongoing before !'}})
@@ -842,6 +896,28 @@ class RejectedBooking(APIView):
                 # job.save()
         else:
             return Response({'errror':{'you are not sahayak or machine malik'}})
+        if job.jobsahayak:
+            push_message = {
+                                'to':job.jobsahayak.grahak.push_token,
+                                'title': 'काम अस्वीकृत!',
+                                'body': f'आपका काम सहायक द्वारा {data["status"]} किया गया है!',
+                                'sound': 'default',
+                                'data': {
+                                    'key': 'Rejected'  # Add additional key-value pair
+                                }
+                            }
+        else:
+            push_message = {
+                                'to':job.jobmachine.grahak.push_token,
+                                'title': 'काम अस्वीकृत!',
+                                'body': f'आपका काम सहायक द्वारा {data["status"]} किया गया है!',
+                                'sound': 'default',
+                                'data': {
+                                    'key': 'Rejected'  # Add additional key-value pair
+                                }
+                            }
+
+        send_push_notification(push_message)
         #send nortification here
         return Response({'message': {'Booking rejected successfully.'}})
 
@@ -1031,6 +1107,17 @@ class CancellationBookingJob(APIView):
                         booking.save()
                         booking.jobmachine.status='Cancelled'
                         booking.jobmachine.save()
+                push_message = {
+                                'to':booking.booking_user.push_token,
+                                'title': 'काम रद्द!',
+                                'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा {status} किया गया है!',
+                                'sound': 'default',
+                                'data': {
+                                    'key': 'Cancelled'  # Add additional key-value pair
+                                }
+                            }
+
+                send_push_notification(push_message)            
         elif JobSahayak.objects.filter(pk=job_id, job_number=job_number).exists():
             get_job = get_object_or_404(JobSahayak, pk=job_id, job_number=job_number)
             if get_job.status == 'Cancelled':
