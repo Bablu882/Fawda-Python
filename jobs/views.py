@@ -1088,16 +1088,15 @@ class PushNotificationAPIView(APIView):
 
 
 class UserPushTokenAPIView(APIView):
-    permission_classes=[AllowAny,]
+    permission_classes=[IsAuthenticated,]
+    authentication_classes=[BearerTokenAuthentication,]
     def post(self, request):
-        phone_no = request.data.get('phone')
         push_token = request.data.get('push_token')
-        if not phone_no:
-            return Response({'phone':{'This field is required'}})
         if not push_token:
             return Response({'push_token':{'This field is required !'}})
         try:
-            user = User.objects.get(mobile_no=phone_no)
+            user = User.objects.get(username=request.user)
+            print(user.profile.name)
         except User.DoesNotExist:
             # If the user doesn't exist, return an error response
             return Response({
