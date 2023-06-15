@@ -8,6 +8,7 @@ from authentication.views import BearerTokenAuthentication
 from jobs.models import *
 from django.db.models import Q
 from rest_framework import status
+from jobs.views import send_push_notification
 
 # class PaymentAPIView(APIView):
 #     def post(self, request):
@@ -112,6 +113,17 @@ class TestPaymentAPIView(APIView):
 
                 job.status = 'Booked'
                 job.save()
+                push_message = {
+                                'to':job.booking_user.push_token,
+                                'title': 'काम बुक किया गया!',
+                                'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
+                                'sound': 'default',
+                                'data': {
+                                    'key': 'Booked'  # Add additional key-value pair
+                                }
+                            }
+
+                send_push_notification(push_message)
             response_data = {
             'booking_id': job_id,
             'amount': str(amount),

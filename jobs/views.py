@@ -81,6 +81,32 @@ class BookingThekePeKam(APIView):
                 )
                 serial=GetJobThekePeKamSerializer(job)
                 #send nortification here
+                users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
+                # Get the coordinates of the job owner
+                job_owner_latitude = grahak.profile.latitude
+                job_owner_longitude = grahak.profile.longitude
+                # Send notification to users within 5km distance from the job owner
+                for user in users:
+                    print('user-----',user)
+                    push_token = user['push_token']
+                    user_latitude = user['profile__latitude']
+                    user_longitude = user['profile__longitude']
+                    # Calculate the distance between user and job owner
+                    distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
+                    print('distance ----',distance)
+                    if distance <= 5:
+                        # push_message['to'] = push_token
+                        # Prepare the push notification message
+                        push_message = {
+                            'to':push_token,
+                            'title': 'नया काम पोस्ट किया गया है',
+                            'body': 'एक नया ठेके पे काम पोस्ट किया गया है!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Sahayak'  # Add additional key-value pair
+                            }
+                        }
+                        send_push_notification(push_message)
                 return Response({'message':'Booking created !','data':serial.data,'status':status.HTTP_201_CREATED})
         else:
             return Response({'message':{'You are not Grahak'}})  
@@ -208,6 +234,32 @@ class BookingSahayakIndividuals(APIView):
                 job.save()
                 serial=GetJobIndividualsSerializer(job)
                 #send nortification here
+                users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
+                # Get the coordinates of the job owner
+                grahak=request.user
+                job_owner_latitude = grahak.profile.latitude
+                job_owner_longitude = grahak.profile.longitude
+                # Send notification to users within 5km distance from the job owner
+                for user in users:
+                    push_token = user['push_token']
+                    user_latitude = user['profile__latitude']
+                    user_longitude = user['profile__longitude']
+                    # Calculate the distance between user and job owner
+                    distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
+
+                    if distance <= 5:
+                        # push_message['to'] = push_token
+                        # Prepare the push notification message
+                        push_message = {
+                            'to':push_token,
+                            'title': 'नया काम पोस्ट किया गया है',
+                            'body': 'एक नया काम "व्यक्तिगत सहायक" के लिए पोस्ट किया गया है!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Sahayak'  # Add additional key-value pair
+                            }
+                        }
+                        send_push_notification(push_message)
                 return Response({'message': 'success','data':serial.data,'status':status.HTTP_201_CREATED})
         return Response({'message': {'You are not Grahak'}})
 
@@ -333,6 +385,31 @@ class BookingJobMachine(APIView):
                 )
                 serial=GetJobMachineSerializer(job) 
                 #send nortification  here   
+                users = User.objects.filter(user_type='MachineMalik').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
+                # Get the coordinates of the job owner
+                job_owner_latitude = grahak.profile.latitude
+                job_owner_longitude = grahak.profile.longitude
+                # Send notification to users within 5km distance from the job owner
+                for user in users:
+                    push_token = user['push_token']
+                    user_latitude = user['profile__latitude']
+                    user_longitude = user['profile__longitude']
+                    # Calculate the distance between user and job owner
+                    distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
+
+                    if distance <= 10:
+                        # push_message['to'] = push_token
+                        # Prepare the push notification message
+                        push_message = {
+                            'to':push_token,
+                            'title': 'नया काम पोस्ट किया गया है',
+                            'body': 'एक नया काम "मशीन के लिए" पोस्ट किया गया है!',
+                            'sound': 'default',
+                            'data': {
+                                'key': 'Machine'  # Add additional key-value pair
+                            }
+                        }
+                        send_push_notification(push_message)
                 return Response({'message':'job created successfully !','status':status.HTTP_201_CREATED,'data':serial.data})
         else:
             return Response({'message':{'You are not Grahak !'}})        
@@ -1107,7 +1184,7 @@ class UserPushTokenAPIView(APIView):
         response = requests.post('https://exp.host/--/api/v2/push/send', json={
             'to': push_token,
             'title': 'Test notification',
-            'body': 'This is a test notification'
+            'body': 'You have registered in new device !'
         })
         print(response.text)
         response_json = response.json()
@@ -1128,3 +1205,15 @@ class UserPushTokenAPIView(APIView):
             'status': status.HTTP_201_CREATED,
             'message': 'Push token saved'
         })
+    
+###--------------------------------------------push token--------------------------------###
+
+def send_push_notification(push_message):
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+    }
+
+    response = requests.post('https://exp.host/--/api/v2/push/send', json=push_message, headers=headers)
+    print(response)
+    return response.json()
