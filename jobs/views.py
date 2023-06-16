@@ -1183,8 +1183,8 @@ class UserPushTokenAPIView(APIView):
         # Check that the push token is valid by sending a test notification to the device
         response = requests.post('https://exp.host/--/api/v2/push/send', json={
             'to': push_token,
-            'title': 'Test notification',
-            'body': 'You have registered in new device !'
+            'title': 'नए डिवाइस में लॉगिन',
+            'body': 'आपने नए डिवाइस में पंजीकृत किया है!'
         })
         print(response.text)
         response_json = response.json()
@@ -1215,5 +1215,4 @@ def send_push_notification(push_message):
     }
 
     response = requests.post('https://exp.host/--/api/v2/push/send', json=push_message, headers=headers)
-    print(response)
     return response.json()
