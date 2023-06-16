@@ -1180,6 +1180,8 @@ class UserPushTokenAPIView(APIView):
                 'status': 'error',
                 'message': 'User does not exist'
             })
+        if push_token == user.push_token:
+            return Response({'message':'Device already registered !'})
         # Check that the push token is valid by sending a test notification to the device
         response = requests.post('https://exp.host/--/api/v2/push/send', json={
             'to': push_token,
