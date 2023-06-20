@@ -896,11 +896,17 @@ class RejectedBooking(APIView):
                 # job.save()
         else:
             return Response({'errror':{'you are not sahayak or machine malik'}})
+        
+        status_mapping = {
+            'Rejected': 'अस्वीकृत',
+            'Rejected-After-Payment': 'भुगतान के बाद अस्वीकृत'
+        }
+
         if job.jobsahayak:
             push_message = {
                                 'to':job.jobsahayak.grahak.push_token,
                                 'title': 'काम अस्वीकृत!',
-                                'body': f'आपका काम सहायक द्वारा {data["status"]} किया गया है!',
+                                'body': f'आपका काम सहायक द्वारा {status_mapping.get(data["status"], data["status"])} किया गया है!',
                                 'sound': 'default',
                                 'data': {
                                     'key': 'Rejected'  # Add additional key-value pair
@@ -910,12 +916,13 @@ class RejectedBooking(APIView):
             push_message = {
                                 'to':job.jobmachine.grahak.push_token,
                                 'title': 'काम अस्वीकृत!',
-                                'body': f'आपका काम सहायक द्वारा {data["status"]} किया गया है!',
+                                'body': f'आपका काम सहायक द्वारा {status_mapping.get(data["status"], data["status"])} किया गया है!',
                                 'sound': 'default',
                                 'data': {
                                     'key': 'Rejected'  # Add additional key-value pair
                                 }
                             }
+        
 
         send_push_notification(push_message)
         #send nortification here
@@ -1107,16 +1114,20 @@ class CancellationBookingJob(APIView):
                         booking.save()
                         booking.jobmachine.status='Cancelled'
                         booking.jobmachine.save()
+
+                status_mapping = {
+                    'Cancelled': 'रद्द',
+                    'Cancelled-After-Payment': 'भुगतान के बाद रद्द'
+                }        
                 push_message = {
                                 'to':booking.booking_user.push_token,
                                 'title': 'काम रद्द!',
-                                'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा {status} किया गया है!',
+                                'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा {status_mapping.get(status, status)} किया गया है!',
                                 'sound': 'default',
                                 'data': {
                                     'key': 'Cancelled'  # Add additional key-value pair
                                 }
                             }
-
                 send_push_notification(push_message)            
         elif JobSahayak.objects.filter(pk=job_id, job_number=job_number).exists():
             get_job = get_object_or_404(JobSahayak, pk=job_id, job_number=job_number)
