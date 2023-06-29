@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Form</title>
+</head>
+<body>
+    <h1>Payment Details</h1>
+    <form method="post" action="/ccavRequestHandler/">
+        {% csrf_token %}
+        <label for="merchant_id">Merchant ID:</label>
+        <input type="text" name="merchant_id" required><br><br>
+
+        
+        <label for="order_id">Order ID:</label>
+        <input type="text" name="order_id" required><br><br>
+
+        <label for="currency">Currency:</label>
+        <input type="text" name="currency" required><br><br>
+
+        <label for="amount">Amount:</label>
+        <input type="text" name="amount" required><br><br>
+
+        <label for="amount">Billing Name:</label>
+        <input type="text" name="billing_name" ><br><br>
+
+        <label for="amount">Billing Address:</label>
+        <input type="text" name="billing_address" ><br><br>
+
+        <label for="amount">Billing City:</label>
+        <input type="text" name="billing_city" ><br><br>
+
+        <label for="amount">Billing State:</label>
+        <input type="text" name="billing_state" ><br><br>
+
+        <label for="amount">Billing Zip:</label>
+        <input type="text" name="billing_zip" ><br><br>
+
+        <label for="amount">Billing Country:</label>
+        <input type="text" name="billing_country" ><br><br>
+
+        <label for="amount">Billing Tel:</label>
+        <input type="text" name="billing_tel" ><br><br>
+
+        <label for="amount">Billing Email:</label>
+        <input type="text" name="billing_email" ><br><br>
+
+       
+
+        <input type="submit" value="Pay">
+    </form>
+</body>
+</html>
+
+<!-- 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Form</title>
+    <style>
+        table {
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Payment Details</h1>
+    <form method="post" action="/ccavRequestHandler/">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <th><label for="merchant_id">Merchant ID:</label></th>
+                <td><input type="text" name="merchant_id" required></td>
+            </tr>
+          
+            <tr>
+                <th><label for="order_id">Order ID:</label></th>
+                <td><input type="text" name="order_id" required></td>
+            </tr>
+            <tr>
+                <th><label for="currency">Currency:</label></th>
+                <td><input type="text" name="currency" required></td>
+            </tr>
+            <tr>
+                <th><label for="amount">Amount:</label></th>
+                <td><input type="text" name="amount" required></td>
+            </tr>
+            <tr>
+				<th>Billing Address:</th>
+				<td><input type="text" name="billing_address"
+					value="Noida-sec-68" /></td>
+			</tr>
+			<tr>
+				<th>Billing City:</th>
+				<td><input type="text" name="billing_city" value="Noida" /></td>
+			</tr>
+			<tr>
+				<th>Billing State:</th>
+				<td><input type="text" name="billing_state" value="UP" /></td>
+			</tr>
+			<tr>
+				<th>Billing Zip:</th>
+				<td><input type="text" name="billing_zip" value="201307" /></td>
+			</tr>
+			<tr>
+				<th>Billing Country:</th>
+				<td><input type="text" name="billing_country" value="India" />
+				</td>
+			</tr>
+			<tr>
+				<th>Billing Tel:</th>
+				<td><input type="text" name="billing_tel" value="456464646" />
+				</td>
+			</tr>
+			<tr>
+				<th>Billing Email:</th>
+				<td><input type="text" name="billing_email" value="webnyxa@gmail.com" /></td>
+			</tr>
+        </table>
+        <br>
+        <input type="submit" value="Pay">
+    </form>
+</body>
+</html> -->
