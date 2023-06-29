@@ -3,23 +3,35 @@ from rest_framework.response import Response
 # import requests
 from .models import Payment
 from booking.models import JobBooking
-from rest_framework.permissions import AllowAny,IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from authentication.views import BearerTokenAuthentication
 from jobs.models import *
 from django.db.models import Q
 from rest_framework import status
+from .ccavutil import encrypt, decrypt,res
+import os
+from dotenv import load_dotenv
 from jobs.views import send_push_notification
+from django.shortcuts import render,redirect
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.urls import reverse
+
+
+
+
+
 
 # class PaymentAPIView(APIView):
 #     def post(self, request):
 #         if request.user.user_type =='Grahak':
 #             booking_id = request.POST.get('booking_id')
 #             amount = request.POST.get('amount')
-            
+
 #             # Get the client's UPI details
 #             upi_id = 'client@upi'  # Replace with the actual UPI ID
 #             beneficiary_name = 'Acme Corporation'  # Replace with the actual beneficiary name
-            
+
 #             # Make an API call to HDFC UPI's payment API endpoint with the client's UPI details
 #             response = requests.post('https://api.hdfcbank.com/upi/payments', data={
 #                 'booking_id': booking_id,
@@ -51,9 +63,9 @@ from jobs.views import send_push_notification
 #                             job.save()
 #                     else:
 #                         job.jobsahayak.status = 'Booked'
-#                         job.save()        
+#                         job.save()
 #                 else:
-#                     job.jobmachine.status='Booked'        
+#                     job.jobmachine.status='Booked'
 #                     job.save()
 #                 return Response({'status': 'success'})
 #             else:
@@ -61,33 +73,35 @@ from jobs.views import send_push_notification
 #                 return Response({'status': 'message', 'message': 'Payment failed'})
 
 
-
 class TestPaymentAPIView(APIView):
-    authentication_classes=[BearerTokenAuthentication,]
-    permission_classes=[IsAuthenticated,]
+    authentication_classes = [BearerTokenAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
     def post(self, request):
         if request.user.user_type == 'Grahak':
             # booking_id = request.data.get('booking_id')
-            job_id=request.data.get('job_id')
-            job_number=request.data.get('job_number')
+            job_id = request.data.get('job_id')
+            job_number = request.data.get('job_number')
             amount = request.data.get('amount')
             upi_id = 'upi_id'  # Replace with the actual UPI ID
-            beneficiary_name = 'beneficiary_name'  # Replace with the actual beneficiary name
+            # Replace with the actual beneficiary name
+            beneficiary_name = 'beneficiary_name'
             if not job_id:
                 return Response({'message': {'job_id required !'}})
             if not job_number:
-                return Response({'message':{'job_number required !'}})    
+                return Response({'message': {'job_number required !'}})
             if not job_id.isdigit():
-                return Response({'message':{'booking_id should be numeric !'}})
+                return Response({'message': {'booking_id should be numeric !'}})
             # if not JobBooking.objects.filter(pk=job_id).exists():
             #     return Response({'message':'booking_id not exists !'})
             # Simulate a successful payment by returning a JSON response with a payment ID and status
             if request.user.user_type != 'Grahak':
                 return Response({'message': {'you are not Grahak, only Grahak can change status'}})
-            
+
             # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
-            #     return Response({'message':'job_id does not exists'}) 
-            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+            #     return Response({'message':'job_id does not exists'})
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+                jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
             is_booked = False
             for job in job_bookings:
                 if job.status == 'Booked':
@@ -114,23 +128,23 @@ class TestPaymentAPIView(APIView):
                 job.status = 'Booked'
                 job.save()
                 push_message = {
-                                'to':job.booking_user.push_token,
-                                'title': 'काम बुक किया गया!',
-                                'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
-                                'sound': 'default',
-                                'data': {
-                                    'key': 'Booked'  # Add additional key-value pair
-                                }
-                            }
+                    'to': job.booking_user.push_token,
+                    'title': 'काम बुक किया गया!',
+                    'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
+                    'sound': 'default',
+                    'data': {
+                        'key': 'Booked'  # Add additional key-value pair
+                    }
+                }
 
                 send_push_notification(push_message)
             response_data = {
-            'booking_id': job_id,
-            'amount': str(amount),
-            'upi_id': upi_id,
-            'beneficiary_name': beneficiary_name,
-            'payment_id': 'mock_payment_id',  # Replace with a mock payment ID
-            'payment_status': 'success',  # Set the payment status to 'success'
+                'booking_id': job_id,
+                'amount': str(amount),
+                'upi_id': upi_id,
+                'beneficiary_name': beneficiary_name,
+                'payment_id': 'mock_payment_id',  # Replace with a mock payment ID
+                'payment_status': 'success',  # Set the payment status to 'success'
             }
 
             # Save payment details to Payment table
@@ -144,6 +158,563 @@ class TestPaymentAPIView(APIView):
 
             if not is_booked:
                 return Response({'message': {'Booking status cannot be updated it should be Accepted before !'}})
-            #send nortification here
-            return Response({'message': 'changed status to Booked successfully!','booking-status':'Booked','status':status.HTTP_200_OK})
+            # send nortification here
+            return Response({'message': 'changed status to Booked successfully!', 'booking-status': 'Booked', 'status': status.HTTP_200_OK})
+
+################################################################################
+
+class PaymentAPIView(APIView):
+    authentication_classes = [BearerTokenAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def post(self, request):
+        if request.user.user_type == 'Grahak':
+            # booking_id = request.data.get('booking_id')
+            job_id = request.data.get('job_id')
+            job_number = request.data.get('job_number')
+            amount = request.data.get('amount')
+            p_redirect_url=request.build_absolute_uri('/ccavResponseHandler/')
+            print(p_redirect_url)
+            p_currency='INR'
+            p_merchant_id='2566737'
+            p_amount=amount
+            p_order_id=job_id
+            p_merchant_param1=job_number
+
+            # upi_id = 'upi_id'  # Replace with the actual UPI ID
+            # # Replace with the actual beneficiary name
+            # beneficiary_name = 'beneficiary_name'
+            if not job_id:
+                return Response({'message': {'job_id required !'}})
+            if not job_number:
+                return Response({'message': {'job_number required !'}})
+            if not job_id.isdigit():
+                return Response({'message': {'booking_id should be numeric !'}})
+            # if not JobBooking.objects.filter(pk=job_id).exists():
+            #     return Response({'message':'booking_id not exists !'})
+            # Simulate a successful payment by returning a JSON response with a payment ID and status
+            if request.user.user_type != 'Grahak':
+                return Response({'message': {'you are not Grahak, only Grahak can change status'}})
+
+            # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
+            #     return Response({'message':'job_id does not exists'})
+            # job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+            #     jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+            # is_booked = False
+            # for job in job_bookings:
+            #     if job.status == 'Booked':
+            #         return Response({'message': {'Status already up to date !'}})
+            #     if job.status != 'Accepted':
+            #         continue
+            #     is_booked = True
+
+            #     if job.jobsahayak:
+            #         if job.jobsahayak.grahak == request.user:
+            #             if not job.jobsahayak.status == 'Pending':
+            #                 job.jobsahayak.status = 'Booked'
+            #                 job.jobsahayak.save()
+            #         else:
+            #             return Response({'message': {'unauthorized grahak !'}})
+            #     else:
+            #         if job.jobmachine.grahak == request.user:
+            #             if not job.jobmachine.status == 'Pending':
+            #                 job.jobmachine.status = 'Booked'
+            #                 job.jobmachine.save()
+            #         else:
+            #             return Response({'message': {'unauthorized grahak !'}})
+
+            #     job.status = 'Booked'
+            #     job.save()
+            #     push_message = {
+            #         'to': job.booking_user.push_token,
+            #         'title': 'काम बुक किया गया!',
+            #         'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
+            #         'sound': 'default',
+            #         'data': {
+            #             'key': 'Booked'  # Add additional key-value pair
+            #         }
+            #     }
+
+            #     send_push_notification(push_message)
+            # response_data = {
+            #     'booking_id': job_id,
+            #     'amount': str(amount),
+            #     'upi_id': upi_id,
+            #     'beneficiary_name': beneficiary_name,
+            #     'payment_id': 'mock_payment_id',  # Replace with a mock payment ID
+            #     'payment_status': 'success',  # Set the payment status to 'success'
+            # }
+
+            # # Save payment details to Payment table
+            # payment = Payment.objects.create(
+            #     booking_id=job_id,
+            #     amount=str(amount),
+            #     payment_id=response_data['payment_id'],
+            #     payment_status=response_data['payment_status'],
+            #     beneficiary_name=beneficiary_name
+            # )
+
+            # if not is_booked:
+            #     return Response({'message': {'Booking status cannot be updated it should be Accepted before !'}})
+            # send nortification here
+            merchant_data = (
+            'merchant_id=' + p_merchant_id + '&' +
+            'order_id=' + p_order_id + '&' +
+            'currency=' + p_currency + '&' +
+            'amount=' + p_amount + '&' +
+            'redirect_url=' + p_redirect_url + '&' +
+            'merchant_param1=' + p_merchant_param1 + '&'
+            # ... Include other form data
+              )
+
+            encryption = encrypt(merchant_data, workingKey)
+
+            return Response(encryption)
+
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PaymentRequestHandler(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        encryption=request.data.get('merchant_data')
+        if not encryption:
+            return Response({'message':'merchant data is required !'})
+        html = '''\
+        <html>
+        <head>
+            <title>Sub-merchant checkout page</title>
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        </head>
+        <body>
+            <form id="nonseamless" method="post" name="redirect" action="https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction">
+                <input type="hidden" id="encRequest" name="encRequest" value="$encReq">
+                <input type="hidden" name="access_code" id="access_code" value="$xscode">
+                <script language='javascript'>document.redirect.submit();</script>
+            </form>
+        </body>
+        </html>
+        '''
+
+        fin = Template(html).safe_substitute(encReq=encryption, xscode=accessCode)
+        return HttpResponse(fin)
+
+
+@csrf_exempt
+def ccav_response_handler(request):
+    if request.method == 'POST':
+        plain_text = res(request.POST.get('encResp'))
+        print(plain_text)
+        return HttpResponse(plain_text)
+    
+    return HttpResponse("Invalid request method")
+
+
+
+################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class EncryptPaymentParamsView(APIView):
+    authentication_classes = [BearerTokenAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def encrypt_data(self, data):
+        working_key = os.getenv('WORKING_KEY')
+        print(working_key)  # Replace with your working key
+        encrypted_data = encrypt(data, working_key)
+        return encrypted_data
+    
+    def decrypt_data(self, data):
+        working_key = os.getenv('WORKING_KEY')  # Replace with your working key
+        decrypted_data = decrypt(data, working_key)
+        return decrypted_data
+
+    def post(self, request):
+        if request.user.user_type == 'Grahak':
+            job_id = request.data.get('job_id')
+            job_number = request.data.get('job_number')
+            amount = request.data.get('amount')
+            merchant_id = os.getenv('MERCHANT_ID')
+            # merchant_param1 = request.data.get('job_number')
+            if not job_id:
+                return Response({'message': {'job_id required !'}})
+            if not job_number:
+                return Response({'message': {'job_number required !'}})
+            if not job_id.isdigit():
+                return Response({'message': {'booking_id should be numeric !'}})
+
+            if request.user.user_type != 'Grahak':
+                return Response({'message': {'you are not Grahak, only Grahak can change status'}})
+
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+                jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+
+            is_booked = False
+            encrypted_data = None
+            for job in job_bookings:
+                if job.status == 'Booked':
+                    return Response({'message': {'Job is already booked, payment is completed'}})
+                if job.status != 'Accepted':
+                    continue
+                is_booked = True
+
+                if job.jobsahayak:
+                    if job.jobsahayak.grahak == request.user:
+                        if not job.jobsahayak.status == 'Pending':
+                            job.jobsahayak.status = 'Booked'
+                            job.jobsahayak.save()
+                    else:
+                        return Response({'message': {'unauthorized grahak !'}})
+                else:
+                    if job.jobmachine.grahak == request.user:
+                        if not job.jobmachine.status == 'Pending':
+                            job.jobmachine.status = 'Booked'
+                            job.jobmachine.save()
+                    else:
+                        return Response({'message': {'unauthorized grahak !'}})
+
+                job.save()
+
+                # if job.total_amount != amount:
+                #     return Response({'message': {'Amount is not correct !'}})
             
+                data_to_encrypt = f'order_id={job_id}&amount={amount}&merchant_id={merchant_id}&currency=INR&redirect_url=https://example.com&cancel_url=https://example.com&language=EN&merchant_param1={job_number}'
+                encrypted_data = self.encrypt_data(data_to_encrypt)
+                # print('-----------en',encrypted_data)
+                # x=self.decrypt_data(encrypted_data)
+                # print('----------de',x)
+
+                response_data = {
+                    'encrypted_data': encrypted_data,
+                }
+                
+                if not is_booked:
+                    return Response({'message': {'Booking status cannot be updated it should be Accepted before !'}})
+
+                return Response({'message': 'params encrypted successfully!', 'status': status.HTTP_200_OK, "encrypted_data": encrypted_data})
+
+
+
+# https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction
+
+
+
+
+
+
+
+
+
+
+def payment_show(request):
+    return render(request,'payments/dataFrom.html')
+
+
+
+from django.http import HttpResponse
+from string import Template
+
+# Set your accessCode and workingKey
+accessCode = 'AVZL78KF22BF82LZFB'
+workingKey = 'BA71ECCDFE4837050730D30DB224BF6C'
+
+# @csrf_exempt
+# def ccav_response_handler(request):
+#     if request.method == 'POST':
+#         plain_text = res(request.POST.get('encResp'))
+#         print(plain_text)
+#         return HttpResponse(plain_text)
+    
+#     return HttpResponse("Invalid request method")
+
+
+def ccav_request_handler(request):
+    if request.method == 'POST':
+        p_merchant_id = request.POST.get('merchant_id')
+        p_order_id = request.POST.get('order_id')
+        p_currency = request.POST.get('currency')
+        p_amount = request.POST.get('amount')
+        p_redirect_url = 'http://127.0.0.1:8000/ccavResponseHandler/'
+        # p_cancel_url = request.POST.get('cancel_url')
+        # p_language = request.POST.get('language')
+        p_billing_name = request.POST.get('billing_name')
+        p_billing_address = request.POST.get('billing_address')
+        p_billing_city = request.POST.get('billing_city')
+        p_billing_state = request.POST.get('billing_state')
+        p_billing_zip = request.POST.get('billing_zip')
+        p_billing_country = request.POST.get('billing_country')
+        p_billing_tel = request.POST.get('billing_tel')
+        p_billing_email = request.POST.get('billing_email')
+
+        merchant_data = (
+            'merchant_id=' + p_merchant_id + '&' +
+            'order_id=' + p_order_id + '&' +
+            'currency=' + p_currency + '&' +
+            'amount=' + p_amount + '&' +
+            'redirect_url=' + p_redirect_url + '&' +
+            'billing_name=' + p_billing_name + '&' +
+            'billing_address=' + p_billing_address + '&' +
+            'billing_city=' + p_billing_city + '&' +
+            'billing_state=' + p_billing_state + '&' +
+            'billing_zip=' + p_billing_zip + '&' +
+            'billing_country=' + p_billing_country + '&' +
+            'billing_tel=' + p_billing_tel + '&' +
+            'billing_email=' + p_billing_email + '&' 
+
+        )
+
+        encryption = encrypt(merchant_data, workingKey)
+
+        html = '''\
+        <html>
+        <head>
+            <title>Sub-merchant checkout page</title>
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        </head>
+        <body>
+            <form id="nonseamless" method="post" name="redirect" action="https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction">
+                <input type="hidden" id="encRequest" name="encRequest" value="$encReq">
+                <input type="hidden" name="access_code" id="access_code" value="$xscode">
+                <script language='javascript'>document.redirect.submit();</script>
+            </form>
+        </body>
+        </html>
+        '''
+
+        fin = Template(html).safe_substitute(encReq=encryption, xscode=accessCode)
+        return HttpResponse(fin)
+    else:
+        return HttpResponse("Invalid request")
+    
+
+from django.http import HttpResponseRedirect
+from django.middleware.csrf import get_token
+from django.utils.decorators import method_decorator
+from django.template.loader import render_to_string
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CCAVRequestHandler(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        p_merchant_id = request.data.get('merchant_id')
+        p_order_id = request.data.get('order_id')
+        p_currency = request.data.get('currency')
+        p_amount = request.data.get('amount')
+        p_redirect_url = 'http://127.0.0.1:8000/ccavResponseHandler/'
+
+        # ... Retrieve other form data
+
+        merchant_data = (
+            'merchant_id=' + p_merchant_id + '&' +
+            'order_id=' + p_order_id + '&' +
+            'currency=' + p_currency + '&' +
+            'amount=' + p_amount + '&' +
+            'redirect_url=' + p_redirect_url + '&' 
+            # ... Include other form data
+        )
+
+        encryption = encrypt(merchant_data, workingKey)
+
+        # html = '''\
+        # <html>
+        # <head>
+        #     <title>Sub-merchant checkout page</title>
+        #     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        # </head>
+        # <body>
+        #     <form id="nonseamless" method="post" name="redirect" action="https://secure.ccavenue.com/transaction/transaction.do?command=initiateTransaction">
+        #         <input type="hidden" id="encRequest" name="encRequest" value="$encReq">
+        #         <input type="hidden" name="access_code" id="access_code" value="$xscode">
+        #         <script language='javascript'>document.redirect.submit();</script>
+        #     </form>
+        # </body>
+        # </html>
+        # '''
+
+        # fin = Template(html).safe_substitute(encReq=encryption, xscode=accessCode)
+        return Response(encryption)
+
+
+
+@csrf_exempt
+class CCAVResponseHandler(APIView):
+    permission_classes=[AllowAny]
+    def post(self, request):
+        encrypted_response = request.data.get('encResp')
+        plain_text = res(encrypted_response)
+        return HttpResponse(plain_text)
+
+
+# from django.views.decorators.csrf import csrf_exempt
+
+# def callback_handler(encResp):
+#     '''
+#     Please put in the 32 bit alphanumeric key in quotes provided by CCAvenues.
+#     '''	 
+#     workingKey = 'BA71ECCDFE4837050730D30DB224BF6C'
+#     decResp = decrypt(encResp, workingKey)
+#     return decResp
+
+# ###--------------------------------------------------------------------------####
+# # @csrf_exempt
+# # def ccav_response_handler(request):
+# #     encrypted_response = request.POST['encResp']
+# #     # decrypted_response = callback_handler(encrypted_response)
+# #     # print('------------',decrypted_response)
+# #     result=res()
+# #     return HttpResponse()
+
+# # from string import Template
+
+# # def res(request):
+# #     '''
+# #     Please put in the 32 bit alphanumeric key in quotes provided by CCAvenues.
+# #     '''
+# #     workingKey = 'BA71ECCDFE4837050730D30DB224BF6C'
+# #     encrypted_response = request.POST.get('encResp')
+# #     decResp = decrypt(encrypted_response, workingKey)
+# #     data = '<table border=1 cellspacing=2 cellpadding=2><tr><td>'    
+# #     data = data + decResp.replace('=', '</td><td>')
+# #     data = data.replace('&', '</td></tr><tr><td>')
+# #     data = data + '</td></tr></table>'
+    
+# #     html = f'''
+# #     <html>
+# #         <head>
+# #             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+# #             <title>Response Handler</title>
+# #         </head>
+# #         <body>
+# #             <center>
+# #                 <font size="4" color="blue"><b>Response Page</b></font>
+# #                 <br>
+# #                 {data}
+# #             </center>
+# #             <br>
+# #         </body>
+# #     </html>
+# #     '''
+# #     return HttpResponse(html)
+
+
+
+
+# ###------------------------------------------------------------------------------###
+
+
+
+# from django.shortcuts import render
+# from django.views.decorators.csrf import csrf_exempt
+# from .ccavutil import encrypt
+# from string import Template
+
+# @csrf_exempt
+# def ccavRequestHandler(request):
+#     '''
+#     Please put in the 32 bit alphanumeric key and Access Code in quotes provided by CCAvenues.
+#     '''
+#     accessCode = ''
+#     workingKey = ''
+
+#     if request.method == 'POST':
+#         p_merchant_id = request.POST.get('merchant_id', '')
+#         p_order_id = request.POST.get('order_id', '')
+#         p_currency = request.POST.get('currency', '')
+#         p_amount = request.POST.get('amount', '')
+#         p_redirect_url = request.POST.get('redirect_url', '')
+#         p_cancel_url = request.POST.get('cancel_url', '')
+#         p_language = request.POST.get('language', '')
+#         p_billing_name = request.POST.get('billing_name', '')
+#         p_billing_address = request.POST.get('billing_address', '')
+#         p_billing_city = request.POST.get('billing_city', '')
+#         p_billing_state = request.POST.get('billing_state', '')
+#         p_billing_zip = request.POST.get('billing_zip', '')
+#         p_billing_country = request.POST.get('billing_country', '')
+#         p_billing_tel = request.POST.get('billing_tel', '')
+#         p_billing_email = request.POST.get('billing_email', '')
+#         p_delivery_name = request.POST.get('delivery_name', '')
+#         p_delivery_address = request.POST.get('delivery_address', '')
+#         p_delivery_city = request.POST.get('delivery_city', '')
+#         p_delivery_state = request.POST.get('delivery_state', '')
+#         p_delivery_zip = request.POST.get('delivery_zip', '')
+#         p_delivery_country = request.POST.get('delivery_country', '')
+#         p_delivery_tel = request.POST.get('delivery_tel', '')
+#         p_merchant_param1 = request.POST.get('merchant_param1', '')
+#         p_merchant_param2 = request.POST.get('merchant_param2', '')
+#         p_merchant_param3 = request.POST.get('merchant_param3', '')
+#         p_merchant_param4 = request.POST.get('merchant_param4', '')
+#         p_merchant_param5 = request.POST.get('merchant_param5', '')
+#         p_promo_code = request.POST.get('promo_code', '')
+#         p_customer_identifier = request.POST.get('customer_identifier', '')
+
+#         merchant_data = (
+#             'merchant_id=' + p_merchant_id + '&' +
+#             'order_id=' + p_order_id + '&' +
+#             'currency=' + p_currency + '&' +
+#             'amount=' + p_amount + '&' +
+#             'redirect_url=' + p_redirect_url + '&' +
+#             'cancel_url=' + p_cancel_url + '&' +
+#             'language=' + p_language + '&' +
+#             'billing_name=' + p_billing_name + '&' +
+#             'billing_address=' + p_billing_address + '&' +
+#             'billing_city=' + p_billing_city + '&' +
+#             'billing_state=' + p_billing_state + '&' +
+#             'billing_zip=' + p_billing_zip + '&' +
+#             'billing_country=' + p_billing_country + '&' +
+#             'billing_tel=' + p_billing_tel + '&' +
+#             'billing_email=' + p_billing_email + '&' +
+#             'delivery_name=' + p_delivery_name + '&' +
+#             'delivery_address=' + p_delivery_address + '&' +
+#             'delivery_city=' + p_delivery_city + '&' +
+#             'delivery_state=' + p_delivery_state + '&' +
+#             'delivery_zip=' + p_delivery_zip + '&' +
+#             'delivery_country=' + p_delivery_country + '&' +
+#             'delivery_tel=' + p_delivery_tel + '&' +
+#             'merchant_param1=' + p_merchant_param1 + '&' +
+#             'merchant_param2=' + p_merchant_param2 + '&' +
+#             'merchant_param3=' + p_merchant_param3 + '&' +
+#             'merchant_param4=' + p_merchant_param4 + '&' +
+#             'merchant_param5=' + p_merchant_param5 + '&' +
+#             'promo_code=' + p_promo_code + '&' +
+#             'customer_identifier=' + p_customer_identifier + '&'
+#         )
+
+#         encryption = encrypt(merchant_data, workingKey)
+
+#         html = '''\
+#         <html>
+#         <head>
+#             <title>Sub-merchant checkout page</title>
+#             <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+#         </head>
+#         <body>
+#         <form id="nonseamless" method="post" name="redirect" action="https://test.ccavenue.com/transaction/transaction.do?command=initiateTransaction">
+#                 <input type="hidden" id="encRequest" name="encRequest" value=$encReq>
+#                 <input type="hidden" name="access_code" id="access_code" value=$xscode>
+#                 <script language='javascript'>document.redirect.submit();</script>
+#         </form>
+#         </body>
+#         </html>
+#         '''
+
+#         fin = Template(html).safe_substitute(encReq=encryption, xscode=accessCode)
+
+#         return render(request, 'payment/payment_form.html', {'payment_form': fin})
+
+
+
