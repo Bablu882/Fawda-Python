@@ -407,7 +407,7 @@ def ccav_response_handler(request):
                 else:
                     booking.jobmachine.status='Booked'    
                     booking.jobmachine.save()
-                create=Payment.objects.create(booking_id=booking.id,amount=amount,payment_id=payment_id,payment_status=order_status,payment_date=payment_date,beneficiary_name='Fawda Agrisolutions Private Limited')    
+                create=Payment.objects.create(booking_id=booking.id,amount=booking.total_amount,payment_id=payment_id,payment_status=order_status,payment_date=payment_date,beneficiary_name='Fawda Agrisolutions Private Limited')    
                 push_message = {
                         'to': booking.booking_user.push_token,
                         'title': 'काम बुक किया गया!',
