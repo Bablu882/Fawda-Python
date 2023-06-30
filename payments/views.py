@@ -1,6 +1,5 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-# import requests
 from .models import Payment
 from booking.models import JobBooking
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -10,12 +9,16 @@ from django.db.models import Q
 from rest_framework import status
 from .ccavutil import encrypt, decrypt,res
 import os
-from dotenv import load_dotenv
 from jobs.views import send_push_notification
-from django.shortcuts import render,redirect
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.urls import reverse
+import json
+from django.http import JsonResponse
+import urllib.parse
+from booking.views import limitedtime
+from django.conf import settings
+
 
 
 
@@ -176,7 +179,7 @@ class PaymentAPIView(APIView):
             p_redirect_url=request.build_absolute_uri('/ccavResponseHandler/')
             print(p_redirect_url)
             p_currency='INR'
-            p_merchant_id='2566737'
+            p_merchant_id=settings.MERCHANT_ID
             p_amount=amount
             p_order_id=job_id
             p_merchant_param1=job_number
@@ -190,16 +193,46 @@ class PaymentAPIView(APIView):
                 return Response({'message': {'job_number required !'}})
             if not job_id.isdigit():
                 return Response({'message': {'booking_id should be numeric !'}})
-            # if not JobBooking.objects.filter(pk=job_id).exists():
-            #     return Response({'message':'booking_id not exists !'})
-            # Simulate a successful payment by returning a JSON response with a payment ID and status
             if request.user.user_type != 'Grahak':
                 return Response({'message': {'you are not Grahak, only Grahak can change status'}})
 
+            
+
             # if not JobSahayak.objects.filter(pk=job_id).exists() or not JobMachine.objects.filter(pk=job_id).exists():
             #     return Response({'message':'job_id does not exists'})
-            # job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
-            #     jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+                jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))  
+                          
+            if not job_bookings.exists():
+                return Response({'message': 'No matching job bookings found.'}) 
+            for booking in job_bookings:
+                if booking.jobsahayak:
+                    diff=limitedtime(booking.jobsahayak.datetime)
+                    if diff <= 0:
+                        return Response({'message':'Can not Booked due to job datetime is exceed !'})
+
+                    if booking.jobsahayak.grahak != request.user:
+                        return Response({'message': 'Unauthorized user!'})
+                else:
+                    diff=limitedtime(booking.jobmachine.datetime)
+                    if diff <= 0:
+                        return Response({'message':'Can not Booked due to job datetime is exceed !'})
+                    if booking.jobmachine.grahak != request.user:
+                        return Response({'message': 'Unauthorized user!'})
+ 
+            if any(job_booking.status == 'Booked' for job_booking in job_bookings):
+                return Response({'message': 'Booking Status already marked as Booked !'})
+
+            if any(job_booking.status != 'Accepted' for job_booking in job_bookings):
+                return Response({'message': 'Booking status should be Accepted before proceeding.'})
+            
+  
+
+            total_amount = sum(float(job_booking.total_amount) for job_booking in job_bookings)
+            print('------',total_amount)
+
+            if total_amount != float(amount):
+                return Response({'message': 'Total amount of job bookings does not match the received amount!'})
             # is_booked = False
             # for job in job_bookings:
             #     if job.status == 'Booked':
@@ -301,16 +334,97 @@ class PaymentRequestHandler(APIView):
         return HttpResponse(fin)
 
 
+# @csrf_exempt
+# def ccav_response_handler(request):
+#     if request.method == 'POST':
+#         plain_text = res(request.POST.get('encResp'))
+#         # print('-----all', plain_text)
+#         data_dict = {}
+
+#         for line in plain_text.split('\n'):
+#             if line.startswith('{"response"'):
+#                 nested_json = line.strip()
+#                 data_dict = json.loads(nested_json)
+#                 break
+
+#         response_data = urllib.parse.parse_qs(data_dict.get('response', ''))
+#         response_data = {key: value[0] for key, value in response_data.items()}
+
+#         # print('-----', response_data)
+
+#         status = response_data.get('order_status')
+#         order_id = response_data.get('order_id')
+#         tracking_id = response_data.get('tracking_id')
+#         amount = response_data.get('amount')
+#         job_number = response_data.get('merchant_param1')
+
+#         print('-----', status, order_id, tracking_id, amount, job_number)
+
+#         if status == 'Success':
+#             # Payment is successful
+#             return JsonResponse({'payment': 'success', 'data': response_data})
+#         else:
+#             # Payment is not successful
+#             return JsonResponse({'payment': 'failed', 'data': response_data})
+
+#     return JsonResponse({'message': 'Invalid request method'}, status=400)
+
+
 @csrf_exempt
 def ccav_response_handler(request):
     if request.method == 'POST':
         plain_text = res(request.POST.get('encResp'))
-        print(plain_text)
-        return HttpResponse(plain_text)
-    
-    return HttpResponse("Invalid request method")
+        # print('-----all', plain_text)
+        data_dict = {}
 
+        for line in plain_text.split('\n'):
+            if line.startswith('{"response"'):
+                nested_json = line.strip()
+                data_dict = json.loads(nested_json)
+                break
 
+        response_data = urllib.parse.parse_qs(data_dict.get('response', ''))
+        response_data = {key: value[0] for key, value in response_data.items()}
+
+        order_status = response_data.get('order_status')
+        job_id = response_data.get('order_id')
+        tracking_id = response_data.get('tracking_id')
+        amount = response_data.get('amount')
+        payment_id=response_data.get('bank_ref_no')
+        payment_date=response_data.get('trans_date')
+        job_number = response_data.get('merchant_param1')  # Retrieve job_number from merchant_param1
+        print('-----', order_status, job_id, tracking_id, amount, job_number)
+
+        if order_status == 'Success':
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+                jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))  
+            for booking in job_bookings:
+                booking.status='Booked'    
+                booking.save()
+                if booking.jobsahayak:
+                    booking.jobsahayak.status='Booked'
+                    booking.jobsahayak.save()
+                else:
+                    booking.jobmachine.status='Booked'    
+                    booking.jobmachine.save()
+                create=Payment.objects.create(booking_id=booking.id,amount=amount,payment_id=payment_id,payment_status=order_status,payment_date=payment_date,beneficiary_name='Fawda Agrisolutions Private Limited')    
+                push_message = {
+                        'to': booking.booking_user.push_token,
+                        'title': 'काम बुक किया गया!',
+                        'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
+                        'sound': 'default',
+                        'data': {
+                            'key': 'Booked'  # Add additional key-value pair
+                        }
+                    }
+                send_push_notification(push_message)
+            # Payment is successful
+            return JsonResponse({'message': 'Payment successfully !', 'data': response_data})
+        else:
+            # Payment is not successful
+            return JsonResponse({'message': 'Payment failed !', 'data': response_data})
+
+    return JsonResponse({'message': 'Invalid request method'}, status=400)
 
 ################################################################################
 
@@ -332,13 +446,13 @@ class EncryptPaymentParamsView(APIView):
     permission_classes = [IsAuthenticated, ]
 
     def encrypt_data(self, data):
-        working_key = os.getenv('WORKING_KEY')
+        working_key = settings.WORKING_KEY
         print(working_key)  # Replace with your working key
         encrypted_data = encrypt(data, working_key)
         return encrypted_data
     
     def decrypt_data(self, data):
-        working_key = os.getenv('WORKING_KEY')  # Replace with your working key
+        working_key = settings.WORKING_KEY  # Replace with your working key
         decrypted_data = decrypt(data, working_key)
         return decrypted_data
 
@@ -347,7 +461,7 @@ class EncryptPaymentParamsView(APIView):
             job_id = request.data.get('job_id')
             job_number = request.data.get('job_number')
             amount = request.data.get('amount')
-            merchant_id = os.getenv('MERCHANT_ID')
+            merchant_id = settings.MERCHANT_ID
             # merchant_param1 = request.data.get('job_number')
             if not job_id:
                 return Response({'message': {'job_id required !'}})
@@ -428,8 +542,8 @@ from django.http import HttpResponse
 from string import Template
 
 # Set your accessCode and workingKey
-accessCode = 'AVZL78KF22BF82LZFB'
-workingKey = 'BA71ECCDFE4837050730D30DB224BF6C'
+accessCode = settings.ACCESS_CODE
+workingKey = settings.WORKING_KEY
 
 # @csrf_exempt
 # def ccav_response_handler(request):
@@ -458,6 +572,7 @@ def ccav_request_handler(request):
         p_billing_country = request.POST.get('billing_country')
         p_billing_tel = request.POST.get('billing_tel')
         p_billing_email = request.POST.get('billing_email')
+        p_merchant_param1='S-8935372'
 
         merchant_data = (
             'merchant_id=' + p_merchant_id + '&' +
@@ -472,7 +587,8 @@ def ccav_request_handler(request):
             'billing_zip=' + p_billing_zip + '&' +
             'billing_country=' + p_billing_country + '&' +
             'billing_tel=' + p_billing_tel + '&' +
-            'billing_email=' + p_billing_email + '&' 
+            'billing_email=' + p_billing_email + '&' +
+            'merchant_param1=' + p_merchant_param1 + '&'
 
         )
 
