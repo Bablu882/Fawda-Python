@@ -9,12 +9,12 @@ urlpatterns=[
     path('api/payment_test/',TestPaymentAPIView.as_view()),
     path('api/payment/',PaymentAPIView.as_view()),
     path('api/encrypt_data/',EncryptPaymentParamsView.as_view()),
-    # path('ccavResponseHandler/', views.ccav_response_handler, name='ccav_response_handler'),
     # path('ccavRequestHandler/', views.ccav_request_handler, name='ccav_request_handler'),
+    path('ccavResponseHandler/', views.ccav_response_handler, name='ccav_response_handler'),
     path('webprint/',payment_show, name='web_print'),
     path('callback/',res,name='callback'),
     path('ccavRequestHandler/',PaymentRequestHandler.as_view(),name='ccav_request_handler'),
-    path('ccavResponseHandler/', views.CCAVResponseHandler, name='ccav_response_handler')
+    # path('ccavResponseHandler/', views.CCAVResponseHandler, name='ccav_response_handler')
 
     
 ]
