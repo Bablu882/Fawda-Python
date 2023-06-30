@@ -1,6 +1,8 @@
 
 from Crypto.Cipher import AES
 import hashlib
+import json
+from django.conf import settings
 # import md5
 # def pad(data):
 #     length = 16 - (len(data) % 16)
@@ -65,32 +67,44 @@ def decrypt(cipherText, workingKey):
 
 from string import Template
 
-def res(encResp):
-	'''
-	Please put in the 32 bit alphanumeric key in quotes provided by CCAvenues.
-	'''	 
-	workingKey = 'BA71ECCDFE4837050730D30DB224BF6C'
-	decResp = decrypt(encResp,workingKey)
-	data = '<table border=1 cellspacing=2 cellpadding=2><tr><td>'	
-	data = data + decResp.replace('=','</td><td>')
-	data = data.replace('&','</td></tr><tr><td>')
-	data = data + '</td></tr></table>'
+# def res(encResp):
+# 	'''
+# 	Please put in the 32 bit alphanumeric key in quotes provided by CCAvenues.
+# 	'''	 
+# 	workingKey = 'BA71ECCDFE4837050730D30DB224BF6C'
+# 	decResp = decrypt(encResp,workingKey)
+# 	data = '<table border=1 cellspacing=2 cellpadding=2><tr><td>'	
+# 	data = data + decResp.replace('=','</td><td>')
+# 	data = data.replace('&','</td></tr><tr><td>')
+# 	data = data + '</td></tr></table>'
 	
-	html = '''\
-	<html>
-		<head>
-			<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-			<title>Response Handler</title>
-		</head>
-		<body>
-			<center>
-				<font size="4" color="blue"><b>Response Page</b></font>
-				<br>
-				$response
-			</center>
-			<br>
-		</body>
-	</html>
-	'''
-	fin = Template(html).safe_substitute(response=data)
-	return fin
+# 	html = '''\
+# 	<html>
+# 		<head>
+# 			<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+# 			<title>Response Handler</title>
+# 		</head>
+# 		<body>
+# 			<center>
+# 				<font size="4" color="blue"><b>Response Page</b></font>
+# 				<br>
+# 				$response
+# 			</center>
+# 			<br>
+# 		</body>
+# 	</html>
+# 	'''
+# 	fin = Template(html).safe_substitute(response=data)
+# 	return fin
+
+
+def res(encResp):
+    workingKey = settings.WORKING_KEY
+    decResp = decrypt(encResp, workingKey)
+    # Process the decrypted response and prepare the data as a dictionary
+    # Example:
+    data = {
+        'response': decResp,
+    }
+    json_data = json.dumps(data)
+    return json_data

@@ -192,3 +192,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 # CRON_CLASSES = ['jobs.cron.TimeoutPendingJobs',]
+
+MERCHANT_ID=os.getenv('MERCHANT_ID')
+ACCESS_CODE=os.getenv('ACCESS_CODE')
+WORKING_KEY=os.getenv('WORKING_KEY')
