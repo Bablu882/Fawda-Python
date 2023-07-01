@@ -371,61 +371,61 @@ class PaymentRequestHandler(APIView):
 
 #     return JsonResponse({'message': 'Invalid request method'}, status=400)
 
-@csrf_exempt
-def ccav_response_handler(request):
-    if request.method == 'POST':
-        plain_text = res(request.POST.get('encResp'))
-        # print('-----all', plain_text)
-        data_dict = {}
+# @csrf_exempt
+# def ccav_response_handler(request):
+#     if request.method == 'POST':
+#         plain_text = res(request.POST.get('encResp'))
+#         # print('-----all', plain_text)
+#         data_dict = {}
 
-        for line in plain_text.split('\n'):
-            if line.startswith('{"response"'):
-                nested_json = line.strip()
-                data_dict = json.loads(nested_json)
-                break
+#         for line in plain_text.split('\n'):
+#             if line.startswith('{"response"'):
+#                 nested_json = line.strip()
+#                 data_dict = json.loads(nested_json)
+#                 break
 
-        response_data = urllib.parse.parse_qs(data_dict.get('response', ''))
-        response_data = {key: value[0] for key, value in response_data.items()}
+#         response_data = urllib.parse.parse_qs(data_dict.get('response', ''))
+#         response_data = {key: value[0] for key, value in response_data.items()}
 
-        order_status = response_data.get('order_status')
-        job_id = response_data.get('order_id')
-        tracking_id = response_data.get('tracking_id')
-        amount = response_data.get('amount')
-        payment_id=response_data.get('bank_ref_no')
-        payment_date=response_data.get('trans_date')
-        job_number = response_data.get('merchant_param1')  # Retrieve job_number from merchant_param1
-        print('-----', order_status, job_id, tracking_id, amount, job_number)
+#         order_status = response_data.get('order_status')
+#         job_id = response_data.get('order_id')
+#         tracking_id = response_data.get('tracking_id')
+#         amount = response_data.get('amount')
+#         payment_id=response_data.get('bank_ref_no')
+#         payment_date=response_data.get('trans_date')
+#         job_number = response_data.get('merchant_param1')  # Retrieve job_number from merchant_param1
+#         print('-----', order_status, job_id, tracking_id, amount, job_number)
 
-        if order_status == 'Success':
-            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
-                jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))  
-            for booking in job_bookings:
-                booking.status='Booked'    
-                booking.save()
-                if booking.jobsahayak:
-                    booking.jobsahayak.status='Booked'
-                    booking.jobsahayak.save()
-                else:
-                    booking.jobmachine.status='Booked'    
-                    booking.jobmachine.save()
-                create=Payment.objects.create(booking_id=booking.id,amount=booking.total_amount,payment_id=payment_id,payment_status=order_status,payment_date=payment_date,beneficiary_name='Fawda Agrisolutions Private Limited')    
-                push_message = {
-                        'to': booking.booking_user.push_token,
-                        'title': 'काम बुक किया गया!',
-                        'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
-                        'sound': 'default',
-                        'data': {
-                            'key': 'Booked'  # Add additional key-value pair
-                        }
-                    }
-                send_push_notification(push_message)
-            # Payment is successful
-            return JsonResponse({'message': 'Payment successfully !', 'data': response_data})
-        else:
-            # Payment is not successful
-            return JsonResponse({'message': 'Payment failed !', 'data': response_data})
+#         if order_status == 'Success':
+#             job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+#                 jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))  
+#             for booking in job_bookings:
+#                 booking.status='Booked'    
+#                 booking.save()
+#                 if booking.jobsahayak:
+#                     booking.jobsahayak.status='Booked'
+#                     booking.jobsahayak.save()
+#                 else:
+#                     booking.jobmachine.status='Booked'    
+#                     booking.jobmachine.save()
+#                 create=Payment.objects.create(booking_id=booking.id,amount=booking.total_amount,payment_id=payment_id,payment_status=order_status,payment_date=payment_date,beneficiary_name='Fawda Agrisolutions Private Limited')    
+#                 push_message = {
+#                         'to': booking.booking_user.push_token,
+#                         'title': 'काम बुक किया गया!',
+#                         'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
+#                         'sound': 'default',
+#                         'data': {
+#                             'key': 'Booked'  # Add additional key-value pair
+#                         }
+#                     }
+#                 send_push_notification(push_message)
+#             # Payment is successful
+#             return JsonResponse({'message': 'Payment successfully !', 'data': response_data})
+#         else:
+#             # Payment is not successful
+#             return JsonResponse({'message': 'Payment failed !', 'data': response_data})
 
-    return JsonResponse({'message': 'Invalid request method'}, status=400)
+#     return JsonResponse({'message': 'Invalid request method'}, status=400)
 
 # @csrf_exempt
 # def ccav_response_handler(request):
@@ -495,6 +495,69 @@ def ccav_response_handler(request):
 #         return JsonResponse({'message': 'Payment failed!', 'data': response_data})
 
 
+
+
+
+@csrf_exempt
+def ccav_response_handler(request):
+    if request.method == 'GET' or request.method == 'POST':
+        if request.method == 'POST':
+            plain_text = res(request.POST.get('encResp'))
+        else:  # GET request
+            plain_text = res(request.GET.get('encResp'))
+
+        # Rest of the code remains the same as in your original code
+        data_dict = {}
+
+        for line in plain_text.split('\n'):
+            if line.startswith('{"response"'):
+                nested_json = line.strip()
+                data_dict = json.loads(nested_json)
+                break
+
+        response_data = urllib.parse.parse_qs(data_dict.get('response', ''))
+        response_data = {key: value[0] for key, value in response_data.items()}
+
+        order_status = response_data.get('order_status')
+        job_id = response_data.get('order_id')
+        tracking_id = response_data.get('tracking_id')
+        amount = response_data.get('amount')
+        payment_id = response_data.get('bank_ref_no')
+        payment_date = response_data.get('trans_date')
+        job_number = response_data.get('merchant_param1')
+
+        print('-----', order_status, job_id, tracking_id, amount, job_number)
+
+        if order_status == 'Success':
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
+                jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))  
+            for booking in job_bookings:
+                booking.status='Booked'    
+                booking.save()
+                if booking.jobsahayak:
+                    booking.jobsahayak.status='Booked'
+                    booking.jobsahayak.save()
+                else:
+                    booking.jobmachine.status='Booked'    
+                    booking.jobmachine.save()
+                create=Payment.objects.create(booking_id=booking.id,amount=booking.total_amount,payment_id=payment_id,payment_status=order_status,payment_date=payment_date,beneficiary_name='Fawda Agrisolutions Private Limited')    
+                push_message = {
+                        'to': booking.booking_user.push_token,
+                        'title': 'काम बुक किया गया!',
+                        'body': f'आपका स्वीकृत किया गया काम ग्राहक द्वारा बुक किया गया है!',
+                        'sound': 'default',
+                        'data': {
+                            'key': 'Booked'  # Add additional key-value pair
+                        }
+                    }
+                send_push_notification(push_message)
+            # Payment is successful
+            return JsonResponse({'message': 'Payment successfully!', 'data': response_data})
+        else:
+            # Payment is not successful
+            return JsonResponse({'message': 'Payment failed!', 'data': response_data})
+
+    return JsonResponse({'message': 'Invalid request method'}, status=400)
 ################################################################################
 
 
