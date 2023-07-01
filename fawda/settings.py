@@ -32,7 +32,7 @@ DEBUG =True
 
 ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = ['https://app.fawda.in']
+# CSRF_TRUSTED_ORIGINS = ['https://app.fawda.in']
 # Application definition
 
 INSTALLED_APPS = [
