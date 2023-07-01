@@ -371,9 +371,6 @@ class PaymentRequestHandler(APIView):
 
 #     return JsonResponse({'message': 'Invalid request method'}, status=400)
 
-
-
-
 @csrf_exempt
 def ccav_response_handler(request):
     if request.method == 'POST':
