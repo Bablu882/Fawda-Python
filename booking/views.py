@@ -196,7 +196,7 @@ class JobAcceptIndividuals(APIView):
             push_message = {
                             'to':job.grahak.push_token,
                             'title': 'काम स्वीकार किया गया है',
-                            'body': f'आपका काम व्यक्ति-सहायक के द्वारा स्वीकार किया गया है! महिला सहायकों की संख्या: {count_female}, पुरुष सहायकों की संख्या: {count_male}!',
+                            'body': f'आपका काम व्यक्ति-सहायक द्वारा {count_male} पुरुष,{count_female} महिला की नौकरी स्वीकार की गई है! स्वीकार किया गया है!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Grahak'  # Add additional key-value pair
