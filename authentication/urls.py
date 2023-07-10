@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/districts/',DistrictApiView.as_view()),
     path('api/logout/',User_logout,name='User_logout'),
     path('api/delete-account/',DeleteAccountAPIView.as_view()),
+    path('api/resendotp/',ResendOTPApi.as_view()), 
     
 
 
