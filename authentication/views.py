@@ -237,6 +237,60 @@ class LoginApi(APIView):
         else:
             return Response({'message': 'User not registered !','status':status.HTTP_404_NOT_FOUND})
         
+class ResendOTPApi(APIView):
+    permission_classes = [AllowAny,]
+    @method_decorator(never_cache)
+    def post(self, request, *args, **kwargs):
+        phone = phone=request.data.get('phone')
+        if not phone:
+            return Response({'message':{'phone number is required !'}})
+        if not re.match(r'^\d{10}$', phone):
+            return Response({'message': {'Phone number should be 10 digits.'}})
+        else :
+            user = User.objects.get(mobile_no=phone)
+        if user is not None: 
+            if phone == '1111111111' or phone == '9999999999' or phone == '3333333333':
+                otp_demo='524525'
+                otps_demo = OTP.objects.create(otp=otp_demo, user=user)
+                return Response({'success': True, 'message': 'otp has been sent to mobile no', 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
+            # delete the previously send otp to invalid them
+            Otps = OTP.objects.filter(user_id=str(user.id))
+            for otp in Otps:
+                otp.delete()
+            
+            # create OTP and send it to the user
+            otp = random.randint(100000, 999999)
+            OTP.objects.create(otp=otp, user=user)
+            # send OTP to the user's mobile number for verification
+            url = "https://api.kaleyra.io/v1/HXIN1764336232IN/messages"
+            headers = {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "api-key": "Adefe782a8aa063fab307422eba489684"
+                }
+            data = {
+                "to":f"+91{phone}",
+                "sender": "FAWDAA",
+                "type": "OTP",
+                "body": f"{otp}-FAWDA company me login karne ke liye OTP. Suraksha ke liye kisi aur ko na batayein. OTP 10 min tak valid hai.",
+                "source": "API",
+                "template_id":"1007978247228401905",
+                "variables": {
+                    "var": otp
+                }
+            }   
+            response = requests.post(url, headers=headers, data=data)
+            print('--->',response.text)
+            if response.status_code == 202:
+                return Response({'success': True, 'message': 'otp has been resent to mobile no', 'user_type': user.user_type,'phone':user.mobile_no,'status': status.HTTP_200_OK})
+            else:
+                return Response({
+                'success': False,
+                'message': 'Failed to send verification code.',
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR
+                })
+        else:
+            return Response({'message': 'User not registered !','status':status.HTTP_404_NOT_FOUND})        
+        
 class MobileNoAuthBackend(BaseBackend):
     def authenticate(self, request, mobile_no=None):
         try:
