@@ -70,6 +70,9 @@ class RegisterApi(APIView):
         district = validated_data['district']
         latitude = validated_data['latitude']
         longitude = validated_data['longitude']
+        age = validated_data['age']
+        pincode = validated_data['pincode']
+        upiid = validated_data['upiid']
 
         # Generate OTP and create user, profile, and OTP objects
         otp = random.randint(100000, 999999)
@@ -89,7 +92,10 @@ class RegisterApi(APIView):
             state=state,
             district=district,
             latitude=latitude,
-            longitude=longitude
+            longitude=longitude,
+            age=age,
+            pincode=pincode,
+            upiid=upiid,
         )
         otp_obj = OTP.objects.create(
             otp=otp,

@@ -51,6 +51,9 @@ class RegisterSerializer(serializers.Serializer):
     district = serializers.CharField(max_length=100)
     latitude = serializers.CharField(max_length=20)
     longitude = serializers.CharField(max_length=20)
+    age = serializers.CharField(max_length=2)
+    pincode = serializers.CharField(max_length=6)
+    upiid = serializers.CharField(max_length=100)
 
     def validate_phone(self, value):
         if not value:
@@ -58,6 +61,32 @@ class RegisterSerializer(serializers.Serializer):
         if not re.match(r'^\d{10}$', value):
             raise serializers.ValidationError('Phone number should be 10 digits.')
         return value
+
+    def validate_age(self, value):
+        if not value:
+            raise serializers.ValidationError('Age is required.')
+        try:
+            Intage = int(value)
+            if 18 <= Intage <= 70 :
+               return value
+            else :
+                raise serializers.ValidationError('Age must be greater or equal than 18 and less or equal than 70.')
+        except ValueError :
+            raise serializers.ValidationError('Age must be a whole number')
+
+    def validate_pincode(self, value):
+        if not value:
+            raise serializers.ValidationError('Pin code is required.')
+        if not re.match(r'^\d{6}$', value):
+            raise serializers.ValidationError('Pin code should be 6 digits')
+        return value
+
+    def validate_upiid(self, value):
+        if not value:
+            raise serializers.ValidationError('Upi Id is required.')
+        if not re.match(r'^.{1,100}$', value):
+            raise serializers.ValidationError('Please enter a valid Upi Id')
+        return value    
 
     def validate_user_type(self, value):
         if not value:
