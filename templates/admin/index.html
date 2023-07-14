@@ -182,8 +182,8 @@
                         <th scope="col">Job Status</th>
                         <th scope="col">Payment to Service Provider</th>
                         <th scope="col">Mobile No. for Payment</th>
+                        <th scope="col">UPI Id for Payment</th>
                         <th scope="col">Payment Status</th>
-  
                       </tr>
                     </thead>
                     <tbody >
@@ -222,7 +222,9 @@
                                   <p id="mohalla_details">Mohalla:</p>
                                   <p id="village_details">Village:</p>
                                   <p id="state_details">State:</p>
-                                  <p id="district_details">District:</p>                                  
+                                  <p id="district_details">District:</p>   
+                                  <p id="pincode_details">Pincode:</p> 
+                                  <p id="age_details">Age:</p>                             
                                 </div>
                               </div>
                               <div class="col-md-6" id="hide-info">
@@ -234,7 +236,10 @@
                                   <p id="mohalla1">Mohalla:</p>
                                   <p id="village1">Village:</p>
                                   <p id="state1">State:</p>
-                                  <p id="district1">District:</p>   
+                                  <p id="district1">District:</p> 
+                                  <p id="pincode1">Pincode:</p> 
+                                  <p id="age1">Age:</p>
+                                  <p id="upi1">UPI Id:</p>  
                                 </div>
                               </div>
                               <div class="col-md-12">
@@ -362,6 +367,7 @@
               row.append(`<td><button class="btn btn-secondary">${data.Job_status}</button></td>`);
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
+              row.append(`<td>${data.upi_id_for_payment}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
               tableBody.append(row); // Append new row
             });
@@ -405,6 +411,7 @@ function statusfunction(intvalue=current) {
         row.append(`<td><button class="btn btn-secondary">${data.Job_status}</button></td>`);
         row.append(`<td>${data.payment_to_service_provider}</td>`);
         row.append(`<td>${data.mobile_no_for_payment}</td>`);
+        row.append(`<td>${data.upi_id_for_payment}</td>`);
 
         let button = `<td></td>`;
         if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
@@ -444,6 +451,8 @@ statusfunction();
              document.getElementById('mohalla_details').innerHTML= "Mohalla:"+response[0].grahak_mohalla;
              document.getElementById('village_details').innerHTML= "Village:"+response[0].grahak_village;
              document.getElementById('district_details').innerHTML= "District:"+response[0].grahak_district;
+             document.getElementById('pincode_details').innerHTML= "Pincode:"+response[0].grahak_pincode;
+             document.getElementById('age_details').innerHTML="Age:"+response[0].grahak_age;
              document.getElementById('state_details').innerHTML= "State:"+response[0].grahak_state;
              document.getElementById('descript').innerHTML=response[0].desc;
               if(response[0].status == 'Pending'){
@@ -459,6 +468,9 @@ statusfunction();
                 document.getElementById('village1').innerHTML= "Village:"+response[0].village;
                 document.getElementById('district1').innerHTML= "District:"+response[0].district;
                 document.getElementById('state1').innerHTML= "State:"+response[0].state;
+                document.getElementById('pincode1').innerHTML="Pincode:"+response[0].pincode;
+                document.getElementById('age1').innerHTML="Age:"+response[0].age;
+                document.getElementById('upi1').innerHTML="Upi Id:"+response[0].upiid;
               }
 
           }
