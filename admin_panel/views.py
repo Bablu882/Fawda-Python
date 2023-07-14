@@ -42,6 +42,7 @@ class JobDetailsAdmin(APIView):
                     'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
+                    'upi_id_for_payment':'Null',
                     'Payment_status':'Null'
                 })
             for jobs in job_machine:
@@ -54,13 +55,13 @@ class JobDetailsAdmin(APIView):
                     'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
+                    'upi_id_for_payment':'Null',
                     'Payment_status':'Null'
 
                 })
         else:
             job_booking=JobBooking.objects.filter(status=status,is_admin_paid='Pending').order_by('-id')
             for jobs in job_booking:
-                print(jobs.booking_user.profile.upiid)
                 if jobs.jobsahayak:
                     if jobs.jobsahayak.job_type == 'theke_pe_kam':
                         data.append({
@@ -127,7 +128,6 @@ class JobDetailsAdminPanel(APIView):
         data_list=[]
         if JobSahayak.objects.filter(id=data,job_number=job_number,status='Pending').exists():
             details1=JobSahayak.objects.get(id=data)
-            print(details1.grahak.profile.upiid);
             data_list.append({
                 'grahak_name':details1.grahak.profile.name,
                 'grahak_gender':details1.grahak.profile.name,
