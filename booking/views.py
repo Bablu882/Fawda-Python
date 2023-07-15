@@ -59,7 +59,7 @@ class JobAcceptMachin(APIView):
             push_message = {
                             'to':job.grahak.push_token,
                             'title': 'काम स्वीकार किया गया है',
-                            'body': 'आपका काम मशीनमालिक के द्वारा स्वीकार किया गया है!',
+                            'body': 'आपका काम मशीनमालिक के द्वारा स्वीकार किया गया है!कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Grahak'  # Add additional key-value pair
@@ -118,7 +118,7 @@ class JobAcceptedSahayakTheka(APIView):
         push_message = {
                             'to':job.grahak.push_token,
                             'title': 'काम स्वीकार किया गया है',
-                            'body': 'आपका ठेके पे काम सहायक द्वारा स्वीकार किया गया है!',
+                            'body': 'आपका ठेके पे काम सहायक द्वारा स्वीकार किया गया है !कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Grahak'  # Add additional key-value pair
@@ -196,7 +196,7 @@ class JobAcceptIndividuals(APIView):
             push_message = {
                             'to':job.grahak.push_token,
                             'title': 'काम स्वीकार किया गया है',
-                            'body': f'आपका काम व्यक्ति-सहायक द्वारा {count_male} पुरुष,{count_female} महिला की नौकरी स्वीकार की गई है! स्वीकार किया गया है!',
+                            'body': f'आपका काम व्यक्ति-सहायक द्वारा {count_male} पुरुष,{count_female} महिला की नौकरी स्वीकार की गई है! कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Grahak'  # Add additional key-value pair
