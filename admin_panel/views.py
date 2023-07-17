@@ -32,7 +32,7 @@ class JobDetailsAdmin(APIView):
         if status == 'Pending' or status == 'Timeout':
             job_sahayak=JobSahayak.objects.filter(status=status).order_by('-id')
             job_machine=JobMachine.objects.filter(status=status).order_by('-id')
-            for jobs in job_sahayak:
+            for jobs in job_sahayak:         
                 data.append({
                     'id':jobs.id,
                     'job_number':jobs.job_number,
@@ -42,6 +42,7 @@ class JobDetailsAdmin(APIView):
                     'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
+                    'upi_id_for_payment':'Null',
                     'Payment_status':'Null'
                 })
             for jobs in job_machine:
@@ -54,6 +55,7 @@ class JobDetailsAdmin(APIView):
                     'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
+                    'upi_id_for_payment':'Null',
                     'Payment_status':'Null'
 
                 })
@@ -71,6 +73,7 @@ class JobDetailsAdmin(APIView):
                             'Job_status':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
+                            'upi_id_for_payment':jobs.booking_user.profile.upiid,
                             'Payment_status':jobs.is_admin_paid
 
                         })
@@ -84,6 +87,7 @@ class JobDetailsAdmin(APIView):
                             'Job_status':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
+                            'upi_id_for_payment':jobs.booking_user.profile.upiid,
                             'Payment_status':jobs.is_admin_paid
 
                         })
@@ -97,6 +101,7 @@ class JobDetailsAdmin(APIView):
                         'Job_status':jobs.status,
                         'payment_to_service_provider':jobs.payment_your,
                         'mobile_no_for_payment':jobs.booking_user.mobile_no,
+                        'upi_id_for_payment':jobs.booking_user.profile.upiid,
                         'Payment_status':jobs.is_admin_paid
 
 
@@ -131,6 +136,9 @@ class JobDetailsAdminPanel(APIView):
                 'grahak_village':details1.grahak.profile.village,
                 'grahak_state':details1.grahak.profile.state,
                 'grahak_district':details1.grahak.profile.district,
+                'grahak_pincode':details1.grahak.profile.pincode,
+                'grahak_age':details1.grahak.profile.age,
+                'grahak_upiid':details1.grahak.profile.upiid,
                 'status':details1.status,
                 'desc':details1.description,
                  
@@ -154,6 +162,9 @@ class JobDetailsAdminPanel(APIView):
                 'grahak_village':details2.grahak.profile.village,
                 'grahak_state':details2.grahak.profile.state,
                 'grahak_district':details2.grahak.profile.district,
+                'grahak_pincode':details2.grahak.profile.pincode,
+                'grahak_age':details2.grahak.profile.age,
+                'grahak_upiid':details2.grahak.profile.upiid,
                 'status':details2.status,
                 'desc':details2.description,
                 
@@ -178,6 +189,9 @@ class JobDetailsAdminPanel(APIView):
                     'grahak_village':details3.jobsahayak.grahak.profile.village,
                     'grahak_state':details3.jobsahayak.grahak.profile.state,
                     'grahak_district':details3.jobsahayak.grahak.profile.district,
+                    'grahak_pincode':details3.jobsahayak.grahak.profile.pincode,
+                    'grahak_age':details3.jobsahayak.grahak.profile.age,
+                    'grahak_upiid':details3.jobsahayak.grahak.profile.upiid,
                     'desc':details3.jobsahayak.description,
                     'status':details3.status,
                     
@@ -189,6 +203,9 @@ class JobDetailsAdminPanel(APIView):
                     'village':details3.booking_user.profile.village,
                     'state':details3.booking_user.profile.state,
                     'district':details3.booking_user.profile.district,
+                    'pincode':details3.booking_user.profile.pincode,
+                    'age':details3.booking_user.profile.age,
+                    'upiid':details3.booking_user.profile.upiid,
 
                 })
             else:
@@ -200,6 +217,9 @@ class JobDetailsAdminPanel(APIView):
                     'grahak_village':details3.jobmachine.grahak.profile.village,
                     'grahak_state':details3.jobmachine.grahak.profile.state,
                     'grahak_district':details3.jobmachine.grahak.profile.district,
+                    'grahak_pincode':details3.jobmachine.grahak.profile.pincode,
+                    'grahak_age':details3.jobmachine.grahak.profile.age,
+                    'grahak_upiid':details3.jobmachine.grahak.profile.upiid,
                     'desc':details3.jobmachine.description,
                     'status':details3.status,
                     
@@ -211,6 +231,9 @@ class JobDetailsAdminPanel(APIView):
                     'village':details3.booking_user.profile.village,
                     'state':details3.booking_user.profile.state,
                     'district':details3.booking_user.profile.district,
+                    'pincode':details3.booking_user.profile.pincode,
+                    'age':details3.booking_user.profile.age,
+                    'upiid':details3.booking_user.profile.upiid,
                 })  
 
         else:

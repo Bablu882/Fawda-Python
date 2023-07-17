@@ -176,7 +176,7 @@ td {
                 <!-- The Modal -->
       <div class="modal" id="myModal">
         <div class="modal-dialog modal-lg">
-          <div class="modal-content" id="modal-content">
+          <div class="modal-content shadow-none" id="modal-content">
       
             <!-- Modal Header -->
             <div class="modal-header" id="invoice_wrapper">
@@ -481,22 +481,43 @@ td {
 
  
 </script>
+<script>
+    const downloadButton = document.getElementById('download-button');
+
+// Add event listener to the button
+    downloadButton.addEventListener('click', function() {
+  // Hide the button
+    downloadButton.style.display = 'none';
+   });
+</script>
 
 <script>
 
-    $(function(){
+$(function() {
+  $('#download-button').on('click', function() {
+    // Store a reference to the button
+    const downloadButton = $(this);
 
-    $('#download-button').on('click',function() {
-        		// Choose the element that your content will be rendered to.
-				const element = document.getElementById('modal-content');
+    // Choose the element that your content will be rendered to.
+    const element = document.getElementById('modal-content');
 
-                console.log(element);
-				// Choose the element and save the PDF for your user.
-				html2pdf().from(element).save();
-    });
+    console.log(element);
+    // Choose the element and save the PDF for your user.
+    html2pdf()
+      .set({
+        onAfterSavePdf: function() {
+          // Show the button again after the PDF is saved
+          downloadButton.show();
+        }
+      })
+      .from(element)
+      .save();
 
+    // Hide the button while the PDF is being generated
+    downloadButton.hide();
+  });
+});
 
-    });
 </script>
 <script src="/static/assets-admin/js/chart.js"></script>
 <script src="/static/assets-admin/js/custom-chart.js" type="text/javascript"></script>
