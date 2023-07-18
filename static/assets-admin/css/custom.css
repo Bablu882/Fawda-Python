@@ -1,7 +1,10 @@
 @import"bootstrap.css";
 
 .invoice-logo-image{
-    height: 148px;
+    height: 125px;
+}
+.page-break-before {
+    page-break-before: always;
 }
 .invoice-location-image{
     height: 50px;

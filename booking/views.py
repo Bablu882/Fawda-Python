@@ -815,7 +815,7 @@ class CompletedStatusApi(APIView):
             push_message = {
                             'to':job.booking_user.push_token,
                             'title': 'काम पूरा हो गया है!',
-                            'body': 'काम पूरा हो गया है! धन्यवाद!',
+                            'body': 'काम पूरा हो गया है! धन्यवाद! कुछ देर में भुगतान राशि आपके खाते में ट्रांसफर कर दी जाएगी!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Completed'  # Add additional key-value pair
