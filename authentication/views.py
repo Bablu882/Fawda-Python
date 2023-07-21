@@ -531,7 +531,7 @@ class DeleteAccountAPIView(APIView):
             for booking in bookings_sahayak:
                 print('boking---',booking) 
                 if booking.status in ['Booked', 'Ongoing']:
-                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.'})       
+                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.','status':'fail'})       
             user.is_active=False
             user.save()
 
@@ -540,7 +540,7 @@ class DeleteAccountAPIView(APIView):
             for booking in bookings_sahayak:
                 print('boking---',booking) 
                 if booking.status in ['Booked', 'Ongoing']:
-                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.'})       
+                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.','status':'fail'})       
             user.is_active=False
             user.save()
         elif user.user_type=='MachineMalik':
@@ -548,7 +548,7 @@ class DeleteAccountAPIView(APIView):
             for booking in bookings_sahayak:
                 print('boking---',booking) 
                 if booking.status in ['Booked', 'Ongoing']:
-                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.'})       
+                    return Response({'message': 'Account cannot be deleted because there are bookings with status Booked or Ongoing.','status':'fail'})       
             user.is_active=False
             user.save()
-        return Response({'message':'User account deleted successfully !'})
+        return Response({'message':'User account deleted successfully !','status':'success'})
