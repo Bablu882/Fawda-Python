@@ -509,7 +509,8 @@ class ClientUserInfo(APIView):
             'village':request.user.profile.village,
             'gender':request.user.profile.gender,
             'state':request.user.profile.state,
-            'district':request.user.profile.district
+            'district':request.user.profile.district,
+            'pincode':request.user.profile.pincode,
         })
         return Response(
             {'client_info': client_info, 'app_version': str(app_version), 'user_details': user_info}
