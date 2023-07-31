@@ -335,9 +335,9 @@ class BookingJobMachine(APIView):
                     return Response({'message':{'all fields are required instead of others !'}})  
                 if not landarea.isdigit():
                     return Response({'message':{'land_area should be integer !'}}) 
-                if not re.match(r'^[a-zA-Z\s]+$', worktype):
+                if not re.match(r'^[a-zA-Z\s\u0900-\u097F]+$', worktype):
                     return Response({'message': {'Invalid work_type, only letters and spaces allowed'}})
-                if not re.match(r'^[a-zA-Z\s]+$', machine):
+                if not re.match(r'^[a-zA-Z\s\u0900-\u097F]+$', machine):
                     return Response({'message': {'Invalid machine, only letters and spaces allowed'}})
                 try:
                     # Check if the datetime string is in the correct format

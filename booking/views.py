@@ -212,7 +212,9 @@ class JobAcceptIndividuals(APIView):
         
 def update_booking_amounts(booking):
     job_sahayak = booking.jobsahayak
-    if job_sahayak.job_type == 'individuals_sahayak':    
+    if job_sahayak.job_type == 'individuals_sahayak': 
+        jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
+        job_count_sahayak = jobs_sahayak.count()
     # if booking.jobsahayak.filter(job_type='individuals_sahayak').exists():
     #     job_sahayak = booking.jobsahayak.filter(job_type='individuals_sahayak').first()
         count_male = int(booking.count_male) if booking.count_male else 0
@@ -223,7 +225,10 @@ def update_booking_amounts(booking):
 
         # Extract the percentage value from fawda_fee_percentage field
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
-        fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+        if job_count_sahayak == 0:
+            fawda_fee_percentage = 0
+        else:
+            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
 
         # calculate total amount without fawda_fee
         total_amount_without_fawda = (count_male * pay_amount_male + count_female * pay_amount_female) * num_days
@@ -245,9 +250,16 @@ def update_booking_amounts(booking):
         booking.admin_commission=str(fawda_fee_amount *2)
         # booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
+        print(booking.booking_user)
+        jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
+        job_count_sahayak = jobs_sahayak.count()
+        print(job_count_sahayak)
         total_amount_theka = int(job_sahayak.total_amount_theka) if job_sahayak.total_amount_theka else 0
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
-        fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+        if job_count_sahayak == 0:
+            fawda_fee_percentage = 0
+        else :
+            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
         total_amount_without_fawda = total_amount_theka
         fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
         total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
@@ -262,9 +274,16 @@ def update_booking_amounts(booking):
 
 def update_booking_amount_machine(booking):
     job_machine=booking.jobmachine
+    jobs_machine=JobBooking.objects.filter(booking_user_id=booking.booking_user)
+    print(booking.booking_user)
+    job_count = jobs_machine.count()
+    print(job_count)
     total_amount_machine = int(job_machine.total_amount_machine) if job_machine.total_amount_machine else 0
     fawda_fee_percentage_str = job_machine.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
-    fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+    if job_count == 0 :
+        fawda_fee_percentage = 0
+    else :
+        fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
     total_amount_without_fawda = total_amount_machine
     fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
     total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)

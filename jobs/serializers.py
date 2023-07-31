@@ -3,6 +3,7 @@ from .models import *
 from booking.models import JobBooking
 from django.utils import timezone
 from datetime import datetime
+import re
 
 class PostJobThekePeKamSerializer(serializers.ModelSerializer):
     land_type = serializers.CharField()
@@ -124,13 +125,13 @@ class JobMachineSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError('land_type should be Bigha or Killa')
         return value    
     def validate_work_type(self, value):
-        if not WorkType.objects.filter(name=value).exists():
-            raise serializers.ValidationError("Invalid work type: {}".format(value))
+        if not re.match(r'^[a-zA-Z\s\u0900-\u097F]+$', value):
+            raise serializers.ValidationError(("Invalid work_type, only letters, spaces, and Hindi characters allowed"))
         return value
     
     def validate_machine(self, value):
-        if not MachineType.objects.filter(machine=value).exists():
-            raise serializers.ValidationError("Invalid machine: {}".format(value))
+        if not re.match(r'^[a-zA-Z\s\u0900-\u097F]+$', value):
+            raise serializers.ValidationError(("Invalid machine, only letters, spaces, and Hindi characters allowed"))
         return value    
     
     def validate_land_area(self, value):

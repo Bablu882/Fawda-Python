@@ -20,7 +20,8 @@ urlpatterns = [
     path('api/logout/',User_logout,name='User_logout'),
     path('api/delete-account/',DeleteAccountAPIView.as_view()),
     path('api/resendotp/',ResendOTPApi.as_view()), 
-    
-
+    path('api/generate-refer-code/',GenerateReferCodeApi.as_view()),
+    path('api/get-job-count/',CheckCompleteJobCountApi.as_view()),
+    # path('api/apply-refer-code/',ApplyReferCodeApi.as_view()),
 
 ]

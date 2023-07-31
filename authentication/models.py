@@ -95,5 +95,16 @@ class District(models.Model):
         self.slug = slugify(self.name)
         super(District, self).save(*args, **kwargs)
 
-
-    
+class ReferCode(models.Model):
+    refer_code=models.CharField(max_length=6,null=True,blank=True)
+    from_user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='referring_from',
+        null=True,
+        blank=True
+    )
+    to_user = models.CharField(max_length=10,null=True,blank=True)
+    is_refer_active=models.BooleanField(default=False)
+    refer_count=models.IntegerField(default=0,null=True,blank=True)
+    used_count=models.IntegerField(default=0,null=True,blank=True)
