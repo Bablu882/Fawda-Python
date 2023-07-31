@@ -73,6 +73,12 @@ class RegisterApi(APIView):
         age = validated_data['age']
         pincode = validated_data['pincode']
         upiid = validated_data['upiid']
+        # refer_code = request.data.get('refer_code')
+
+        # if refer_code != '' :
+        #     refer_result = self.apply_refer_code(user,phone_number,usertype=user_type,refer_code=refer_code)
+        #     if 'status' in refer_result and refer_result['status'] == 'success':
+
 
         # Generate OTP and create user, profile, and OTP objects
         otp = random.randint(100000, 999999)
@@ -139,6 +145,49 @@ class RegisterApi(APIView):
                 'message': 'Failed to send verification code.',
                 'status': status.HTTP_500_INTERNAL_SERVER_ERROR
             })
+
+    def apply_refer_code(self, user, phone_number, usertype, refer_code):
+        if usertype == 'MachineMalik':
+            return {'message': 'User should be grahak or sahayak', 'status': 0}
+
+        try:
+            check_refer = ReferCode.objects.filter(refer_code=refer_code)
+            if not check_refer.exists():
+                return {'message': 'Invalid Refer Code', 'status': 0}
+
+            for refer_code_obj in check_refer:
+                referal_code = refer_code_obj.refer_code
+                refer_from_user_type = refer_code_obj.from_user.user_type
+                refer_user_count = refer_code_obj.refer_count
+                refer_user_check = refer_code_obj.to_user
+                refer_from_user = refer_code_obj.from_user
+
+                if not referal_code:
+                    return {'message': 'Invalid Refer code', 'status': 0}
+                if refer_from_user_type != usertype:
+                    return {'message': 'Only refer code from the same user type is allowed', 'status': 1}
+                if refer_user_count > 2 or refer_user_count == 2:
+                    return {'message': 'This refer code has reached its use limit', 'status': 2}
+                if refer_user_check == phone_number:
+                    return {'message': 'Same user cannot use the refer code twice', 'status' : 3}
+
+                if refer_user_check != phone_number and refer_user_check is not None:
+                    updated_referal_count = refer_user_count + 1
+                    ReferCode.objects.create(refer_code=referal_code, to_user=phone_number, is_refer_active=True, refer_count=updated_referal_count, from_user=refer_from_user)
+                    refer_code_obj.refer_count = updated_referal_count
+                    refer_code_obj.save()
+                    return {'message': 'Refer code applied successfully', 'status': 'success'}
+
+                updated_refer_count = refer_user_count + 1
+                refer_code_obj.is_refer_active = True
+                refer_code_obj.to_user = phone_number
+                refer_code_obj.refer_count = updated_refer_count
+                refer_code_obj.save()
+                return {'message': 'Refer code applied successfully', 'status': 'success'}
+            return {'message': 'Invalid Refer Code', 'status': 0}
+        
+        except:
+            return {'message': 'Invalid Refer Code', 'status': 0}    
     
 class VerifyMobile(APIView):
     permission_classes=[AllowAny,]
@@ -520,6 +569,7 @@ def logout_view(request):
 from jobs.models import JobSahayak,JobMachine
 from booking.models import JobBooking
 from django.db.models import Q
+import string
 
 class DeleteAccountAPIView(APIView):
     permission_classes=[IsAuthenticated]
@@ -552,3 +602,127 @@ class DeleteAccountAPIView(APIView):
             user.is_active=False
             user.save()
         return Response({'message':'User account deleted successfully !','status':'success'})
+            
+class GenerateReferCodeApi(APIView):
+    authentication_classes = [BearerTokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        user = request.user
+        if not user:
+            return Response({'message': 'Invalid User!', 'status': status.HTTP_404_NOT_FOUND})
+        
+        try:
+            check_refer = ReferCode.objects.get(from_user=request.user)
+            referal_code = check_refer.refer_code
+            if referal_code != '':
+                return Response({'message': 'User already has a refer code', 'refer_code': referal_code})
+        except ReferCode.DoesNotExist:
+            pass
+
+        if user.user_type == 'MachineMalik':
+            return Response({'message': 'User should be grahak or sahayak'})
+
+        if user.user_type == 'Grahak':
+            bookings_completed = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Completed']).order_by('-id')
+            bookings_completed_machine = JobBooking.objects.filter(jobmachine__grahak=request.user, status__in=['Completed']).order_by('-id')
+            job_count_sahayak = bookings_completed.count()
+            job_count_machine = bookings_completed_machine.count()
+            job_count = job_count_machine + job_count_sahayak
+            if job_count == 0:
+                return Response({'message': 'User must complete at least one booking'})
+            else:
+                while True:
+                    refer_code = self.generate_refer_code()
+                    try:
+                        ReferCode.objects.get(refer_code=refer_code)
+                    except ReferCode.DoesNotExist:
+                        ReferCode.objects.create(refer_code=refer_code, from_user=user)
+                        return Response({'message': 'Refer code generated successfully', 'refer_code': refer_code, 'status': status.HTTP_200_OK})
+
+        if user.user_type == 'Sahayak':
+            bookings_data = JobBooking.objects.filter(booking_user=request.user, status__in=['Completed']).order_by('-id')
+            job_count = bookings_data.count()
+            if job_count == 0:
+                return Response({'message': 'User must complete at least one booking'})
+            else:
+                while True:
+                    refer_code = self.generate_refer_code()
+                    try:
+                        ReferCode.objects.get(refer_code=refer_code)
+                    except ReferCode.DoesNotExist:
+                        ReferCode.objects.create(refer_code=refer_code, from_user=user)
+                        return Response({'message': 'Refer code generated successfully', 'refer_code': refer_code, 'status': status.HTTP_200_OK})
+
+    def generate_refer_code(self):
+        characters = string.ascii_letters + string.digits
+        refer_code = ''.join(random.choice(characters) for _ in range(6))
+        return refer_code            
+
+class CheckCompleteJobCountApi(APIView) :
+    authentication_classes = [BearerTokenAuthentication,]
+    permission_classes = [IsAuthenticated,]
+
+    def get(self, request, format=None):
+        user=request.user
+        if not user :
+          return Response({'message': 'Invalid User !', 'status': status.HTTP_404_NOT_FOUND})
+        if user is not None:
+            if user.user_type == 'Machinemalik':
+                return Response({'message':'User should be Sahayak or Grahak'})
+            if user.user_type == 'Grahak':
+                bookings_completed = JobBooking.objects.filter(jobsahayak__grahak=request.user, status__in=['Completed']).order_by('-id')
+                bookings_completed_machine = JobBooking.objects.filter(jobmachine__grahak=request.user, status__in=['Completed']).order_by('-id')
+                job_count_sahayak = bookings_completed.count()
+                job_count_machine = bookings_completed_machine.count()
+                job_count = job_count_machine + job_count_sahayak
+                return Response({'message':'Grahak completed job count','job_count':job_count})
+            if user.user_type == 'Sahayak':
+                bookings_data = JobBooking.objects.filter(booking_user=request.user, status__in=['Completed']).order_by('-id')
+                job_count = bookings_data.count()
+                return Response({'message':'Sahayak completed job count','job_count':job_count})
+            
+
+# class ApplyReferCodeApi(APIView) :
+#     permission_classes = [AllowAny,]
+#     def post(self,request,format=None):
+#         refer_code=request.data.get('refer_code')
+#         phone_number=request.data.get('phone_number')
+#         usertype=request.data.get('user_type')
+
+#         if usertype == 'MachineMalik' :
+#             return Response({'message':'User should Grahak or Sahayak'})
+        
+#         try :
+#             check_refer = ReferCode.objects.filter(refer_code=refer_code)
+#             if not check_refer.exists() :
+#                 return Response({'message': 'Invalid Refer Code', 'status': 0})
+#             for check_refer in check_refer :
+#               referal_code = check_refer.refer_code
+#               refer_from_user_type = check_refer.from_user.user_type
+#               refer_user_count = check_refer.refer_count
+#               refer_user_check = check_refer.to_user
+#               refer_from_user = check_refer.from_user
+#               if not referal_code :
+#                 return Response({'message':'Invalid Refer code','status':0})
+#               if refer_from_user_type != usertype:
+#                 return Response({'message':'Only refer code from same user type is allowed','status':1})
+#               if refer_user_count > 2 or refer_user_count == 2 :
+#                 return Response({'message':'This refer code reached its use limit','status':2})
+#               if refer_user_check == phone_number :
+#                 return Response({'message':'Same user cannot use the refer code twice'})
+#               if refer_user_check != phone_number and refer_user_check is not None:
+#                 updated_referal_count = refer_user_count + 1
+#                 ReferCode.objects.create(refer_code=referal_code,to_user=phone_number,is_refer_active=True,refer_count=updated_referal_count,from_user=refer_from_user)
+#                 check_refer.refer_count = updated_referal_count
+#                 check_refer.save()
+#                 return Response({'message':'Refer code applied successfully','status':'success'})
+            
+#               updated_refer_count = refer_user_count + 1
+#               check_refer.is_refer_active = True
+#               check_refer.to_user = phone_number
+#               check_refer.refer_count = updated_refer_count
+#               check_refer.save()
+#               return Response({'message':'Refer code applied successfully','status':'success'})
+#         except :
+#             return Response({'message':'Invalid Refer Code','status':0})

@@ -82,6 +82,8 @@ class JobSahayak(models.Model):
     
     def save(self, *args, **kwargs):
         if self.job_type == 'individuals_sahayak':
+            jobs_grahak = JobSahayak.objects.filter(grahak_id=self.grahak_id)
+            job_count = jobs_grahak.count()
             count_male = int(self.count_male) if self.count_male else 0
             count_female = int(self.count_female) if self.count_female else 0
             pay_amount_male = int(self.pay_amount_male) if self.pay_amount_male else 0
@@ -90,13 +92,16 @@ class JobSahayak(models.Model):
             
             # Extract the percentage value from fawda_fee_percentage field
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
-            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
-
+            if job_count == 0:
+                fawda_fee_percentage = 0
+            else:
+                fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+            print(fawda_fee_percentage)
             # calculate total amount without fawda_fee
             total_amount_without_fawda = (count_male * pay_amount_male + count_female * pay_amount_female) * num_days
             
             # calculate fawda_fee amount
-            fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
+            fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage/ 100), 2)
             
             # calculate total amount with fawda_fee
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
@@ -111,9 +116,16 @@ class JobSahayak(models.Model):
             self.total_amount_sahayak=str(total_amount_without_fawda)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
         if self.job_type == 'theke_pe_kam':
+            # print(self.grahak_id)
+            jobs_grahak = JobSahayak.objects.filter(grahak_id=self.grahak_id)
+            job_count = jobs_grahak.count()
+            # print(completed_job_count)
             total_amount_theka = int(self.total_amount_theka) if self.total_amount_theka else 0
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
-            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+            if job_count == 0:
+                fawda_fee_percentage = 0
+            else :
+                fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
             total_amount_without_fawda = total_amount_theka
             fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
@@ -172,9 +184,14 @@ class JobMachine(models.Model):
     
     def save(self, *args, **kwargs):
         if self.job_type == 'machine_malik':
+            jobs_grahak = JobMachine.objects.filter(grahak_id=self.grahak_id)
+            job_count = jobs_grahak.count()
             total_amount_machine = int(self.total_amount_machine) if self.total_amount_machine else 0
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
-            fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
+            if job_count == 0 :
+                fawda_fee_percentage = 0
+            else:
+                fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
             total_amount_without_fawda = total_amount_machine
             fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
