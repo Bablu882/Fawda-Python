@@ -1,5 +1,6 @@
 from django.db import models
 from authentication.models import User
+from authentication.models import ReferCode
 
 # class LandPreparation(models.Model):
 #     name=models.CharField(max_length=500,null=True,blank=True)
@@ -83,6 +84,19 @@ class JobSahayak(models.Model):
     def save(self, *args, **kwargs):
         if self.job_type == 'individuals_sahayak':
             jobs_grahak = JobSahayak.objects.filter(grahak_id=self.grahak_id)
+            check_refer = ReferCode.objects.filter(from_user=self.grahak_id)
+            is_refer = False
+            for refers in check_refer:
+                refer_status = refers.is_refer_active
+                used_refer_count = refers.used_count
+                # print(used_refer_count)
+                if refer_status is True:
+                    is_refer = True
+                updated_used_count = 0    
+                if used_refer_count == 0 or used_refer_count == 1:
+                    updated_used_count = used_refer_count+ 1
+                    refers.used_count = updated_used_count
+                    refers.save()   
             job_count = jobs_grahak.count()
             count_male = int(self.count_male) if self.count_male else 0
             count_female = int(self.count_female) if self.count_female else 0
@@ -94,6 +108,8 @@ class JobSahayak(models.Model):
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
             if job_count == 0:
                 fawda_fee_percentage = 0
+            elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                fawda_fee_percentage = 1.25    
             else:
                 fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
             print(fawda_fee_percentage)
@@ -116,14 +132,29 @@ class JobSahayak(models.Model):
             self.total_amount_sahayak=str(total_amount_without_fawda)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
         if self.job_type == 'theke_pe_kam':
-            # print(self.grahak_id)
             jobs_grahak = JobSahayak.objects.filter(grahak_id=self.grahak_id)
+            check_refer = ReferCode.objects.filter(from_user=self.grahak_id)
+
+            is_refer = False
+            for refers in check_refer:
+                refer_status = refers.is_refer_active
+                used_refer_count = refers.used_count
+                # print(used_refer_count)
+                if refer_status is True:
+                    is_refer = True
+                updated_used_count = 0    
+                if used_refer_count == 0 or used_refer_count == 1:
+                    updated_used_count = used_refer_count+ 1
+                    refers.used_count = updated_used_count
+                    refers.save()   
+
             job_count = jobs_grahak.count()
-            # print(completed_job_count)
             total_amount_theka = int(self.total_amount_theka) if self.total_amount_theka else 0
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
             if job_count == 0:
                 fawda_fee_percentage = 0
+            elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                fawda_fee_percentage = 1.25
             else :
                 fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
             total_amount_without_fawda = total_amount_theka
@@ -185,11 +216,26 @@ class JobMachine(models.Model):
     def save(self, *args, **kwargs):
         if self.job_type == 'machine_malik':
             jobs_grahak = JobMachine.objects.filter(grahak_id=self.grahak_id)
+            check_refer = ReferCode.objects.filter(from_user=self.grahak_id)
+            is_refer = False
+            for refers in check_refer:
+                refer_status = refers.is_refer_active
+                used_refer_count = refers.used_count
+                # print(used_refer_count)
+                if refer_status is True:
+                    is_refer = True
+                updated_used_count = 0    
+                if used_refer_count == 0 or used_refer_count == 1:
+                    updated_used_count = used_refer_count+ 1
+                    refers.used_count = updated_used_count
+                    refers.save() 
             job_count = jobs_grahak.count()
             total_amount_machine = int(self.total_amount_machine) if self.total_amount_machine else 0
             fawda_fee_percentage_str = self.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
             if job_count == 0 :
                 fawda_fee_percentage = 0
+            elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                fawda_fee_percentage = 1.25    
             else:
                 fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
             total_amount_without_fawda = total_amount_machine

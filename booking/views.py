@@ -213,8 +213,21 @@ class JobAcceptIndividuals(APIView):
 def update_booking_amounts(booking):
     job_sahayak = booking.jobsahayak
     if job_sahayak.job_type == 'individuals_sahayak': 
-        jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
-        job_count_sahayak = jobs_sahayak.count()
+        jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)   
+        check_refer = ReferCode.objects.filter(from_user=booking.booking_user)
+        is_refer = False
+        for refers in check_refer:
+            refer_status = refers.is_refer_active
+            used_refer_count = refers.used_count
+            # print(used_refer_count)
+            if refer_status is True:
+                is_refer = True
+            updated_used_count = 0    
+            if used_refer_count == 0 or used_refer_count == 1:
+                updated_used_count = used_refer_count+ 1
+                refers.used_count = updated_used_count
+                refers.save() 
+        job_count_sahayak = jobs_sahayak.count() - 1
     # if booking.jobsahayak.filter(job_type='individuals_sahayak').exists():
     #     job_sahayak = booking.jobsahayak.filter(job_type='individuals_sahayak').first()
         count_male = int(booking.count_male) if booking.count_male else 0
@@ -227,6 +240,8 @@ def update_booking_amounts(booking):
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
         if job_count_sahayak == 0:
             fawda_fee_percentage = 0
+        elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+            fawda_fee_percentage = 1.25       
         else:
             fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
 
@@ -250,14 +265,27 @@ def update_booking_amounts(booking):
         booking.admin_commission=str(fawda_fee_amount *2)
         # booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
-        print(booking.booking_user)
         jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
-        job_count_sahayak = jobs_sahayak.count()
-        print(job_count_sahayak)
+        check_refer = ReferCode.objects.filter(from_user=booking.booking_user)
+        is_refer = False
+        for refers in check_refer:
+            refer_status = refers.is_refer_active
+            used_refer_count = refers.used_count
+            # print(used_refer_count)
+            if refer_status is True:
+                is_refer = True
+            updated_used_count = 0    
+            if used_refer_count == 0 or used_refer_count == 1:
+                updated_used_count = used_refer_count+ 1
+                refers.used_count = updated_used_count
+                refers.save() 
+        job_count_sahayak = jobs_sahayak.count() - 1
         total_amount_theka = int(job_sahayak.total_amount_theka) if job_sahayak.total_amount_theka else 0
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
         if job_count_sahayak == 0:
             fawda_fee_percentage = 0
+        elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+            fawda_fee_percentage = 1.25     
         else :
             fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
         total_amount_without_fawda = total_amount_theka
@@ -276,8 +304,7 @@ def update_booking_amount_machine(booking):
     job_machine=booking.jobmachine
     jobs_machine=JobBooking.objects.filter(booking_user_id=booking.booking_user)
     print(booking.booking_user)
-    job_count = jobs_machine.count()
-    print(job_count)
+    job_count = jobs_machine.count() - 1
     total_amount_machine = int(job_machine.total_amount_machine) if job_machine.total_amount_machine else 0
     fawda_fee_percentage_str = job_machine.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
     if job_count == 0 :
