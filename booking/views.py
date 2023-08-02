@@ -108,6 +108,7 @@ class JobAcceptedSahayakTheka(APIView):
             booking_user=sahayak_user,
             status='Accepted',
         )
+        print(booking.jobsahayak.total_amount)
         # booking.jobsahayak.add(job)
         update_booking_amounts(booking)
         get_job=JobSahayak.objects.get(pk=job_id)    
@@ -118,7 +119,7 @@ class JobAcceptedSahayakTheka(APIView):
         push_message = {
                             'to':job.grahak.push_token,
                             'title': 'काम स्वीकार किया गया है',
-                            'body': 'आपका ठेके पे काम सहायक द्वारा स्वीकार किया गया है !कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
+                            'body': 'आपका ठेके पे काम स्वीकार किया गया है !कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Grahak'  # Add additional key-value pair
@@ -235,7 +236,8 @@ def update_booking_amounts(booking):
         pay_amount_male = int(job_sahayak.pay_amount_male) if job_sahayak.pay_amount_male else 0
         pay_amount_female = int(job_sahayak.pay_amount_female) if job_sahayak.pay_amount_female else 0
         num_days = int(job_sahayak.num_days) if job_sahayak.num_days else 0
-
+        total_amount = float(job_sahayak.total_amount) if job_sahayak.total_amount else 0
+        fawda_fee_grahak = float(job_sahayak.fawda_fee_grahak) if job_sahayak.fawda_fee_grahak else 0
         # Extract the percentage value from fawda_fee_percentage field
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
         if job_count_sahayak == 0:
@@ -252,17 +254,18 @@ def update_booking_amounts(booking):
         fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
 
         # calculate total amount with fawda_fee
-        total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+        # total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
 
         # calculate payment_your amount
         payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
 
         # update the booking fields
-        booking.fawda_fee=str(fawda_fee_amount)
+        booking.fawda_fee_sahayak=str(fawda_fee_amount)
         booking.total_amount = str(total_amount)
+        booking.fawda_fee_grahak = str(fawda_fee_grahak)
         booking.payment_your = str(payment_your)
         booking.total_amount_sahayak = str(total_amount_without_fawda)
-        booking.admin_commission=str(fawda_fee_amount *2)
+        booking.admin_commission=str((total_amount - payment_your))
         # booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
         jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
@@ -281,6 +284,8 @@ def update_booking_amounts(booking):
                 refers.save() 
         job_count_sahayak = jobs_sahayak.count() - 1
         total_amount_theka = int(job_sahayak.total_amount_theka) if job_sahayak.total_amount_theka else 0
+        total_amount = float(job_sahayak.total_amount) if job_sahayak.total_amount else 0
+        fawda_fee_grahak = float(job_sahayak.fawda_fee_grahak) if job_sahayak.fawda_fee_grahak else 0
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
         if job_count_sahayak == 0:
             fawda_fee_percentage = 0
@@ -290,13 +295,14 @@ def update_booking_amounts(booking):
             fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
         total_amount_without_fawda = total_amount_theka
         fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
-        total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+        # total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
         payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
-        booking.fawda_fee = str(fawda_fee_amount)
+        booking.fawda_fee_sahayak = str(fawda_fee_amount)
         booking.total_amount = str(total_amount)
+        booking.fawda_fee_grahak = str(fawda_fee_grahak)
         booking.payment_your = str(payment_your)
         booking.total_amount_theka = str(total_amount_without_fawda)
-        booking.admin_commission=str(fawda_fee_amount *2)
+        booking.admin_commission=str((total_amount - payment_your))
         # booking.fawda_fee_percentage = booking.fawda_fee_percentage  # update the original field value without percentage symbol 
     booking.save()    
 
@@ -305,6 +311,8 @@ def update_booking_amount_machine(booking):
     jobs_machine=JobBooking.objects.filter(booking_user_id=booking.booking_user)
     print(booking.booking_user)
     job_count = jobs_machine.count() - 1
+    total_amount = float(job_machine.total_amount) if job_machine.total_amount else 0
+    fawda_fee_grahak = float(job_machine.fawda_fee_grahak) if job_machine.fawda_fee_grahak else 0
     total_amount_machine = int(job_machine.total_amount_machine) if job_machine.total_amount_machine else 0
     fawda_fee_percentage_str = job_machine.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
     if job_count == 0 :
@@ -313,13 +321,14 @@ def update_booking_amount_machine(booking):
         fawda_fee_percentage = float(fawda_fee_percentage_str) if fawda_fee_percentage_str else 0
     total_amount_without_fawda = total_amount_machine
     fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
-    total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+    # total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
     payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
-    booking.fawda_fee = str(fawda_fee_amount)
+    booking.fawda_fee_machine = str(fawda_fee_amount)
     booking.total_amount = str(total_amount)
+    booking.fawda_fee_grahak = str(fawda_fee_grahak)
     booking.payment_your = str(payment_your)
     booking.total_amount_machine = str(total_amount_without_fawda)
-    booking.admin_commission=str(fawda_fee_amount *2)   
+    booking.admin_commission=str((total_amount - payment_your))   
     booking.save()
 
 
@@ -350,7 +359,7 @@ class MyJobsDetais(APIView):
                             "land_type":job.jobsahayak.land_type,
                             "pay_amount_male":job.pay_amount_male,
                             "pay_amount_female":job.pay_amount_female,
-                            "fawda_fee":job.fawda_fee,
+                            "fawda_fee":job.fawda_fee_sahayak,
                             "count_male":job.count_male,
                             "count_female":job.count_female,
                             "payment_your":job.payment_your,
@@ -375,7 +384,7 @@ class MyJobsDetais(APIView):
                             "datetime":job.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                             "land_area":job.jobsahayak.land_area,
                             "land_type":job.jobsahayak.land_type,
-                            "fawda_fee":job.fawda_fee,
+                            "fawda_fee":job.fawda_fee_sahayak,
                             "payment_your":job.payment_your,
                             "total_amount_theka":job.total_amount_theka,
                             "grahak_name":job.jobsahayak.grahak.profile.name,
@@ -396,7 +405,7 @@ class MyJobsDetais(APIView):
                         "datetime":job.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         "land_area":job.jobmachine.land_area,
                         "land_type":job.jobmachine.land_type,
-                        "fawda_fee":job.fawda_fee,
+                        "fawda_fee":job.fawda_fee_machine,
                         "payment_your":job.payment_your,
                         "total_amount_machine":job.total_amount_machine,
                         "grahak_name":job.jobmachine.grahak.profile.name,
@@ -438,7 +447,7 @@ class MyBookingDetailsSahayak(APIView):
                     count_female += int(booking.count_female) if booking.count_female else 0
                     total_amount_sahayak += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                     payment_your += float(booking.payment_your) if booking.payment_your else 0
-                    fawda_fee += float(booking.fawda_fee) if booking.fawda_fee else 0
+                    fawda_fee += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                     booking_data.append({
                         'id': booking.id,
                         'datetime': booking.jobsahayak.datetime,
@@ -474,7 +483,7 @@ class MyBookingDetailsSahayak(APIView):
                         'datetime':booking.jobsahayak.datetime,
                         'land_area':booking.jobsahayak.land_area,
                         'description':booking.jobsahayak.description,
-                        'fawda_fee':booking.fawda_fee,
+                        'fawda_fee':booking.fawda_fee_grahak,
                         'booking_user_id':booking.booking_user.id,
                         'job_type':booking.jobsahayak.job_type,
                         'user_status':booking.booking_user.user_type,
@@ -571,7 +580,7 @@ class MyBookingDetails(APIView):
                 booking_data[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -596,7 +605,7 @@ class MyBookingDetails(APIView):
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -635,7 +644,7 @@ class MyBookingDetails(APIView):
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
-                'fawda_fee':booking.fawda_fee,
+                'fawda_fee':booking.fawda_fee_grahak,
                 'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
@@ -1244,7 +1253,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1274,7 +1283,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1308,7 +1317,7 @@ class MyBookingDetailsHistory(APIView):
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
-                'fawda_fee':booking.fawda_fee,
+                'fawda_fee':booking.fawda_fee_grahak,
                 'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
@@ -1344,7 +1353,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_rejected[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data_rejected[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data_rejected[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_rejected[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_rejected[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_rejected[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1372,7 +1381,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_rejected[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data_rejected[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data_rejected[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_rejected[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_rejected[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_rejected[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1406,7 +1415,7 @@ class MyBookingDetailsHistory(APIView):
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
-                'fawda_fee':booking.fawda_fee,
+                'fawda_fee':booking.fawda_fee_grahak,
                 'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
@@ -1442,7 +1451,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_rejected_after[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data_rejected_after[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data_rejected_after[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_rejected_after[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_rejected_after[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_rejected_after[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1470,7 +1479,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_rejected_after[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data_rejected_after[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data_rejected_after[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_rejected_after[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_rejected_after[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_rejected_after[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1505,7 +1514,7 @@ class MyBookingDetailsHistory(APIView):
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
-                'fawda_fee':booking.fawda_fee,
+                'fawda_fee':booking.fawda_fee_grahak,
                 'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
@@ -1541,7 +1550,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_cancelled[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data_cancelled[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data_cancelled[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_cancelled[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_cancelled[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_cancelled[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1569,7 +1578,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_cancelled[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data_cancelled[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data_cancelled[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_cancelled[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_cancelled[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_cancelled[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1604,7 +1613,7 @@ class MyBookingDetailsHistory(APIView):
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
-                'fawda_fee':booking.fawda_fee,
+                'fawda_fee':booking.fawda_fee_grahak,
                 'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
@@ -1640,7 +1649,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_cancelled_after[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data_cancelled_after[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data_cancelled_after[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_cancelled_after[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_cancelled_after[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_cancelled_after[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1668,7 +1677,7 @@ class MyBookingDetailsHistory(APIView):
                 booking_data_cancelled_after[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data_cancelled_after[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data_cancelled_after[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data_cancelled_after[job_id]['fawda_fee'] += float(booking.fawda_fee) if booking.fawda_fee else 0
+                booking_data_cancelled_after[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                 booking_data_cancelled_after[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -1702,7 +1711,7 @@ class MyBookingDetailsHistory(APIView):
                 'total_amount':booking.total_amount,
                 'total_amount_machine':booking.total_amount_machine,
                 'payment_your':booking.payment_your,
-                'fawda_fee':booking.fawda_fee,
+                'fawda_fee':booking.fawda_fee_grahak,
                 'status':booking.status,
                 'machine_malik_name':booking.booking_user.profile.name,
                 'machine_malik_village':booking.booking_user.profile.village,
@@ -1756,7 +1765,7 @@ class MyjobsHistory(APIView):
                             'payment_your':booking_data.payment_your,
                             'total_amount_sahayak':booking_data.total_amount_sahayak,
                             'total_amount':booking_data.total_amount,
-                            'fawda_fee':booking_data.fawda_fee,
+                            'fawda_fee':booking_data.fawda_fee_sahayak,
                             'pay_amount_male': booking_data.jobsahayak.pay_amount_male,
                             'pay_amount_female': booking_data.jobsahayak.pay_amount_female,
                             'count_male': booking_data.count_male,
@@ -1781,7 +1790,7 @@ class MyjobsHistory(APIView):
                             'total_amount_theka':booking_data.total_amount_theka,
                             'total_amount':booking_data.total_amount,
                             'payment_your':booking_data.payment_your,
-                            'fawda_fee':booking_data.fawda_fee,
+                            'fawda_fee':booking_data.fawda_fee_sahayak,
                             'booking_user_id':booking_data.booking_user.id,
                             'grahak_name':booking_data.jobsahayak.grahak.profile.name,
                             'grahak_village': booking_data.jobsahayak.grahak.profile.village,
@@ -1805,7 +1814,7 @@ class MyjobsHistory(APIView):
                         'total_amount':booking_data.total_amount,
                         'total_amount_machine':booking_data.total_amount_machine,
                         'payment_your':booking_data.payment_your,
-                        'fawda_fee':booking_data.fawda_fee,
+                        'fawda_fee':booking_data.fawda_fee_machine,
                         'status':booking_data.status,
                         'grahak_name':booking_data.jobmachine.grahak.profile.name,
                         'grahak_village':booking_data.jobmachine.grahak.profile.village,
