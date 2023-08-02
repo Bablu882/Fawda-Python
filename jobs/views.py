@@ -81,32 +81,32 @@ class BookingThekePeKam(APIView):
                 )
                 serial=GetJobThekePeKamSerializer(job)
                 #send nortification here
-                users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
-                # Get the coordinates of the job owner
-                job_owner_latitude = grahak.profile.latitude
-                job_owner_longitude = grahak.profile.longitude
-                # Send notification to users within 5km distance from the job owner
-                for user in users:
-                    print('user-----',user)
-                    push_token = user['push_token']
-                    user_latitude = user['profile__latitude']
-                    user_longitude = user['profile__longitude']
-                    # Calculate the distance between user and job owner
-                    distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
-                    print('distance ----',distance)
-                    if distance <= 5:
-                        # push_message['to'] = push_token
-                        # Prepare the push notification message
-                        push_message = {
-                            'to':push_token,
-                            'title': 'नया काम पोस्ट किया गया है',
-                            'body': 'एक नया ठेके पे काम पोस्ट किया गया है!',
-                            'sound': 'default',
-                            'data': {
-                                'key': 'Sahayak'  # Add additional key-value pair
-                            }
-                        }
-                        send_push_notification(push_message)
+                # users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
+                # # Get the coordinates of the job owner
+                # job_owner_latitude = grahak.profile.latitude
+                # job_owner_longitude = grahak.profile.longitude
+                # # Send notification to users within 5km distance from the job owner
+                # for user in users:
+                #     print('user-----',user)
+                #     push_token = user['push_token']
+                #     user_latitude = user['profile__latitude']
+                #     user_longitude = user['profile__longitude']
+                #     # Calculate the distance between user and job owner
+                #     distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
+                #     print('distance ----',distance)
+                #     if distance <= 5:
+                #         # push_message['to'] = push_token
+                #         # Prepare the push notification message
+                #         push_message = {
+                #             'to':push_token,
+                #             'title': 'नया काम पोस्ट किया गया है',
+                #             'body': 'एक नया ठेके पे काम पोस्ट किया गया है!',
+                #             'sound': 'default',
+                #             'data': {
+                #                 'key': 'Sahayak'  # Add additional key-value pair
+                #             }
+                #         }
+                #         send_push_notification(push_message)
                 return Response({'message':'Booking created !','data':serial.data,'status':status.HTTP_201_CREATED})
         else:
             return Response({'message':{'You are not Grahak'}})  
@@ -234,32 +234,32 @@ class BookingSahayakIndividuals(APIView):
                 job.save()
                 serial=GetJobIndividualsSerializer(job)
                 #send nortification here
-                users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
-                # Get the coordinates of the job owner
-                grahak=request.user
-                job_owner_latitude = grahak.profile.latitude
-                job_owner_longitude = grahak.profile.longitude
-                # Send notification to users within 5km distance from the job owner
-                for user in users:
-                    push_token = user['push_token']
-                    user_latitude = user['profile__latitude']
-                    user_longitude = user['profile__longitude']
-                    # Calculate the distance between user and job owner
-                    distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
+                # users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
+                # # Get the coordinates of the job owner
+                # grahak=request.user
+                # job_owner_latitude = grahak.profile.latitude
+                # job_owner_longitude = grahak.profile.longitude
+                # # Send notification to users within 5km distance from the job owner
+                # for user in users:
+                #     push_token = user['push_token']
+                #     user_latitude = user['profile__latitude']
+                #     user_longitude = user['profile__longitude']
+                #     # Calculate the distance between user and job owner
+                #     distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
 
-                    if distance <= 5:
-                        # push_message['to'] = push_token
-                        # Prepare the push notification message
-                        push_message = {
-                            'to':push_token,
-                            'title': 'नया काम पोस्ट किया गया है',
-                            'body': 'एक नया काम "व्यक्तिगत सहायक" के लिए पोस्ट किया गया है!',
-                            'sound': 'default',
-                            'data': {
-                                'key': 'Sahayak'  # Add additional key-value pair
-                            }
-                        }
-                        send_push_notification(push_message)
+                #     if distance <= 5:
+                #         # push_message['to'] = push_token
+                #         # Prepare the push notification message
+                #         push_message = {
+                #             'to':push_token,
+                #             'title': 'नया काम पोस्ट किया गया है',
+                #             'body': 'एक नया काम "व्यक्तिगत सहायक" के लिए पोस्ट किया गया है!',
+                #             'sound': 'default',
+                #             'data': {
+                #                 'key': 'Sahayak'  # Add additional key-value pair
+                #             }
+                #         }
+                #         send_push_notification(push_message)
                 return Response({'message': 'success','data':serial.data,'status':status.HTTP_201_CREATED})
         return Response({'message': {'You are not Grahak'}})
 
@@ -385,31 +385,31 @@ class BookingJobMachine(APIView):
                 )
                 serial=GetJobMachineSerializer(job) 
                 #send nortification  here   
-                users = User.objects.filter(user_type='MachineMalik').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
-                # Get the coordinates of the job owner
-                job_owner_latitude = grahak.profile.latitude
-                job_owner_longitude = grahak.profile.longitude
-                # Send notification to users within 5km distance from the job owner
-                for user in users:
-                    push_token = user['push_token']
-                    user_latitude = user['profile__latitude']
-                    user_longitude = user['profile__longitude']
-                    # Calculate the distance between user and job owner
-                    distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
+                # users = User.objects.filter(user_type='MachineMalik').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
+                # # Get the coordinates of the job owner
+                # job_owner_latitude = grahak.profile.latitude
+                # job_owner_longitude = grahak.profile.longitude
+                # # Send notification to users within 5km distance from the job owner
+                # for user in users:
+                #     push_token = user['push_token']
+                #     user_latitude = user['profile__latitude']
+                #     user_longitude = user['profile__longitude']
+                #     # Calculate the distance between user and job owner
+                #     distance = calculate_distance(job_owner_latitude, job_owner_longitude, user_latitude, user_longitude)
 
-                    if distance <= 10:
-                        # push_message['to'] = push_token
-                        # Prepare the push notification message
-                        push_message = {
-                            'to':push_token,
-                            'title': 'नया काम पोस्ट किया गया है',
-                            'body': 'एक नया काम "मशीन के लिए" पोस्ट किया गया है!',
-                            'sound': 'default',
-                            'data': {
-                                'key': 'Machine'  # Add additional key-value pair
-                            }
-                        }
-                        send_push_notification(push_message)
+                #     if distance <= 10:
+                #         # push_message['to'] = push_token
+                #         # Prepare the push notification message
+                #         push_message = {
+                #             'to':push_token,
+                #             'title': 'नया काम पोस्ट किया गया है',
+                #             'body': 'एक नया काम "मशीन के लिए" पोस्ट किया गया है!',
+                #             'sound': 'default',
+                #             'data': {
+                #                 'key': 'Machine'  # Add additional key-value pair
+                #             }
+                #         }
+                #         send_push_notification(push_message)
                 return Response({'message':'job created successfully !','status':status.HTTP_201_CREATED,'data':serial.data})
         else:
             return Response({'message':{'You are not Grahak !'}})        
@@ -521,11 +521,28 @@ class GetAllJob(APIView):
                 ~Q(jobbooking__booking_user=request.user) &
                 ~Q(jobbooking__status__in=['Booked', 'Ongoing', 'Completed', 'Cancelled', 'Cancelled-After-Payment','Rejected-After-Payment'])
                 ).order_by('-id')
+            job_sahayak = JobBooking.objects.filter(booking_user_id=request.user)
+            job_count = job_sahayak.count()
+            print(job_count)
+            check_refer = ReferCode.objects.filter(from_user=request.user)
+            is_refer = False
+            for refers in check_refer:
+                refer_status = refers.is_refer_active
+                used_refer_count = refers.used_count
+             # print(used_refer_count)
+                if refer_status is True:
+                    is_refer = True
+                updated_used_count = 0    
+                if used_refer_count == 0 or used_refer_count == 1:
+                    updated_used_count = used_refer_count+ 1
+                    refers.used_count = updated_used_count
             for job_post in job_posts:
                 print('--time--job-0-',job_post.datetime)
+                print({job_post})
                 grahak_profile = job_post.grahak.profile
                 grahak_lat = grahak_profile.latitude
                 grahak_lon = grahak_profile.longitude
+
                 # print(grahak_lat,grahak_lon)
                 distance = calculate_distance(sahayak_lat, sahayak_lon, grahak_lat, grahak_lon)
                 print(distance)
@@ -544,6 +561,18 @@ class GetAllJob(APIView):
                     hours_diff = (job_time - current_time).total_seconds() / 3600
                     # print(hours_diff)
                     if job_post.job_type =='individuals_sahayak':
+                        if job_count == 0:
+                            fawda_fee_percentage = 0
+                        elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                            fawda_fee_percentage = 1.25 
+                        else:
+                            fawda_fee_percentage = 2.5
+                        try:
+                            total_amount_sahayak = float(job_post.total_amount_sahayak)
+                        except (ValueError,TypeError) :
+                            total_amount_sahayak = 0
+
+                        fawda_fee_amount = round(total_amount_sahayak * (fawda_fee_percentage / 100), 2)
 
                         if hours_diff >=2.5:
                             result.append({
@@ -553,7 +582,7 @@ class GetAllJob(APIView):
                                 "date":job_post.date,
                                 "datetime":job_time,
                                 "payment_your":job_post.payment_your,
-                                "fawda_fee":job_post.fawda_fee,
+                                "fawda_fee":fawda_fee_amount,
                                 "description":job_post.description,
                                 "count_male":job_post.count_male,
                                 "count_female":job_post.count_female,
@@ -573,6 +602,18 @@ class GetAllJob(APIView):
                             job_post.status='Timeout'    
                             job_post.save()
                     else:
+                        if job_count == 0:
+                            fawda_fee_percentage = 0
+                        elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                            fawda_fee_percentage = 1.25 
+                        else:
+                            fawda_fee_percentage = 2.5 
+                        try:
+                            total_amount_theka = float(job_post.total_amount_theka)  # Convert to float if it is a string
+                        except (ValueError, TypeError):
+                            total_amount_theka = 0    
+                        fawda_fee_amount = round(total_amount_theka * (fawda_fee_percentage / 100), 2)
+                        payment_your = round(total_amount_theka - fawda_fee_amount, 2)
                         if hours_diff >=2:
                             result.append({
                                 "id":job_post.id,
@@ -580,8 +621,8 @@ class GetAllJob(APIView):
                                 "status":job_post.status,
                                 "date":job_post.date,
                                 "datetime":job_time,
-                                "payment_your":job_post.payment_your,
-                                "fawda_fee":job_post.fawda_fee,
+                                "payment_your":payment_your,
+                                "fawda_fee":fawda_fee_amount,
                                 "description":job_post.description,
                                 # "count_male":job_post.count_male,
                                 # "count_female":job_post.count_female,
@@ -602,6 +643,9 @@ class GetAllJob(APIView):
                             job_post.save()      
         elif sahayak.user_type == 'MachineMalik':
             job_posts_machin=JobMachine.objects.all().filter(status='Pending').order_by('-id')
+            job_machine = JobBooking.objects.filter(booking_user_id=request.user)
+            job_count = job_machine.count()
+            print(job_count)
             for job_post in job_posts_machin:
                 grahak_profile = job_post.grahak.profile
                 # print(grahak_profile)
@@ -625,14 +669,24 @@ class GetAllJob(APIView):
                         print('hoursdiff----',hours_diff)
                         # print(hours_diff)
                         if hours_diff >=2:
+                            if job_count == 0:
+                                fawda_fee_percentage = 0
+                            else :
+                                fawda_fee_percentage = 2.5
+                            try :
+                                total_amount_machine = float(job_post.total_amount_machine)
+                            except (ValueError,TypeError) :
+                                total_amount_machine = 0       
+                            fawda_fee_amount = round(total_amount_machine * (fawda_fee_percentage / 100), 2)
+                            payment_your = round(total_amount_machine - fawda_fee_amount, 2)
                             result.append({
                                 "id":job_post.id,
                                 "job_type":job_post.job_type,
                                 "status":job_post.status,
                                 "date":job_post.date,
                                 "datetime":job_time,
-                                "payment_your":job_post.payment_your,
-                                "fawda_fee":job_post.fawda_fee,
+                                "payment_your":payment_your,
+                                "fawda_fee":fawda_fee_amount,
                                 "description":job_post.description,
                                 "total_amount":job_post.total_amount,
                                 "total_amount_machine":job_post.total_amount_machine,
@@ -945,7 +999,7 @@ class RefreshfMyBookingDetails(APIView):
                     count_female += int(booking.count_female) if booking.count_female else 0
                     total_amount_sahayak += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                     payment_your += float(booking.payment_your) if booking.payment_your else 0
-                    fawda_fee += float(booking.fawda_fee) if booking.fawda_fee else 0
+                    fawda_fee += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
                     booking_data.append({
                         'booking_id': booking.id,
                         'job_id':booking.jobsahayak.id,
@@ -958,7 +1012,7 @@ class RefreshfMyBookingDetails(APIView):
                         # 'total_amount_theka': booking.total_amount_theka,
                         # 'total_amount_machine': booking.total_amount_machine,
                         'payment_your': booking.payment_your,
-                        'fawda_fee': booking.fawda_fee,
+                        'fawda_fee': booking.fawda_fee_grahak,
                         'booking_user_id':booking.booking_user.id,
                         # 'datetime':booking.jobsahayak.datetime,
                         'description':booking.jobsahayak.description,
@@ -986,7 +1040,7 @@ class RefreshfMyBookingDetails(APIView):
                         'land_area':booking.jobsahayak.land_area,
                         'land_type':booking.jobsahayak.land_type,
                         'description':booking.jobsahayak.description,
-                        'fawda_fee':booking.fawda_fee,
+                        'fawda_fee':booking.fawda_fee_grahak,
                         'booking_user_id':booking.booking_user.id,
                         'job_type':booking.jobsahayak.job_type,
                         'user_type':booking.booking_user.user_type,
@@ -1022,7 +1076,7 @@ class RefreshfMyBookingDetails(APIView):
                     'status':booking.status,
                     'payment_your':booking.payment_your,
                     'job_type':booking.jobmachine.job_type,
-                    'fawda_fee':booking.fawda_fee,
+                    'fawda_fee':booking.fawda_fee_grahak,
                     'user_type':booking.booking_user.user_type,
                     'machine_malik_name':booking.booking_user.profile.name,
                     'machine_malik_village':booking.booking_user.profile.village,
@@ -1081,7 +1135,7 @@ class RefreshMyjobsDetails(APIView):
                         "land_type":job.jobsahayak.land_type,
                         "pay_amount_male":job.pay_amount_male,
                         "pay_amount_female":job.pay_amount_female,
-                        "fawda_fee":job.fawda_fee,
+                        "fawda_fee":job.fawda_fee_sahayak,
                         "count_male":job.count_male,
                         "count_female":job.count_female,
                         "payment_your":job.payment_your,
@@ -1101,7 +1155,7 @@ class RefreshMyjobsDetails(APIView):
                         "datetime":job.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                         "land_area":job.jobsahayak.land_area,
                         "land_type":job.jobsahayak.land_type,
-                        "fawda_fee":job.fawda_fee,
+                        "fawda_fee":job.fawda_fee_sahayak,
                         "payment_your":job.payment_your,
                         "total_amount_theka":job.total_amount_theka,
                         "grahak_name":job.jobsahayak.grahak.profile.name,
@@ -1119,7 +1173,7 @@ class RefreshMyjobsDetails(APIView):
                     "datetime":job.jobmachine.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     "land_area":job.jobmachine.land_area,
                     "land_type":job.jobmachine.land_type,
-                    "fawda_fee":job.fawda_fee,
+                    "fawda_fee":job.fawda_fee_machine,
                     "payment_your":job.payment_your,
                     "total_amount_machine":job.total_amount_machine,
                     "grahak_name":job.jobmachine.grahak.profile.name,

@@ -54,6 +54,8 @@ class JobSahayak(models.Model):
     datetime= models.DateTimeField() 
     payment_your = models.CharField(max_length=100,blank=True,null=True)
     fawda_fee=models.CharField(max_length=100,blank=True,null=True)
+    fawda_fee_grahak=models.CharField(max_length=100,null=True,blank=True)
+    fawda_fee_sayahak=models.CharField(max_length=100,null=True,blank=True)
     description = models.TextField(blank=True)
     fawda_fee_percentage = models.ForeignKey(FawdaFee, on_delete=models.CASCADE, null=True, blank=True, default=1)
     count_male=models.CharField(max_length=100,blank=True,null=True)
@@ -160,10 +162,11 @@ class JobSahayak(models.Model):
             total_amount_without_fawda = total_amount_theka
             fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
-            payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
-            self.fawda_fee = str(fawda_fee_amount)
+            # payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+            self.fawda_fee_grahak = str(fawda_fee_amount)
+            # self.fawda_fee = str(fawda_fee_amount)
             self.total_amount = str(total_amount)
-            self.payment_your = str(payment_your)
+            # self.payment_your = str(payment_your)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
         super(JobSahayak, self).save(*args, **kwargs)
 
@@ -198,6 +201,8 @@ class JobMachine(models.Model):
     land_area=models.CharField(max_length=100,null=True,blank=True)
     total_amount=models.CharField(max_length=100, blank=True, null=True)
     fawda_fee=models.CharField(max_length=100,blank=True,null=True)
+    fawda_fee_grahak=models.CharField(max_length=100,null=True,blank=True)
+    fawda_fee_machine=models.CharField(max_length=100,null=True,blank=True)
     fawda_fee_percentage = models.ForeignKey(FawdaFee, on_delete=models.CASCADE, null=True, blank=True, default=1)
     total_amount_machine=models.CharField(max_length=100, blank=True, null=True)
     payment_your=models.CharField(max_length=100,blank=True,null=True)
@@ -241,10 +246,11 @@ class JobMachine(models.Model):
             total_amount_without_fawda = total_amount_machine
             fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
-            payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
-            self.fawda_fee = str(fawda_fee_amount)
+            # payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+            # self.fawda_fee = str(fawda_fee_amount)
+            self.fawda_fee_grahak = str(fawda_fee_amount)
             self.total_amount = str(total_amount)
-            self.payment_your = str(payment_your)
+            # self.payment_your = str(payment_your)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
             super(JobMachine, self).save(*args, **kwargs)
 

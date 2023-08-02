@@ -40,6 +40,9 @@ class JobBooking(models.Model):
     admin_commission=models.CharField(max_length=100,null=True,blank=True)
     pay_amount_male=models.CharField(max_length=100,null=True,blank=True)
     pay_amount_female=models.CharField(max_length=100,null=True,blank=True)
+    fawda_fee_sahayak=models.CharField(max_length=100,null=True,blank=True)
+    fawda_fee_grahak=models.CharField(max_length=100,null=True,blank=True)
+    fawda_fee_machine=models.CharField(max_length=100,null=True,blank=True)
     ADMIN_PAYMENT=(
         ('Pending','Pending'),
         ('Paid','Paid'),
