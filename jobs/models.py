@@ -55,7 +55,7 @@ class JobSahayak(models.Model):
     payment_your = models.CharField(max_length=100,blank=True,null=True)
     fawda_fee=models.CharField(max_length=100,blank=True,null=True)
     fawda_fee_grahak=models.CharField(max_length=100,null=True,blank=True)
-    fawda_fee_sayahak=models.CharField(max_length=100,null=True,blank=True)
+    fawda_fee_sahayak=models.CharField(max_length=100,null=True,blank=True)
     description = models.TextField(blank=True)
     fawda_fee_percentage = models.ForeignKey(FawdaFee, on_delete=models.CASCADE, null=True, blank=True, default=1)
     count_male=models.CharField(max_length=100,blank=True,null=True)

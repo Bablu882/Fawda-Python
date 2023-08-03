@@ -216,7 +216,7 @@ class BookingSahayakIndividuals(APIView):
                 # create a new job if it doesn't already exist
                 unique_id = int(uuid.uuid4().hex[:6], 16)
                 job_number='S-'+str(unique_id)
-                job = JobSahayak(
+                job = JobSahayak.objects.create(
                     grahak=request.user,
                     job_type='individuals_sahayak',
                     datetime=data['datetime'],
@@ -231,7 +231,7 @@ class BookingSahayakIndividuals(APIView):
                     job_number=job_number
                     # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
-                job.save()
+                # job.save()
                 serial=GetJobIndividualsSerializer(job)
                 #send nortification here
                 # users = User.objects.filter(user_type='Sahayak').exclude(push_token='').exclude(profile__latitude=None).exclude(profile__longitude=None).values('push_token', 'profile__latitude', 'profile__longitude')
