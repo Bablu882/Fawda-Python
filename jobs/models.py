@@ -125,12 +125,12 @@ class JobSahayak(models.Model):
             total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
             
             # calculate payment_your amount
-            payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
+            # payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
             
             # update the model fields
-            self.fawda_fee = str(fawda_fee_amount)
+            self.fawda_fee_grahak = str(fawda_fee_amount)
             self.total_amount = str(total_amount)
-            self.payment_your = str(payment_your)
+            # self.payment_your = str(payment_your)
             self.total_amount_sahayak=str(total_amount_without_fawda)
             self.fawda_fee_percentage = self.fawda_fee_percentage  # update the original field value without percentage symbol
         if self.job_type == 'theke_pe_kam':
