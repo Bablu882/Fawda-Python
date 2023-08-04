@@ -19,9 +19,9 @@ class PostJobThekePeKamSerializer(serializers.ModelSerializer):
         fields = ['datetime', 'description', 'land_area', 'land_type', 'total_amount_theka']
 
     def validate_land_type(self, value):
-        allowed_choices = ['Bigha', 'Killa']
+        allowed_choices = ['Bigha', 'Killa', 'None']
         if value not in allowed_choices:
-            raise serializers.ValidationError('land_type should be Bigha or Killa')
+            raise serializers.ValidationError('land_type should be Bigha or Killa or None')
         return value
     
     def validate_land_area(self, value):
@@ -30,8 +30,8 @@ class PostJobThekePeKamSerializer(serializers.ModelSerializer):
         except ValueError:
             raise serializers.ValidationError('land_area should be a valid integer')
 
-        if land_area <= 0:
-            raise serializers.ValidationError('land_area should be greater than 0')
+        # if land_area <= 0:
+        #     raise serializers.ValidationError('land_area should be greater than 0')
         if land_area >= 100:
             raise serializers.ValidationError('land_area should be less than 100')
         return land_area
@@ -65,16 +65,16 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
                   'num_days']
         
     def validate_land_type(self, value):
-        allowed_choices = ['Bigha', 'Killa']
+        allowed_choices = ['Bigha', 'Killa', 'None']
         if value not in allowed_choices:
-            raise serializers.ValidationError('land_type should be Bigha or Killa')
+            raise serializers.ValidationError('land_type should be Bigha or Killa or None')
         return value
         
-    def validate_land_type(self, value):
-        allowed_choices = ['Bigha', 'Killa']
-        if value not in allowed_choices:
-            raise serializers.ValidationError('land_type should be Bigha or Killa')
-        return value
+    # def validate_land_type(self, value):
+    #     allowed_choices = ['Bigha', 'Killa']
+    #     if value not in allowed_choices:
+    #         raise serializers.ValidationError('land_type should be Bigha or Killa')
+    #     return value
     
     def validate_land_area(self, value):
         try:
@@ -82,8 +82,8 @@ class PostJobIndividualSerializer(serializers.ModelSerializer):
         except ValueError:
             raise serializers.ValidationError('land_area should be a valid integer')
 
-        if land_area <= 0:
-            raise serializers.ValidationError('land_area should be greater than 0')
+        # if land_area <= 0:
+        #     raise serializers.ValidationError('land_area should be greater than 0')
         if land_area >= 100:
             raise serializers.ValidationError('land_area should be less than 100')
         return land_area
@@ -120,9 +120,9 @@ class JobMachineSerializers(serializers.ModelSerializer):
             'total_amount_machine',    
         ]
     def validate_land_type(self, value):
-        allowed_choices = ['Bigha', 'Killa']
+        allowed_choices = ['Bigha', 'Killa', 'None']
         if value not in allowed_choices:
-            raise serializers.ValidationError('land_type should be Bigha or Killa')
+            raise serializers.ValidationError('land_type should be Bigha or Killa or None')
         return value    
     def validate_work_type(self, value):
         if not re.match(r'^[a-zA-Z\s\u0900-\u097F]+$', value):
@@ -140,8 +140,8 @@ class JobMachineSerializers(serializers.ModelSerializer):
         except ValueError:
             raise serializers.ValidationError('land_area should be a valid integer')
 
-        if land_area <= 0:
-            raise serializers.ValidationError('land_area should be greater than 0')
+        # if land_area <= 0:
+        #     raise serializers.ValidationError('land_area should be greater than 0')
         if land_area >= 100:
             raise serializers.ValidationError('land_area should be less than 100')
         return land_area
