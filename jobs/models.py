@@ -69,7 +69,8 @@ class JobSahayak(models.Model):
     land_area=models.CharField(max_length=100,null=True,blank=True)
     LAND_TYPE=(
         ('Killa','Killa'),
-        ('Bigha','Bigha')
+        ('Bigha','Bigha'),
+        ('None','None')
     )
     land_type=models.CharField(max_length=10,choices=LAND_TYPE)
     job_number=models.CharField(max_length=50,null=True,blank=True)
@@ -188,7 +189,8 @@ class JobMachine(models.Model):
     )
     LAND_TYPE_CHOICES=(
         ('Killa','Killa'),
-        ('Bigha','Bigha')
+        ('Bigha','Bigha'),
+        ('None','None')
     )
     grahak=models.ForeignKey(User,on_delete=models.CASCADE)
     date=models.DateTimeField(auto_now_add=True)
