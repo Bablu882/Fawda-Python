@@ -96,7 +96,7 @@ class RegisterApi(APIView):
             username=phone_number,
             mobile_no=phone_number,
             user_type=user_type,
-            is_active=False,
+            is_active=True,
             is_verified=False,
         )
         profile = Profile.objects.create(

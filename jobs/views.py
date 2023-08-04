@@ -1227,7 +1227,9 @@ class UserPushTokenAPIView(APIView):
             return Response({'push_token':{'This field is required !'}})
         try:
             user = User.objects.get(username=request.user)
+            is_verified = user.is_verified
             print(user.profile.name)
+            print(user.push_token)
         except User.DoesNotExist:
             # If the user doesn't exist, return an error response
             return Response({
@@ -1236,21 +1238,38 @@ class UserPushTokenAPIView(APIView):
             })
         if push_token == user.push_token:
             return Response({'message':'Device already registered !'})
+        
         # Check that the push token is valid by sending a test notification to the device
-        response = requests.post('https://exp.host/--/api/v2/push/send', json={
-            'to': push_token,
-            'title': 'नए डिवाइस में लॉगिन',
-            'body': 'आपने नए डिवाइस में पंजीकृत किया है!'
-        })
-        print(response.text)
-        response_json = response.json()
-        if 'data' in response_json and 'status' in response_json['data']:
-            if response_json['data']['status'] == 'error' and 'details' in response_json['data'] and 'expoPushToken' in response_json['data']['details']:
+        if user.push_token is None:
+            response = requests.post('https://exp.host/--/api/v2/push/send', json={
+                'to': push_token,
+                'title': 'नया पंजीकरण सफल',
+                'body': 'आपने नए डिवाइस में पंजीकृत किया है!'
+            })
+            print(response.text)
+            response_json = response.json()
+            if 'data' in response_json and 'status' in response_json['data']:
+                if response_json['data']['status'] == 'error' and 'details' in response_json['data'] and 'expoPushToken' in response_json['data']['details']:
                 # If the test notification failed, return an error response
-                return Response({
-                    'status': 'error',
-                    'message': response_json
-                })        
+                    return Response({
+                        'status': 'error',
+                        'message': response_json
+                    })
+        elif is_verified == True and push_token != user.push_token :
+            response = requests.post('https://exp.host/--/api/v2/push/send', json={
+                'to': push_token,
+                'title': 'नए डिवाइस में लॉगिन',
+                'body': 'आपने नए डिवाइस में लॉगिन किया है!'
+            })
+            print(response.text)
+            response_json = response.json()
+            if 'data' in response_json and 'status' in response_json['data']:
+                if response_json['data']['status'] == 'error' and 'details' in response_json['data'] and 'expoPushToken' in response_json['data']['details']:
+                # If the test notification failed, return an error response
+                    return Response({
+                        'status': 'error',
+                        'message': response_json
+                    })
 
         # Save or update the push token for the user
         user.push_token = push_token
