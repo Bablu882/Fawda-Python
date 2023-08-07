@@ -236,7 +236,7 @@ def update_booking_amounts(booking):
         pay_amount_male = int(job_sahayak.pay_amount_male) if job_sahayak.pay_amount_male else 0
         pay_amount_female = int(job_sahayak.pay_amount_female) if job_sahayak.pay_amount_female else 0
         num_days = int(job_sahayak.num_days) if job_sahayak.num_days else 0
-        total_amount = float(job_sahayak.total_amount) if job_sahayak.total_amount else 0
+        # total_amount = float(job_sahayak.total_amount) if job_sahayak.total_amount else 0
         fawda_fee_grahak = float(job_sahayak.fawda_fee_grahak) if job_sahayak.fawda_fee_grahak else 0
         # Extract the percentage value from fawda_fee_percentage field
         fawda_fee_percentage_str = job_sahayak.fawda_fee_percentage.fawda_fee_percentage.rstrip('%')
@@ -254,7 +254,7 @@ def update_booking_amounts(booking):
         fawda_fee_amount = round(total_amount_without_fawda * (fawda_fee_percentage / 100), 2)
 
         # calculate total amount with fawda_fee
-        # total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
+        total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
 
         # calculate payment_your amount
         payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
@@ -265,8 +265,8 @@ def update_booking_amounts(booking):
         booking.fawda_fee_grahak = str(fawda_fee_grahak)
         booking.payment_your = str(payment_your)
         booking.total_amount_sahayak = str(total_amount_without_fawda)
-        booking.admin_commission=str((total_amount - payment_your))
-        # booking.save()
+        booking.admin_commission=str(fawda_fee_amount + fawda_fee_grahak)
+        booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
         jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
         check_refer = ReferCode.objects.filter(from_user=booking.booking_user)
@@ -304,7 +304,7 @@ def update_booking_amounts(booking):
         booking.total_amount_theka = str(total_amount_without_fawda)
         booking.admin_commission=str((total_amount - payment_your))
         # booking.fawda_fee_percentage = booking.fawda_fee_percentage  # update the original field value without percentage symbol 
-    booking.save()    
+        booking.save()    
 
 def update_booking_amount_machine(booking):
     job_machine=booking.jobmachine

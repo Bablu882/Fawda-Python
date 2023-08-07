@@ -124,9 +124,8 @@ class JobDetailsAdminPanel(APIView):
     def get(self,request,format=None):
         data=request.GET.get('id')
         job_number=request.GET.get('job_number')
-        # print('jhlhjkhk',job_number)
         data_list=[]
-        if JobSahayak.objects.filter(id=data,job_number=job_number,status='Pending').exists():
+        if JobSahayak.objects.filter(id=data,job_number=job_number).exists():
             details1=JobSahayak.objects.get(id=data)
             data_list.append({
                 'grahak_name':details1.grahak.profile.name,
@@ -142,17 +141,20 @@ class JobDetailsAdminPanel(APIView):
                 'status':details1.status,
                 'desc':details1.description,
                  
-                # 'heading':"",
-                # 'name':"",
-                # 'gender':"",
-                # 'phone':"",
-                # 'mohalla':"",
-                # 'village':"",
-                # 'state':"",
-                # 'district':"",
+                'heading':"Sahayak Details",
+                'name':"None",
+                'gender':"None",
+                'phone':"None",
+                'mohalla':"None",
+                'village':"None",
+                'state':"None",
+                'district':"None",
+                'pincode':"None",
+                'age':"None",
+                'upiid':"None",
 
             })
-        elif JobMachine.objects.filter(id=data,job_number=job_number,status='Pending').exists():
+        elif JobMachine.objects.filter(id=data,job_number=job_number).exists():
             details2=JobMachine.objects.get(id=data)
             data_list.append({
                 'grahak_name':details2.grahak.profile.name,
@@ -166,16 +168,19 @@ class JobDetailsAdminPanel(APIView):
                 'grahak_age':details2.grahak.profile.age,
                 'grahak_upiid':details2.grahak.profile.upiid,
                 'status':details2.status,
-                'desc':details2.description,
+                'desc':(details2.work_type) + " , "  + (details2.machine),
                 
-                # 'heading':"",
-                # 'name':"",
-                # 'gender':"",
-                # 'phone':"",
-                # 'mohalla':"",
-                # 'village':"",
-                # 'state':"",
-                # 'district':"",
+                'heading':"Sahayak Details",
+                'name':"None",
+                'gender':"None",
+                'phone':"None",
+                'mohalla':"None",
+                'village':"None",
+                'state':"None",
+                'district':"None",
+                'pincode':"None",
+                'age':"None",
+                'upiid':"None",
 
             })
         elif JobBooking.objects.filter(id=data).exists():
@@ -220,7 +225,7 @@ class JobDetailsAdminPanel(APIView):
                     'grahak_pincode':details3.jobmachine.grahak.profile.pincode,
                     'grahak_age':details3.jobmachine.grahak.profile.age,
                     'grahak_upiid':details3.jobmachine.grahak.profile.upiid,
-                    'desc':details3.jobmachine.description,
+                    'desc':details3.jobmachine.work_type + " , " + (details3.jobmachine.machine),
                     'status':details3.status,
                     
                     'heading':"Machine Malik Details",
