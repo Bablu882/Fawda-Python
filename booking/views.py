@@ -447,7 +447,7 @@ class MyBookingDetailsSahayak(APIView):
                     count_female += int(booking.count_female) if booking.count_female else 0
                     total_amount_sahayak += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                     payment_your += float(booking.payment_your) if booking.payment_your else 0
-                    fawda_fee += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
+                    fawda_fee += float(booking.fawda_fee_grahak) if booking.fawda_fee_grahak else 0
                     booking_data.append({
                         'id': booking.id,
                         'datetime': booking.jobsahayak.datetime,
@@ -580,7 +580,7 @@ class MyBookingDetails(APIView):
                 booking_data[job_id]['count_female'] += int(booking.count_female) if booking.count_female else 0
                 booking_data[job_id]['total_amount_sahayak'] += int(booking.total_amount_sahayak) if booking.total_amount_sahayak else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee_grahak else 0
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
@@ -605,7 +605,7 @@ class MyBookingDetails(APIView):
                 booking_data[job_id]['total_amount'] += float(booking.total_amount) if booking.total_amount else 0
                 booking_data[job_id]['total_amount_sahayak'] += float(booking.total_amount_theka) if booking.total_amount_theka else 0
                 booking_data[job_id]['payment_your'] += float(booking.payment_your) if booking.payment_your else 0
-                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee else 0
+                booking_data[job_id]['fawda_fee'] += float(booking.fawda_fee_grahak) if booking.fawda_fee_grahak else 0
                 booking_data[job_id]['sahayaks'].append({
                     'booking_id': booking.id,
                     'job_id':booking.jobsahayak.id,
