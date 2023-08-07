@@ -239,11 +239,19 @@ class PaymentAPIView(APIView):
             #     print('------', total_amount)
             # else :
             #     total_amount = sum(float(job_booking.total_amount) for job_booking in job_bookings)
+            if job_details.job_type == 'individuals_sahayak' :
+                total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
+                total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                print(total_amount_grahak)
+                print(total_fawda_fee)
+                total_amount = float(total_amount_grahak + total_fawda_fee)
+            else:
 
-            total_amount_grahak = sum(float(job_booking.total_amount) for job_booking in job_bookings)
-            total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
-            
-            total_amount = float(total_amount_grahak + total_fawda_fee)
+                total_amount_grahak = sum(float(job_booking.total_amount) for job_booking in job_bookings)
+                total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                print(total_amount_grahak)
+                print(total_fawda_fee)
+                total_amount = float(total_amount_grahak + total_fawda_fee)
 
             if total_amount != float(amount):
                 return Response({'message': 'Total amount of job bookings does not match the received amount!'})
