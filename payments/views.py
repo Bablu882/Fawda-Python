@@ -226,8 +226,11 @@ class PaymentAPIView(APIView):
             if any(job_booking.status != 'Accepted' for job_booking in job_bookings):
                 return Response({'message': 'Booking status should be Accepted before proceeding.'})
 
-            total_amount = sum(float(job_booking.total_amount)
+            total_amount_sahayak = sum(float(job_booking.total_amount_sahayak)
                                for job_booking in job_bookings)
+            job_details = JobSahayak.objects.get(id=job_id,job_number=job_number)
+            fawda_fee_grahak = job_details.fawda_fee_grahak
+            total_amount = total_amount_sahayak + float(fawda_fee_grahak)
             print('------', total_amount)
 
             if total_amount != float(amount):
