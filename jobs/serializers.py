@@ -117,7 +117,8 @@ class JobMachineSerializers(serializers.ModelSerializer):
             'total_amount',
             'land_area',
             'land_type',
-            'total_amount_machine',    
+            'total_amount_machine', 
+            'description'
         ]
     def validate_land_type(self, value):
         allowed_choices = ['Bigha', 'Killa', 'None']

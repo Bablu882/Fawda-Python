@@ -330,6 +330,7 @@ class BookingJobMachine(APIView):
                 landarea=serializers.data.get('land_area')
                 landtype=serializers.data.get('land_type')
                 amount=serializers.data.get('total_amount_machine')
+                description=serializers.data.get('description')
                 grahak=request.user
                 if not worktype or not machine or not datetime or not landarea or not landtype or not amount:
                     return Response({'message':{'all fields are required instead of others !'}})  
@@ -365,8 +366,7 @@ class BookingJobMachine(APIView):
                     land_type=landtype,
                     total_amount_machine=amount,
                     grahak=grahak,
-
-
+                    description=description,
                 )
                 if existing_job:
                     return Response({'message':{'job already exist !'}})
@@ -381,7 +381,8 @@ class BookingJobMachine(APIView):
                     land_type=landtype,
                     total_amount_machine=amount,
                     grahak=grahak,
-                    job_number=job_number
+                    job_number=job_number,
+                    description=description
                 )
                 serial=GetJobMachineSerializer(job) 
                 #send nortification  here   

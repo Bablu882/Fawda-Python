@@ -197,7 +197,7 @@ class JobAcceptIndividuals(APIView):
             push_message = {
                             'to':job.grahak.push_token,
                             'title': 'काम स्वीकार किया गया है',
-                            'body': f'आपका काम व्यक्ति-सहायक द्वारा {count_male} पुरुष,{count_female} महिला की नौकरी स्वीकार की गई है! कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
+                            'body': f'आपका व्यक्ति-सहायक काम स्वीकार किया गया है! कृपया अपनी बुकिंग के लिए भुगतान पूरा करें!',
                             'sound': 'default',
                             'data': {
                                 'key': 'Grahak'  # Add additional key-value pair
@@ -255,14 +255,13 @@ def update_booking_amounts(booking):
 
         # calculate total amount with fawda_fee
         total_amount = round(total_amount_without_fawda + fawda_fee_amount, 2)
-
         # calculate payment_your amount
         payment_your = round(total_amount_without_fawda - fawda_fee_amount, 2)
 
         # update the booking fields
         booking.fawda_fee_sahayak=str(fawda_fee_amount)
         booking.total_amount = str(total_amount)
-        booking.fawda_fee_grahak = str(fawda_fee_grahak)
+        booking.fawda_fee_grahak = str(fawda_fee_amount)
         booking.payment_your = str(payment_your)
         booking.total_amount_sahayak = str(total_amount_without_fawda)
         booking.admin_commission=str(fawda_fee_amount + fawda_fee_grahak)
@@ -651,7 +650,8 @@ class MyBookingDetails(APIView):
                 'machine_malik_mobile_no':booking.booking_user.mobile_no,
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
-                'land_type':booking.jobmachine.land_type
+                'land_type':booking.jobmachine.land_type,
+                'description':booking.jobmachine.description
                 
             })
         booking2=JobSahayak.objects.filter(grahak=request.user,status='Pending').order_by('-id')
@@ -806,16 +806,16 @@ class OngoingStatusApi(APIView):
 
             job.status = 'Ongoing'
             job.save()
-            push_message = {
-                            'to':job.booking_user.push_token,
-                            'title': 'काम शुरू हो गया है!',
-                            'body': 'आपका काम शुरू हो गया है! जल्दी से जाँच करें।',
-                            'sound': 'default',
-                            'data': {
-                                'key': 'Started'  # Add additional key-value pair
-                            }
-                        }
-            send_push_notification(push_message)
+            # push_message = {
+            #                 'to':job.booking_user.push_token,
+            #                 'title': 'काम शुरू हो गया है!',
+            #                 'body': 'आपका काम शुरू हो गया है! जल्दी से जाँच करें।',
+            #                 'sound': 'default',
+            #                 'data': {
+            #                     'key': 'Started'  # Add additional key-value pair
+            #                 }
+            #             }
+            # send_push_notification(push_message)
             
 
         if not is_booked:
@@ -867,16 +867,16 @@ class CompletedStatusApi(APIView):
 
             job.status = 'Completed'
             job.save()
-            push_message = {
-                            'to':job.booking_user.push_token,
-                            'title': 'काम पूरा हो गया है!',
-                            'body': 'काम पूरा हो गया है! धन्यवाद! कुछ देर में भुगतान राशि आपके खाते में ट्रांसफर कर दी जाएगी!',
-                            'sound': 'default',
-                            'data': {
-                                'key': 'Completed'  # Add additional key-value pair
-                            }
-                        }
-            send_push_notification(push_message)
+            # push_message = {
+            #                 'to':job.booking_user.push_token,
+            #                 'title': 'काम पूरा हो गया है!',
+            #                 'body': 'काम पूरा हो गया है! धन्यवाद! कुछ देर में भुगतान राशि आपके खाते में ट्रांसफर कर दी जाएगी!',
+            #                 'sound': 'default',
+            #                 'data': {
+            #                     'key': 'Completed'  # Add additional key-value pair
+            #                 }
+            #             }
+            # send_push_notification(push_message)
 
         if not is_ongoing:
             return Response({'message': {'Booking status cannot be updated it should be Ongoing before !'}})
@@ -1325,6 +1325,7 @@ class MyBookingDetailsHistory(APIView):
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
                 'land_type':booking.jobmachine.land_type,
+                'description':booking.jobmachine.description,
                 'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                 'comment':getrating(booking.id)['comment'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
 
@@ -1423,6 +1424,7 @@ class MyBookingDetailsHistory(APIView):
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
                 'land_type':booking.jobmachine.land_type,
+                'description':booking.jobmachine.description,
                 'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                 'comment':getrating(booking.id)['comment'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
 
@@ -1522,6 +1524,7 @@ class MyBookingDetailsHistory(APIView):
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
                 'land_type':booking.jobmachine.land_type,
+                'description':booking.jobmachine.description,
                 'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                 'comment':getrating(booking.id)['comment'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
 
@@ -1621,6 +1624,7 @@ class MyBookingDetailsHistory(APIView):
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
                 'land_type':booking.jobmachine.land_type,
+                'description':booking.jobmachine.description,
                 'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                 'comment':getrating(booking.id)['comment'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
 
@@ -1719,6 +1723,7 @@ class MyBookingDetailsHistory(APIView):
                 'booking_user_id':booking.booking_user.id,
                 'job_number':booking.jobmachine.job_number,
                 'land_type':booking.jobmachine.land_type,
+                'description':booking.jobmachine.description,
                 'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                 'comment':getrating(booking.id)['comment'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                 
@@ -1822,6 +1827,7 @@ class MyjobsHistory(APIView):
                         'booking_user_id':booking_data.booking_user.id,
                         'job_number':booking_data.jobmachine.job_number,
                         'land_type':booking_data.jobmachine.land_type,
+                        'description':booking_data.jobmachine.description,
                         'rating':getrating(booking_data.id)['rating'] if Rating.objects.filter(booking_job=booking_data.id).exists() else "",
                         'comment':getrating(booking_data.id)['comment'] if Rating.objects.filter(booking_job=booking_data.id).exists() else "",  
                         })

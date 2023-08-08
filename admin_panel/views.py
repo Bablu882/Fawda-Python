@@ -168,7 +168,7 @@ class JobDetailsAdminPanel(APIView):
                 'grahak_age':details2.grahak.profile.age,
                 'grahak_upiid':details2.grahak.profile.upiid,
                 'status':details2.status,
-                'desc':(details2.work_type) + " , "  + (details2.machine),
+                'desc':(details2.work_type) + " , "  + (details2.machine) + "\n" + (details2.description),
                 
                 'heading':"Sahayak Details",
                 'name':"None",
@@ -225,7 +225,7 @@ class JobDetailsAdminPanel(APIView):
                     'grahak_pincode':details3.jobmachine.grahak.profile.pincode,
                     'grahak_age':details3.jobmachine.grahak.profile.age,
                     'grahak_upiid':details3.jobmachine.grahak.profile.upiid,
-                    'desc':details3.jobmachine.work_type + " , " + (details3.jobmachine.machine),
+                    'desc':details3.jobmachine.work_type + " , " + (details3.jobmachine.machine) + "\n" + (details3.jobmachine.description),
                     'status':details3.status,
                     
                     'heading':"Machine Malik Details",
