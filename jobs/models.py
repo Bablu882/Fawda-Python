@@ -196,7 +196,7 @@ class JobMachine(models.Model):
     date=models.DateTimeField(auto_now_add=True)
     # time=models.TimeField()
     datetime= models.DateTimeField() 
-    description=models.TextField(blank=True)
+    description=models.TextField(null=True,blank=True)
     land_type=models.CharField(max_length=10,choices=LAND_TYPE_CHOICES)
     job_type=models.CharField(max_length=20,default='machine_malik')
     status=models.CharField(max_length=20,choices=STATUS_TYPE_CHOICES,default='Pending')
