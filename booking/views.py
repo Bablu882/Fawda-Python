@@ -264,7 +264,7 @@ def update_booking_amounts(booking):
         booking.fawda_fee_grahak = str(fawda_fee_amount)
         booking.payment_your = str(payment_your)
         booking.total_amount_sahayak = str(total_amount_without_fawda)
-        booking.admin_commission=str(fawda_fee_amount + fawda_fee_grahak)
+        booking.admin_commission=str(fawda_fee_amount + fawda_fee_amount)
         booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
         jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
