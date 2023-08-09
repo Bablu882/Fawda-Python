@@ -184,7 +184,7 @@ class PaymentAPIView(APIView):
             p_amount = amount
             p_order_id = job_id
             p_merchant_param1 = job_number
-            p_upi_mode = 'intent'
+            p_upi_intent = 'intent'
 
             # upi_id = 'upi_id'  # Replace with the actual UPI ID
             # # Replace with the actual beneficiary name
@@ -319,7 +319,7 @@ class PaymentAPIView(APIView):
                 'amount=' + p_amount + '&' +
                 'redirect_url=' + p_redirect_url + '&' +
                 'merchant_param1=' + p_merchant_param1 + '&' +
-                'upi_mode=' + p_upi_mode + '&'
+                'upi_intent=' + p_upi_intent + '&'
                 # ... Include other form data
             )
 
@@ -640,7 +640,7 @@ def ccav_request_handler(request):
         p_billing_tel = request.POST.get('billing_tel')
         p_billing_email = request.POST.get('billing_email')
         p_merchant_param1 = 'S-8935372'
-        p_upi_mode = 'intent'
+        p_upi_intent = 'intent'
 
         merchant_data = (
             'merchant_id=' + p_merchant_id + '&' +
@@ -657,7 +657,7 @@ def ccav_request_handler(request):
             'billing_tel=' + p_billing_tel + '&' +
             'billing_email=' + p_billing_email + '&' +
             'merchant_param1=' + p_merchant_param1 + '&' + 
-            'upi_mode=' + p_upi_mode + '&'
+            'upi_intent=' + p_upi_intent + '&'
 
         )
 
