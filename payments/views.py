@@ -184,7 +184,7 @@ class PaymentAPIView(APIView):
             p_amount = amount
             p_order_id = job_id
             p_merchant_param1 = job_number
-            p_upi_intent = 'intent'
+            p_upi_intent = 'Intent'
 
             # upi_id = 'upi_id'  # Replace with the actual UPI ID
             # # Replace with the actual beneficiary name
@@ -319,7 +319,7 @@ class PaymentAPIView(APIView):
                 'amount=' + p_amount + '&' +
                 'redirect_url=' + p_redirect_url + '&' +
                 'merchant_param1=' + p_merchant_param1 + '&' +
-                'upi_intent=' + p_upi_intent + '&'
+                'UpiPaymentflag=' + p_upi_intent + '&'
                 # ... Include other form data
             )
 
@@ -328,6 +328,17 @@ class PaymentAPIView(APIView):
             print(decription)
 
             return Response(encryption)
+        
+# class PaymentDetails(APIView):
+#     authentication_classes=[BearerTokenAuthentication]
+#     permission_classes =[IsAuthenticated,]
+
+#     def post(self, request):
+#         job_id=request.data.get('job_id')
+#         job_number=request.data.get('job_number')
+#         user=request.user
+
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
