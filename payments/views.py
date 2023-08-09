@@ -177,14 +177,14 @@ class PaymentAPIView(APIView):
             job_id = request.data.get('job_id')
             job_number = request.data.get('job_number')
             amount = request.data.get('amount')
-            p_redirect_url = request.build_absolute_uri(
-                '/ccavResponseHandler/')
+            p_redirect_url = 'https://fawda.demoserver.in/ccavResponseHandler/'
             print(p_redirect_url)
             p_currency = 'INR'
             p_merchant_id = settings.MERCHANT_ID
             p_amount = amount
             p_order_id = job_id
             p_merchant_param1 = job_number
+            p_upi_mode = 'intent'
 
             # upi_id = 'upi_id'  # Replace with the actual UPI ID
             # # Replace with the actual beneficiary name
@@ -318,7 +318,8 @@ class PaymentAPIView(APIView):
                 'currency=' + p_currency + '&' +
                 'amount=' + p_amount + '&' +
                 'redirect_url=' + p_redirect_url + '&' +
-                'merchant_param1=' + p_merchant_param1 + '&'
+                'merchant_param1=' + p_merchant_param1 + '&' +
+                'upi_mode=' + p_upi_mode + '&'
                 # ... Include other form data
             )
 
@@ -639,6 +640,7 @@ def ccav_request_handler(request):
         p_billing_tel = request.POST.get('billing_tel')
         p_billing_email = request.POST.get('billing_email')
         p_merchant_param1 = 'S-8935372'
+        p_upi_mode = 'intent'
 
         merchant_data = (
             'merchant_id=' + p_merchant_id + '&' +
@@ -654,7 +656,8 @@ def ccav_request_handler(request):
             'billing_country=' + p_billing_country + '&' +
             'billing_tel=' + p_billing_tel + '&' +
             'billing_email=' + p_billing_email + '&' +
-            'merchant_param1=' + p_merchant_param1 + '&'
+            'merchant_param1=' + p_merchant_param1 + '&' + 
+            'upi_mode=' + p_upi_mode + '&'
 
         )
 
