@@ -54,6 +54,14 @@ class BookingThekePeKam(APIView):
 
                 if amount <= 5:
                     return Response({'message': {'total_amount_theka should be greater than  5 !'}})
+                
+                job_count_grahak_machine = (JobSahayak.objects.filter(grahak=request.user)).count()
+                job_count_grahak_sahayak = (JobMachine.objects.filter(grahak=request.user)).count()
+                jobs_count = job_count_grahak_machine + job_count_grahak_sahayak
+                if jobs_count == 0:
+                    is_first = True
+                else :
+                    is_first = False
                   
                 existing_job = JobSahayak.objects.filter(
                     datetime=datetime,
@@ -77,7 +85,8 @@ class BookingThekePeKam(APIView):
                     total_amount_theka=amount,
                     job_type='theke_pe_kam',
                     grahak=grahak,
-                    job_number=job_number
+                    job_number=job_number,
+                    is_first=is_first
                 )
                 serial=GetJobThekePeKamSerializer(job)
                 #send nortification here
@@ -196,6 +205,13 @@ class BookingSahayakIndividuals(APIView):
                 if int(data['count_male']) == 0 and int(data['count_female']) == 0:
                     return Response({'message':{'without count_male or count_female job can not be post !'}})    
                 # check if a job with the same details already exists
+                job_count_grahak_machine = (JobSahayak.objects.filter(grahak=request.user)).count()
+                job_count_grahak_sahayak = (JobMachine.objects.filter(grahak=request.user)).count()
+                jobs_count = job_count_grahak_machine + job_count_grahak_sahayak
+                if jobs_count == 0:
+                    is_first = True
+                else :
+                    is_first = False    
                 existing_jobs = JobSahayak.objects.filter(
                     grahak=request.user,
                     job_type='individuals_sahayak',
@@ -228,7 +244,8 @@ class BookingSahayakIndividuals(APIView):
                     pay_amount_male=pay_amount_male,
                     pay_amount_female=pay_amount_female,
                     num_days=data['num_days'],
-                    job_number=job_number
+                    job_number=job_number,
+                    is_first=is_first
                     # fawda_fee_percentage=data['fawda_fee_percentage']
                 )
                 # job.save()
@@ -357,6 +374,15 @@ class BookingJobMachine(APIView):
 
                 if amount <= 5:
                     return Response({'message': {'total_amount_machine should be greater than 5 !'}})     
+                
+                job_count_grahak_machine = (JobSahayak.objects.filter(grahak=request.user)).count()
+                job_count_grahak_sahayak = (JobMachine.objects.filter(grahak=request.user)).count()
+                jobs_count = job_count_grahak_machine + job_count_grahak_sahayak
+                if jobs_count == 0:
+                    is_first = True
+                else :
+                    is_first = False
+                
                 existing_job=JobMachine.objects.filter(
                     work_type=worktype,
                     machine=machine,
@@ -382,7 +408,8 @@ class BookingJobMachine(APIView):
                     total_amount_machine=amount,
                     grahak=grahak,
                     job_number=job_number,
-                    description=description
+                    description=description,
+                    is_first=is_first
                 )
                 serial=GetJobMachineSerializer(job) 
                 #send nortification  here   
