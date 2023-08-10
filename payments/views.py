@@ -105,6 +105,36 @@ class TestPaymentAPIView(APIView):
             #     return Response({'message':'job_id does not exists'})
             job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(
                 jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+            job_type = ''
+            try:
+                job_details = JobSahayak.objects.get(id=job_id,job_number=job_number)
+                job_type=job_details.job_type
+            except JobSahayak.DoesNotExist:
+                job_type=''
+                pass
+
+            if job_details.job_type == 'individuals_sahayak' or job_details.job_type == 'theke_pe_kam':
+                job_grahak = job_details.grahak
+                check_refer = ReferCode.objects.filter(from_user=job_grahak)
+                for refers in check_refer:
+                    used_refer_count = refers.used_count
+                    updated_used_count = 0    
+                    if used_refer_count == 0 or used_refer_count == 1:
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                        refers.save()
+            else :
+                job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
+                job_grahak1 = job_details1.grahak
+                check_refer = ReferCode.objects.filter(from_user=job_grahak1)
+                for refers in check_refer:
+                    used_refer_count = refers.used_count
+                    updated_used_count = 0    
+                    if used_refer_count == 0 or used_refer_count == 1:
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                        refers.save()    
+
             is_booked = False
             for job in job_bookings:
                 if job.status == 'Booked':
@@ -225,8 +255,13 @@ class PaymentAPIView(APIView):
 
             if any(job_booking.status != 'Accepted' for job_booking in job_bookings):
                 return Response({'message': 'Booking status should be Accepted before proceeding.'})
-            
-            job_details = JobSahayak.objects.get(id=job_id,job_number=job_number)
+            job_type = ''
+            try:
+                job_details = JobSahayak.objects.get(id=job_id,job_number=job_number)
+                job_type = job_details.job_type
+            except JobSahayak.DoesNotExist:
+                job_type=''
+                pass    
 
             # if job_details.job_type == "individuals_sahayak" :
 
@@ -239,16 +274,19 @@ class PaymentAPIView(APIView):
             #     print('------', total_amount)
             # else :
             #     total_amount = sum(float(job_booking.total_amount) for job_booking in job_bookings)
-            if job_details.job_type == 'individuals_sahayak' :
-                total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
-                total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+            if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam' :
+                if job_type == 'individuals_sahayak':
+                    total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
+                elif job_type == 'theke_pe_kam':
+                    total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)    
+                total_fawda_fee = float(job_details.fawda_fee)
                 print(total_amount_grahak)
                 print(total_fawda_fee)
                 total_amount = float(total_amount_grahak + total_fawda_fee)
             else:
-
-                total_amount_grahak = sum(float(job_booking.total_amount) for job_booking in job_bookings)
-                total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
+                total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
+                total_fawda_fee = float(job_details1.fawda_fee)
                 print(total_amount_grahak)
                 print(total_fawda_fee)
                 total_amount = float(total_amount_grahak + total_fawda_fee)
@@ -329,14 +367,147 @@ class PaymentAPIView(APIView):
 
             return Response(encryption)
         
-# class PaymentDetails(APIView):
-#     authentication_classes=[BearerTokenAuthentication]
-#     permission_classes =[IsAuthenticated,]
+class PaymentDetails(APIView):
+    authentication_classes=[BearerTokenAuthentication]
+    permission_classes =[IsAuthenticated,]
 
-#     def post(self, request):
-#         job_id=request.data.get('job_id')
-#         job_number=request.data.get('job_number')
-#         user=request.user
+    def post(self, request):
+        if request.user.user_type == 'Grahak':
+
+            job_id=request.data.get('job_id')
+            job_number=request.data.get('job_number')
+            user=request.user
+            if not job_id:
+                return Response({'message': {'job_id required !'}})
+            if not job_number:
+                return Response({'message': {'job_number required !'}})
+            if not job_id.isdigit():
+                return Response({'message': {'booking_id should be numeric !'}})
+            job_bookings = JobBooking.objects.filter(Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) | (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number))))
+            if not job_bookings.exists():
+                return Response({'message': 'No matching job bookings found.'})
+            job_type = ''
+            try:
+                job_details = JobSahayak.objects.get(id=job_id,job_number=job_number)
+                job_type = job_details.job_type
+            except JobSahayak.DoesNotExist:
+                job_type = ''
+                pass
+
+            if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam':
+                check_refer = ReferCode.objects.filter(from_user=user)
+                is_refer = False
+                for refers in check_refer:
+                    refer_status = refers.is_refer_active
+                    used_refer_count = refers.used_count
+                    if refer_status is True:
+                        is_refer = True
+                    updated_used_count = 0    
+                    if used_refer_count == 0 or used_refer_count == 1:
+                        updated_used_count = used_refer_count + 1
+                        refers.used_count = updated_used_count  
+                if job_details.is_first is True :
+                    if job_type == 'individuals_sahayak':
+                        total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
+                    elif job_type == 'theke_pe_kam':
+                         total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)   
+                    total_fawda_fee = float(0)
+                    total_amount = float(total_amount_grahak + total_fawda_fee)
+                    job_details.fawda_fee = str(total_fawda_fee)
+                    job_details.save()
+                    for booking in job_bookings:
+                        fawda_fee_sahayak = float(booking.fawda_fee_sahayak)
+                        updated_admin_commission = float(fawda_fee_sahayak + 0)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                    if job_type == 'individuals_sahayak':
+                        total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
+                    elif job_type == 'theke_pe_kam':
+                        total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
+                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_fawda_fee = float(fawda_fees * 1.25)
+                    job_details.fawda_fee = str(total_fawda_fee)
+                    job_details.save()
+                    for booking in job_bookings:
+                        fawda_fee_sahayak = float(booking.fawda_fee_sahayak)
+                        grahak_fees = float(booking.fawda_fee_grahak)
+                        fee_grahak = float(grahak_fees * 1.25)
+                        updated_admin_commission = float(fawda_fee_sahayak + fee_grahak)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                else:
+                    if job_type == 'individuals_sahayak':
+                        total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
+                    elif job_type == 'theke_pe_kam':    
+                        total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
+                    total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_amount = float(total_amount_grahak + total_fawda_fee)
+                    job_details.fawda_fee = str(total_fawda_fee)
+                    job_details.save()
+                    for booking in job_bookings:
+                        fawda_fee_sahayak = float(booking.fawda_fee_sahayak)
+                        grahak_fees = float(booking.fawda_fee_grahak)
+                        updated_admin_commission = float(fawda_fee_sahayak + grahak_fees)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+            else :
+                job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
+                check_refer = ReferCode.objects.filter(from_user=request.user)
+                is_refer = False
+                for refers in check_refer:
+                    refer_status = refers.is_refer_active
+                    used_refer_count = refers.used_count
+                    if refer_status is True:
+                        is_refer = True
+                    updated_used_count = 0    
+                    if used_refer_count == 0 or used_refer_count == 1:
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                if job_details1.is_first is True :
+                    total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
+                    total_fawda_fee = float(0)
+                    total_amount = float(total_amount_grahak + total_fawda_fee)
+                    job_details1.fawda_fee = str(total_fawda_fee)
+                    job_details1.save()
+                    for booking in job_bookings:
+                        fawda_fee_machine = float(booking.fawda_fee_machine)
+                        updated_admin_commission = float(fawda_fee_machine + 0)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount}) 
+                elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                    total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
+                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_fawda_fee = float(fawda_fees * 1.25)
+                    job_details1.fawda_fee = str(total_fawda_fee)
+                    job_details1.save()
+                    for booking in job_bookings:
+                        fawda_fee_machine = float(booking.fawda_fee_machine)
+                        grahak_fees = float(booking.fawda_fee_grahak)
+                        fee_grahak = float(grahak_fees * 1.25)
+                        updated_admin_commission = float(fawda_fee_machine + fee_grahak)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                else:
+                    total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
+                    total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_amount = float(total_amount_grahak + total_fawda_fee)
+                    job_details1.fawda_fee = str(total_fawda_fee)
+                    job_details1.save()
+                    for booking in job_bookings:
+                        fawda_fee_sahayak = float(booking.fawda_fee_machine)
+                        grahak_fees = float(booking.fawda_fee_grahak)
+                        updated_admin_commission = float(fawda_fee_sahayak + grahak_fees)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+        else:
+            return Response({'message':'Only grahak user is allowed to make payment'})
 
 
 
@@ -491,6 +662,35 @@ class CCAVResponseHandler(APIView):
                 Q((Q(jobsahayak__id=job_id) & Q(jobsahayak__job_number=job_number)) |
                   (Q(jobmachine__id=job_id) & Q(jobmachine__job_number=job_number)))
             )
+            job_type = ''
+            try:
+                job_details = JobSahayak.objects.get(id=job_id,job_number=job_number)
+                job_type = job_details.job_type
+            except JobSahayak.DoesNotExist:
+                job_type  = ''
+                pass  
+            if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam':
+                job_grahak = job_details.grahak
+                check_refer = ReferCode.objects.filter(from_user=job_grahak)
+                for refers in check_refer:
+                    used_refer_count = refers.used_count
+                    updated_used_count = 0    
+                    if used_refer_count == 0 or used_refer_count == 1:
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                        refers.save()
+            else :
+                job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
+                job_grahak1 = job_details1.grahak
+                check_refer = ReferCode.objects.filter(from_user=job_grahak1)
+                for refers in check_refer:
+                    used_refer_count = refers.used_count
+                    updated_used_count = 0    
+                    if used_refer_count == 0 or used_refer_count == 1:
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                        refers.save()      
+
             for booking in job_bookings:
                 booking.status = 'Booked'
                 booking.save()

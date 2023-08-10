@@ -13,7 +13,7 @@ urlpatterns=[
     path('webprint/',payment_show, name='web_print'),
     path('callback/',res,name='callback'),
     path('ccavRequestHandler/',PaymentRequestHandler.as_view(),name='ccav_request_handler'),
+    path('api/payment-details/', PaymentDetails.as_view()),
     # path('ccavResponseHandler/', views.CCAVResponseHandler, name='ccav_response_handler')
-
-    
+   
 ]
