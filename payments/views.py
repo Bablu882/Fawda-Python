@@ -427,14 +427,14 @@ class PaymentDetails(APIView):
                     elif job_type == 'theke_pe_kam':
                         total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
                     fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
-                    total_fawda_fee = float(fawda_fees * 1.25)
+                    total_fawda_fee = float(fawda_fees * 0.5)
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details.fawda_fee = str(total_fawda_fee)
                     job_details.save()
                     for booking in job_bookings:
                         fawda_fee_sahayak = float(booking.fawda_fee_sahayak)
                         grahak_fees = float(booking.fawda_fee_grahak)
-                        fee_grahak = float(grahak_fees * 1.25)
+                        fee_grahak = float(grahak_fees * 0.5)
                         updated_admin_commission = float(fawda_fee_sahayak + fee_grahak)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
@@ -483,14 +483,14 @@ class PaymentDetails(APIView):
                 elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
                     fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
-                    total_fawda_fee = float(fawda_fees * 1.25)
+                    total_fawda_fee = float(fawda_fees * 0.5)
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details1.fawda_fee = str(total_fawda_fee)
                     job_details1.save()
                     for booking in job_bookings:
                         fawda_fee_machine = float(booking.fawda_fee_machine)
                         grahak_fees = float(booking.fawda_fee_grahak)
-                        fee_grahak = float(grahak_fees * 1.25)
+                        fee_grahak = float(grahak_fees * 0.5)
                         updated_admin_commission = float(fawda_fee_machine + fee_grahak)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
