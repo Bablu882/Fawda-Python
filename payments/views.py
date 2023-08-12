@@ -113,7 +113,7 @@ class TestPaymentAPIView(APIView):
                 job_type=''
                 pass
 
-            if job_details.job_type == 'individuals_sahayak' or job_details.job_type == 'theke_pe_kam':
+            if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam':
                 job_grahak = job_details.grahak
                 check_refer = ReferCode.objects.filter(from_user=job_grahak)
                 for refers in check_refer:
