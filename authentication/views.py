@@ -91,7 +91,7 @@ class RegisterApi(APIView):
                 return Response({'message':'Same user cannot use the refer code twice','status':3})
 
         # Generate OTP and create user, profile, and OTP objects
-        otp = random.randint(100000, 999999)
+        otp = random.randint(1000, 9999)
         user = User.objects.create(
             username=phone_number,
             mobile_no=phone_number,
@@ -273,7 +273,7 @@ class LoginApi(APIView):
             if not user.is_active:
                 return Response({'message': 'User is deactivated or deleted!','deactivate':True, 'status': status.HTTP_403_FORBIDDEN})          
             # create OTP and send it to the user
-            otp = random.randint(100000, 999999)
+            otp = random.randint(1000, 9999)
             otps = OTP.objects.create(otp=otp, user=user)
             # send OTP to the user's mobile number for verification
             url = "https://api.kaleyra.io/v1/HXIN1764336232IN/messages"
@@ -327,7 +327,7 @@ class ResendOTPApi(APIView):
                 otp.delete()
             
             # create OTP and send it to the user
-            otp = random.randint(100000, 999999)
+            otp = random.randint(1000, 9999)
             OTP.objects.create(otp=otp, user=user)
             # send OTP to the user's mobile number for verification
             url = "https://api.kaleyra.io/v1/HXIN1764336232IN/messages"
