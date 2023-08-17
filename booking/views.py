@@ -722,8 +722,8 @@ class RatingCreate(APIView):
                 if booking.jobsahayak:
                     if not booking.jobsahayak.grahak == request.user:
                         return Response({'message':{'unauthorised user !'}})
-                    if not booking.status == 'Completed':
-                        return Response({'message':{'rating can not created it should be completed before !'}})    
+                    # if not booking.status == 'Completed':
+                    #     return Response({'message':{'rating can not created it should be completed before !'}})    
                     if Rating.objects.filter(booking_job=booking).exists():
                         return Response({'message':{'Rating already created !'}})    
                     Rating.objects.create(
