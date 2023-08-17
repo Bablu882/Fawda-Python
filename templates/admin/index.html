@@ -183,6 +183,7 @@
                         <th scope="col">Payment to Service Provider</th>
                         <th scope="col">Mobile No. for Payment</th>
                         <th scope="col">UPI Id for Payment</th>
+                        <th scope="col">Grahak UPI Id</th>
                         <th scope="col">Payment Status</th>
                       </tr>
                     </thead>
@@ -224,7 +225,8 @@
                                   <p id="state_details">State:</p>
                                   <p id="district_details">District:</p>   
                                   <p id="pincode_details">Pincode:</p> 
-                                  <p id="age_details">Age:</p>                             
+                                  <p id="age_details">Age:</p>
+                                  <p id="upi_id">UPI Id:</p>                             
                                 </div>
                               </div>
                               <div class="col-md-6" id="hide-info">
@@ -368,6 +370,7 @@
               row.append(`<td>${data.payment_to_service_provider}</td>`);
               row.append(`<td>${data.mobile_no_for_payment}</td>`);
               row.append(`<td>${data.upi_id_for_payment}</td>`);
+              row.append(`<td>${data.grahak_upi_id}</td>`);
               row.append(`<td><button class="btn btn-primary" onclick='GetJobID(${data.id}>${data.Payment_status}</button></td>`);
               tableBody.append(row); // Append new row
             });
@@ -412,6 +415,7 @@ function statusfunction(intvalue=current) {
         row.append(`<td>${data.payment_to_service_provider}</td>`);
         row.append(`<td>${data.mobile_no_for_payment}</td>`);
         row.append(`<td>${data.upi_id_for_payment}</td>`);
+        row.append(`<td>${data.grahak_upi_id}</td>`);
 
         let button = `<td></td>`;
         if(data.Job_status == 'Completed' || data.Job_status == 'Cancelled-After-Payment' || data.Job_status == 'Rejected-After-Payment'){
@@ -454,6 +458,7 @@ statusfunction();
              document.getElementById('pincode_details').innerHTML= "Pincode:"+response[0].grahak_pincode;
              document.getElementById('age_details').innerHTML="Age:"+response[0].grahak_age;
              document.getElementById('state_details').innerHTML= "State:"+response[0].grahak_state;
+             document.getElementById('upi_id').innerHTML="UPI Id:"+response[0].grahak_upiid;
              document.getElementById('descript').innerHTML=response[0].desc;
               if(response[0].status == 'Pending'){
                 document.getElementById('hide-info').style.display='none';

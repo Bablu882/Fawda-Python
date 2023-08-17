@@ -17,6 +17,7 @@ class BookingHistorySahayak(models.Model):
     paid_by_grahak=models.CharField(max_length=100,null=True,blank=True)
     sahayak_name=models.CharField(max_length=100,null=True,blank=True)
     sahayak_mobile_no=models.CharField(max_length=100,null=True,blank=True)
+    sahayak_upi_id=models.CharField(max_length=100,null=True,blank=True)
     booking_id=models.IntegerField()
     def __str__(self):
         return f"{self.grahak_name}+{self.sahayak_name}+{self.job_type} success {self.payment_status_by_admin}"
@@ -35,6 +36,7 @@ class BookingHistoryMachine(models.Model):
     paid_by_grahak=models.CharField(max_length=100,null=True,blank=True)
     machine_malik_name=models.CharField(max_length=100,null=True,blank=True)
     machine_malik_mobile_no=models.CharField(max_length=100,null=True,blank=True)
+    machine_malik_upi_id=models.CharField(max_length=100,null=True,blank=True)
     booking_id=models.IntegerField()
 
     def __str__(self):
