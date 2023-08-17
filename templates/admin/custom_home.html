@@ -104,6 +104,7 @@ td {
                       <th>Paid by Grahak</th>
                       <th>Sahayak Name</th>
                       <th>Sahayak Mobile No</th>
+                      <th>Sahayak Upi Id</th>
                       <th>Invoice</th>
                     </tr>
                   </thead>
@@ -123,6 +124,7 @@ td {
                       <td>{{ booking.paid_by_grahak }}</td>
                       <td>{{ booking.sahayak_name }}</td>
                       <td>{{ booking.sahayak_mobile_no }}</td>
+                      <td>{{ booking.sahayak_upi_id }}</td>
                       <td class="btn btn-success m-2" data-toggle="modal" data-target="#myModal" onclick="GetJobID('{{booking.booking_id}}')">invoice</td>
                     </tr>
                     {% endfor %}
@@ -482,14 +484,14 @@ td {
 
  
 </script>
- <script>
-        // Add event listener to the cross icon
-        var closeButton = document.querySelector('.close');
-        closeButton.addEventListener('click', function() {
-            // Refresh the page
-            location.reload();
-        });
-    </script>
+<script>
+    // Add event listener to the cross icon
+    var closeButton = document.querySelector('.close');
+    closeButton.addEventListener('click', function() {
+        // Refresh the page
+        location.reload();
+    });
+</script>
 <script>
     const downloadButton = document.getElementById('download-button');
 

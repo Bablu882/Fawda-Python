@@ -43,6 +43,7 @@ class JobDetailsAdmin(APIView):
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
                     'upi_id_for_payment':'Null',
+                    'grahak_upi_id':jobs.grahak.profile.upiid,
                     'Payment_status':'Null'
                 })
             for jobs in job_machine:
@@ -56,6 +57,7 @@ class JobDetailsAdmin(APIView):
                     'payment_to_service_provider':jobs.payment_your,
                     'mobile_no_for_payment':'Null',
                     'upi_id_for_payment':'Null',
+                    'grahak_upi_id':jobs.grahak.profile.upiid,
                     'Payment_status':'Null'
 
                 })
@@ -74,6 +76,7 @@ class JobDetailsAdmin(APIView):
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
                             'upi_id_for_payment':jobs.booking_user.profile.upiid,
+                            'grahak_upi_id': jobs.jobsahayak.grahak.profile.upiid,
                             'Payment_status':jobs.is_admin_paid
 
                         })
@@ -88,6 +91,7 @@ class JobDetailsAdmin(APIView):
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
                             'upi_id_for_payment':jobs.booking_user.profile.upiid,
+                            'grahak_upi_id':jobs.jobsahayak.grahak.profile.upiid,
                             'Payment_status':jobs.is_admin_paid
 
                         })
@@ -102,6 +106,7 @@ class JobDetailsAdmin(APIView):
                         'payment_to_service_provider':jobs.payment_your,
                         'mobile_no_for_payment':jobs.booking_user.mobile_no,
                         'upi_id_for_payment':jobs.booking_user.profile.upiid,
+                        'grahak_upi_id':jobs.jobmachine.grahak.profile.upiid,
                         'Payment_status':jobs.is_admin_paid
 
 
@@ -271,7 +276,8 @@ class AdminPaymentStatus(APIView):
                         paid_by_grahak=get.total_amount,
                         sahayak_name=get.booking_user.profile.name,
                         sahayak_mobile_no=get.booking_user.mobile_no,
-                        booking_id=get.id
+                        booking_id=get.id,
+                        sahayak_upi_id=get.booking_user.profile.upiid
                     )
                 else:
                     booking=BookingHistoryMachine.objects.create(
@@ -287,7 +293,8 @@ class AdminPaymentStatus(APIView):
                         paid_by_grahak=get.total_amount,
                         machine_malik_name=get.booking_user.profile.name,
                         machine_malik_mobile_no=get.booking_user.mobile_no,
-                        booking_id=get.id
+                        booking_id=get.id,
+                        machine_malik_upi_id=get.booking_user.profile.upiid
                     )  
             elif get.status == 'Cancelled-After-Payment' or get.status == 'Rejected-After-Payment':
                 get.is_admin_paid ='Refunded'
@@ -569,16 +576,23 @@ def BookingInvoice(request,id):
     if JobBooking.objects.filter(pk=id,is_admin_paid='Paid'):
         booking=JobBooking.objects.get(pk=id)
         latest_info = ClientInformation.objects.aggregate(Max('created_at'))
-        invoice_data = None
         if latest_info['created_at__max']:
-            latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])  
+            latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])
+        job_machine = booking.jobmachine
+        job_sahayak = booking.jobsahayak
+        if job_sahayak is not None :
+            fawda_fee = job_sahayak.fawda_fee
+            print(fawda_fee)
+        else :
+            fawda_fee = job_machine.fawda_fee
+            print(fawda_fee)      
         if booking.jobsahayak:
             invoice_data=({
                 'grahak_name':booking.jobsahayak.grahak.profile.name,
                 'job_number':booking.jobsahayak.job_number,
                 'grahak_address':f"{booking.jobsahayak.grahak.profile.village},{booking.jobsahayak.grahak.profile.mohalla},{booking.jobsahayak.grahak.profile.district},{booking.jobsahayak.grahak.profile.state}",
                 'date_invoice_generation':'date',
-                'fawda_fee':(float(booking.fawda_fee_grahak) + float(booking.fawda_fee_sahayak)),
+                'fawda_fee':float(fawda_fee),
                 'busigness_gst':latest_info.gst_no,
                 'busigness_name':latest_info.business_name,
                 'client_address':latest_info.client_address,
@@ -586,13 +600,14 @@ def BookingInvoice(request,id):
                 'sahayak_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
                 'payment':booking.payment_your
             })
+            print(invoice_data)
         else:
             invoice_data=({
                 'grahak_name':booking.jobmachine.grahak.profile.name,
                 'job_number':booking.jobmachine.job_number,
                 'grahak_address':f"{booking.jobmachine.grahak.profile.village},{booking.jobmachine.grahak.profile.mohalla},{booking.jobmachine.grahak.profile.district},{booking.jobmachine.grahak.profile.state}",
                 'date_invoice_generation':'date',
-                'fawda_fee':(float(booking.fawda_fee_grahak) + float(booking.fawda_fee_machine)),
+                'fawda_fee':float(fawda_fee),
                 'busigness_gst':latest_info.gst_no,
                 'busigness_name':latest_info.business_name,
                 'client_address':latest_info.client_address,
@@ -600,7 +615,7 @@ def BookingInvoice(request,id):
                 'machine_malik_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
                 'payment':booking.payment_your
             })
-        print(invoice_data)    
+            print(invoice_data)   
     return render(request,'admin/custom_home.html',context={'invoice_data':invoice_data})        
 
 
@@ -614,6 +629,14 @@ class BookingInvoiceApiView(APIView):
         invoice_data = None
         if JobBooking.objects.filter(pk=booking_id,is_admin_paid='Paid'):
             booking=JobBooking.objects.get(pk=booking_id)
+            job_machine = booking.jobmachine
+            job_sahayak = booking.jobsahayak
+            if job_sahayak is not None :
+                fawda_fee = job_sahayak.fawda_fee
+                print(fawda_fee)
+            else :
+                fawda_fee = job_machine.fawda_fee
+                print(fawda_fee)
             latest_info = ClientInformation.objects.aggregate(Max('created_at'))
             if latest_info['created_at__max']:
                 latest_info = ClientInformation.objects.get(created_at=latest_info['created_at__max'])  
@@ -623,7 +646,7 @@ class BookingInvoiceApiView(APIView):
                     'job_number':booking.jobsahayak.job_number,
                     'grahak_address':f"{booking.jobsahayak.grahak.profile.village},{booking.jobsahayak.grahak.profile.mohalla},{booking.jobsahayak.grahak.profile.district},{booking.jobsahayak.grahak.profile.state}",
                     'date_invoice_generation':datetime.now().strftime('%Y-%m-%d'),
-                    'fawda_fee':(float(booking.fawda_fee_grahak) + float(booking.fawda_fee_sahayak)),
+                    'fawda_fee':(float(fawda_fee) + float(booking.fawda_fee_sahayak)),
                     'busigness_gst':latest_info.gst_no,
                     'busigness_name':latest_info.business_name,
                     'client_address':latest_info.client_address,
@@ -631,13 +654,14 @@ class BookingInvoiceApiView(APIView):
                     'provider_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
                     'payment':booking.payment_your
                 })
+                print(invoice_data)
             else:
                 invoice_data=({
                     'grahak_name':booking.jobmachine.grahak.profile.name,
                     'job_number':booking.jobmachine.job_number,
                     'grahak_address':f"{booking.jobmachine.grahak.profile.village},{booking.jobmachine.grahak.profile.mohalla},{booking.jobmachine.grahak.profile.district},{booking.jobmachine.grahak.profile.state}",
                     'date_invoice_generation':datetime.now().strftime('%Y-%m-%d'),
-                    'fawda_fee':(float(booking.fawda_fee_grahak) + float(booking.fawda_fee_machine)),
+                    'fawda_fee':(float(fawda_fee) + float(booking.fawda_fee_machine)),
                     'busigness_gst':latest_info.gst_no,
                     'busigness_name':latest_info.business_name,
                     'client_address':latest_info.client_address,
@@ -645,8 +669,7 @@ class BookingInvoiceApiView(APIView):
                     'provider_address':f"{booking.booking_user.profile.village},{booking.booking_user.profile.mohalla},{booking.booking_user.profile.district},{booking.booking_user.profile.state}",
                     'payment':booking.payment_your
                 })
-            print(invoice_data)
-            print(booking.fawda_fee)    
+                print(invoice_data)  
         return Response({'invoice_data':invoice_data})        
 
 
