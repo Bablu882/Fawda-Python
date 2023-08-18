@@ -151,6 +151,7 @@ td {
                       <th>Paid by Grahak</th>
                       <th>Machine Malik Name</th>
                       <th>Machine Malik Mobile No</th>
+                      <th>Machine Malik UPI Id</th>
                       <th>Invoice</th>
                     </tr>
                   </thead>
@@ -170,6 +171,7 @@ td {
                       <td>{{ booking.paid_by_grahak }}</td>
                       <td>{{ booking.machine_malik_name }}</td>
                       <td>{{ booking.machine_malik_mobile_no }}</td>
+                      <td>{{ booking.machine_malik_upi_id }}</td>
                       <td class="btn btn-success m-2" data-toggle="modal" data-target="#myModal" onclick="GetJobID('{{booking.booking_id}}')">invoice</td>
                     </tr>
                     {% endfor %}
