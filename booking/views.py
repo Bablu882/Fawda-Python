@@ -224,13 +224,19 @@ def update_booking_amounts(booking):
             if refer_status is True:
                 is_refer = True
             updated_used_count = 0    
+            if used_refer_count == 2 :
+                refers.is_refer_active =  False
+                refers.save()
             if used_refer_count == 0 or used_refer_count == 1:
                 updated_used_count = used_refer_count+ 1
                 refers.used_count = updated_used_count
                 refers.save() 
+                if updated_used_count == 2 :
+                    refers.is_refer_active = False
+                    refers.save()
         job_count_sahayak = jobs_sahayak.count() - 1
-    # if booking.jobsahayak.filter(job_type='individuals_sahayak').exists():
-    #     job_sahayak = booking.jobsahayak.filter(job_type='individuals_sahayak').first()
+        # if booking.jobsahayak.filter(job_type='individuals_sahayak').exists():
+        #     job_sahayak = booking.jobsahayak.filter(job_type='individuals_sahayak').first()
         count_male = int(booking.count_male) if booking.count_male else 0
         count_female = int(booking.count_female) if booking.count_female else 0
         pay_amount_male = int(job_sahayak.pay_amount_male) if job_sahayak.pay_amount_male else 0
@@ -276,11 +282,17 @@ def update_booking_amounts(booking):
             # print(used_refer_count)
             if refer_status is True:
                 is_refer = True
-            updated_used_count = 0    
+            updated_used_count = 0  
+            if used_refer_count == 2 :
+                refers.is_refer_active = False
+                refers.save()  
             if used_refer_count == 0 or used_refer_count == 1:
                 updated_used_count = used_refer_count+ 1
                 refers.used_count = updated_used_count
                 refers.save() 
+                if updated_used_count == 2 :
+                    refers.is_refer_active = False
+                    refers.save()
         job_count_sahayak = jobs_sahayak.count() - 1
         total_amount_theka = int(job_sahayak.total_amount_theka) if job_sahayak.total_amount_theka else 0
         total_amount = float(job_sahayak.total_amount) if job_sahayak.total_amount else 0
@@ -855,6 +867,15 @@ class CompletedStatusApi(APIView):
                     if not job.jobsahayak.status == 'Pending':
                         job.jobsahayak.status = 'Completed'
                         job.jobsahayak.save()
+                    try:
+                        check_refer_grahak = ReferCode.objects.get(to_user=job.jobsahayak.grahak.username)
+                        used_count = check_refer_grahak.used_count
+                        if check_refer_grahak is not None and used_count != 2:               
+                            check_refer_grahak.is_refer_active = True
+                            check_refer_grahak.save()
+                    except ReferCode.DoesNotExist :
+                        pass       
+
                 else:
                     return Response({'message': {'unauthorized grahak !'}})
             else:
@@ -862,11 +883,30 @@ class CompletedStatusApi(APIView):
                     if not job.jobmachine.status == 'Pending':
                         job.jobmachine.status = 'Completed'
                         job.jobmachine.save()
+                    try:
+                        check_refer_grahak = ReferCode.objects.get(to_user=job.jobmachine.grahak.username)
+                        used_count = check_refer_grahak.used_count
+                        if check_refer_grahak is not None and used_count != 2:
+                            check_refer_grahak.is_refer_active = True
+                            check_refer_grahak.save()
+                    except ReferCode.DoesNotExist:
+                        pass    
                 else:
                     return Response({'message': {'unauthorized grahak !'}})
 
             job.status = 'Completed'
             job.save()
+
+            if job.jobsahayak:
+                try:
+                    check_refer_sahayak = ReferCode.objects.get(to_user=job.booking_user.username) 
+                    used_count = check_refer_sahayak.used_count
+                    if check_refer_sahayak is not None and used_count != 2:
+                        check_refer_sahayak.is_refer_active = True
+                        check_refer_sahayak.save()    
+                except ReferCode.DoesNotExist:
+                    pass
+
             # push_message = {
             #                 'to':job.booking_user.push_token,
             #                 'title': 'काम पूरा हो गया है!',
