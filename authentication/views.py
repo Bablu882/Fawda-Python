@@ -185,13 +185,14 @@ class RegisterApi(APIView):
 
                 if refer_user_check != phone_number and refer_user_check is not None:
                     updated_referal_count = refer_user_count + 1
-                    ReferCode.objects.create(refer_code=referal_code, to_user=phone_number, is_refer_active=True, refer_count=updated_referal_count, from_user=refer_from_user, used_count = refer_used_count)
+                    # ReferCode.objects.create(refer_code=referal_code, to_user=phone_number, is_refer_active=True, refer_count=updated_referal_count, from_user=refer_from_user, used_count = refer_used_count)
+                    ReferCode.objects.create(refer_code=referal_code, to_user=phone_number,refer_count=updated_referal_count, from_user=refer_from_user, used_count = refer_used_count)
                     refer_code_obj.refer_count = updated_referal_count
                     refer_code_obj.save()
                     return {'message': 'Refer code applied successfully', 'status': 'success'}
 
                 updated_refer_count = refer_user_count + 1
-                refer_code_obj.is_refer_active = True
+                # refer_code_obj.is_refer_active = True
                 refer_code_obj.to_user = phone_number
                 refer_code_obj.refer_count = updated_refer_count
                 refer_code_obj.used_count = refer_used_count

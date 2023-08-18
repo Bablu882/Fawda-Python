@@ -399,6 +399,7 @@ def export_booking_history_sahayak_excel(request):
         'Paid By Grahak',
         'Sahayak Name',
         'Sahayak Mobile No',
+        'Sahayak UPI Id',
     ]
     row_num = 1
     for col_num, column_title in enumerate(columns, 1):
@@ -422,6 +423,7 @@ def export_booking_history_sahayak_excel(request):
             booking.paid_by_grahak,
             booking.sahayak_name,
             booking.sahayak_mobile_no,
+            booking.sahayak_upi_id,
         ]
         for col_num, cell_value in enumerate(row, 1):
             cell = worksheet.cell(row=row_num, column=col_num)
@@ -458,6 +460,7 @@ def export_booking_history_machine_excel(request):
         'Paid By Grahak',
         'Machine Malik Name',
         'Machine Malik Mobile No',
+        'Machine Malik UPI Id',
     ]
     row_num = 1
     for col_num, column_title in enumerate(columns, 1):
@@ -481,6 +484,7 @@ def export_booking_history_machine_excel(request):
             booking.paid_by_grahak,
             booking.machine_malik_name,
             booking.machine_malik_mobile_no,
+            booking.machine_malik_upi_id,
         ]
         for col_num, cell_value in enumerate(row, 1):
             cell = worksheet.cell(row=row_num, column=col_num)

@@ -118,22 +118,34 @@ class TestPaymentAPIView(APIView):
                 check_refer = ReferCode.objects.filter(from_user=job_grahak)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
+                    if used_refer_count == 2:
+                        refers.is_refer_active = False
+                        refers.save()
                     updated_used_count = 0    
                     if used_refer_count == 0 or used_refer_count == 1:
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
                         refers.save()
+                        if updated_used_count == 2 :
+                            refers.is_refer_active = False
+                            refers.save()
             else :
                 job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
                 job_grahak1 = job_details1.grahak
                 check_refer = ReferCode.objects.filter(from_user=job_grahak1)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
+                    if used_refer_count == 2 :
+                        refers.is_refer_active =  False
+                        refers.save()
                     updated_used_count = 0    
                     if used_refer_count == 0 or used_refer_count == 1:
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
                         refers.save()    
+                        if updated_used_count == 2 :
+                            refers.is_refer_active = False
+                            refers.save()
 
             is_booked = False
             for job in job_bookings:
@@ -676,22 +688,34 @@ class CCAVResponseHandler(APIView):
                 check_refer = ReferCode.objects.filter(from_user=job_grahak)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
-                    updated_used_count = 0    
+                    updated_used_count = 0   
+                    if used_refer_count == 2 :
+                        refers.is_refer_active =  False
+                        refers.save() 
                     if used_refer_count == 0 or used_refer_count == 1:
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
                         refers.save()
+                        if updated_used_count == 2 :
+                            refers.is_refer_active = False
+                            refers.save()
             else :
                 job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
                 job_grahak1 = job_details1.grahak
                 check_refer = ReferCode.objects.filter(from_user=job_grahak1)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
-                    updated_used_count = 0    
+                    updated_used_count = 0   
+                    if used_refer_count == 2 :
+                        refers.is_refer_active = False
+                        refers.save() 
                     if used_refer_count == 0 or used_refer_count == 1:
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
-                        refers.save()      
+                        refers.save() 
+                        if updated_used_count == 2 :
+                            refers.is_refer_active =  False
+                            refers.save()     
 
             for booking in job_bookings:
                 booking.status = 'Booked'
