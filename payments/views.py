@@ -115,34 +115,48 @@ class TestPaymentAPIView(APIView):
 
             if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam':
                 job_grahak = job_details.grahak
-                check_refer = ReferCode.objects.filter(from_user=job_grahak)
+                check_refer = ReferCode.objects.filter(from_user=job_grahak,is_refer_active=True)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
-                    if used_refer_count == 2:
-                        refers.is_refer_active = False
-                        refers.save()
+                    refer_user_count = refers.refer_count
+                    # if used_refer_count == 2:
+                    #     refers.is_refer_active = False
+                    #     refers.save()
                     updated_used_count = 0    
-                    if used_refer_count == 0 or used_refer_count == 1:
+                    if used_refer_count == 0 and (refer_user_count == 1 or refer_user_count == 2):
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
+                        refers.is_refer_active = False
                         refers.save()
+                    elif used_refer_count == 1 and (refer_user_count == 2 or refer_user_count == 1):
+                        updated_used_count = used_refer_count + 1
+                        refers.used_count = updated_used_count
+                        refers.is_refer_active  = False
+                        refers.save()    
                         if updated_used_count == 2 :
                             refers.is_refer_active = False
                             refers.save()
             else :
                 job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
                 job_grahak1 = job_details1.grahak
-                check_refer = ReferCode.objects.filter(from_user=job_grahak1)
+                check_refer = ReferCode.objects.filter(from_user=job_grahak1, is_refer_active = True)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
-                    if used_refer_count == 2 :
-                        refers.is_refer_active =  False
-                        refers.save()
+                    refer_user_count = refers.refer_count
+                    # if used_refer_count == 2 :
+                    #     refers.is_refer_active =  False
+                    #     refers.save()
                     updated_used_count = 0    
-                    if used_refer_count == 0 or used_refer_count == 1:
+                    if used_refer_count == 0 and (refer_user_count == 1 or refer_user_count == 2):
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
-                        refers.save()    
+                        refers.is_refer_active = False
+                        refers.save() 
+                    elif used_refer_count == 1 and (refer_user_count == 2 or refer_user_count == 1):
+                        updated_used_count = used_refer_count + 1
+                        refers.used_count = updated_used_count
+                        refers.is_refer_active = False
+                        refers.save()       
                         if updated_used_count == 2 :
                             refers.is_refer_active = False
                             refers.save()
@@ -407,11 +421,12 @@ class PaymentDetails(APIView):
                 pass
 
             if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam':
-                check_refer = ReferCode.objects.filter(from_user=user)
+                check_refer = ReferCode.objects.filter(from_user=user, is_refer_active=True)
                 is_refer = False
                 for refers in check_refer:
                     refer_status = refers.is_refer_active
                     used_refer_count = refers.used_count
+                    refer_user_count = refers.refer_count
                     if refer_status is True:
                         is_refer = True
                     updated_used_count = 0    
@@ -433,7 +448,7 @@ class PaymentDetails(APIView):
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
-                elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                elif is_refer is True and updated_used_count == 1:
                     if job_type == 'individuals_sahayak':
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
                     elif job_type == 'theke_pe_kam':
@@ -451,6 +466,24 @@ class PaymentDetails(APIView):
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2:
+                    if job_type == 'individuals_sahayak':
+                        total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
+                    elif job_type == 'theke_pe_kam':
+                        total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
+                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_fawda_fee = float(fawda_fees * 0.5)
+                    total_amount = float(total_amount_grahak + total_fawda_fee)
+                    job_details.fawda_fee = str(total_fawda_fee)
+                    job_details.save()
+                    for booking in job_bookings:
+                        fawda_fee_sahayak = float(booking.fawda_fee_sahayak)
+                        grahak_fees = float(booking.fawda_fee_grahak)
+                        fee_grahak = float(grahak_fees * 0.5)
+                        updated_admin_commission = float(fawda_fee_sahayak + fee_grahak)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()   
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount}) 
                 else:
                     if job_type == 'individuals_sahayak':
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
@@ -469,11 +502,12 @@ class PaymentDetails(APIView):
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
             else :
                 job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
-                check_refer = ReferCode.objects.filter(from_user=request.user)
+                check_refer = ReferCode.objects.filter(from_user=request.user, is_refer_active = True)
                 is_refer = False
                 for refers in check_refer:
                     refer_status = refers.is_refer_active
                     used_refer_count = refers.used_count
+                    refer_user_count = refers.refer_count
                     if refer_status is True:
                         is_refer = True
                     updated_used_count = 0    
@@ -492,7 +526,22 @@ class PaymentDetails(APIView):
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount}) 
-                elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                elif is_refer is True and updated_used_count == 1:
+                    total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
+                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_fawda_fee = float(fawda_fees * 0.5)
+                    total_amount = float(total_amount_grahak + total_fawda_fee)
+                    job_details1.fawda_fee = str(total_fawda_fee)
+                    job_details1.save()
+                    for booking in job_bookings:
+                        fawda_fee_machine = float(booking.fawda_fee_machine)
+                        grahak_fees = float(booking.fawda_fee_grahak)
+                        fee_grahak = float(grahak_fees * 0.5)
+                        updated_admin_commission = float(fawda_fee_machine + fee_grahak)
+                        booking.admin_commission = str(updated_admin_commission)
+                        booking.save()
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2 :
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
                     fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
                     total_fawda_fee = float(fawda_fees * 0.5)
@@ -685,16 +734,23 @@ class CCAVResponseHandler(APIView):
                 pass  
             if job_type == 'individuals_sahayak' or job_type == 'theke_pe_kam':
                 job_grahak = job_details.grahak
-                check_refer = ReferCode.objects.filter(from_user=job_grahak)
+                check_refer = ReferCode.objects.filter(from_user=job_grahak, is_refer_active = True)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
+                    refer_user_count = refers.refer_count
                     updated_used_count = 0   
-                    if used_refer_count == 2 :
-                        refers.is_refer_active =  False
-                        refers.save() 
-                    if used_refer_count == 0 or used_refer_count == 1:
+                    # if used_refer_count == 2 :
+                    #     refers.is_refer_active =  False
+                    #     refers.save() 
+                    if used_refer_count == 0 and (refer_user_count == 1 or refer_user_count == 2):
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
+                        refers.is_refer_active == False
+                        refers.save()
+                    elif used_refer_count == 1 and (refer_user_count == 1 or refer_user_count == 2):
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                        refers.is_refer_active == False
                         refers.save()
                         if updated_used_count == 2 :
                             refers.is_refer_active = False
@@ -702,17 +758,24 @@ class CCAVResponseHandler(APIView):
             else :
                 job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
                 job_grahak1 = job_details1.grahak
-                check_refer = ReferCode.objects.filter(from_user=job_grahak1)
+                check_refer = ReferCode.objects.filter(from_user=job_grahak1, is_refer_active = True)
                 for refers in check_refer:
                     used_refer_count = refers.used_count
+                    refer_user_count = refers.refer_count
                     updated_used_count = 0   
-                    if used_refer_count == 2 :
-                        refers.is_refer_active = False
-                        refers.save() 
-                    if used_refer_count == 0 or used_refer_count == 1:
+                    # if used_refer_count == 2 :
+                    #     refers.is_refer_active = False
+                    #     refers.save() 
+                    if used_refer_count == 0 and (refer_user_count == 1 or refer_user_count == 2):
                         updated_used_count = used_refer_count+ 1
                         refers.used_count = updated_used_count
+                        refers.is_refer_active = False
                         refers.save() 
+                    elif used_refer_count == 1 and (refer_user_count == 1 or refer_user_count == 2):
+                        updated_used_count = used_refer_count+ 1
+                        refers.used_count = updated_used_count
+                        refers.is_refer_active = False
+                        refers.save()    
                         if updated_used_count == 2 :
                             refers.is_refer_active =  False
                             refers.save()     
