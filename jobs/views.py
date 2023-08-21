@@ -552,11 +552,12 @@ class GetAllJob(APIView):
             job_sahayak = JobBooking.objects.filter(booking_user_id=request.user)
             job_count = job_sahayak.count()
             print(job_count)
-            check_refer = ReferCode.objects.filter(from_user=request.user)
+            check_refer = ReferCode.objects.filter(from_user=request.user, is_refer_active = True)
             is_refer = False
             for refers in check_refer:
                 refer_status = refers.is_refer_active
                 used_refer_count = refers.used_count
+                refer_user_count = refers.refer_count
              # print(used_refer_count)
                 if refer_status is True:
                     is_refer = True
@@ -591,8 +592,10 @@ class GetAllJob(APIView):
                     if job_post.job_type =='individuals_sahayak':
                         if job_count == 0:
                             fawda_fee_percentage = 0
-                        elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                        elif is_refer is True and updated_used_count == 1:
                             fawda_fee_percentage = 1.25 
+                        elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2:
+                            fawda_fee_percentage = 1.25    
                         else:
                             fawda_fee_percentage = 2.5
                         try:
@@ -632,8 +635,10 @@ class GetAllJob(APIView):
                     else:
                         if job_count == 0:
                             fawda_fee_percentage = 0
-                        elif is_refer is True and (updated_used_count == 1 or updated_used_count == 2):
+                        elif is_refer is True and updated_used_count == 1:
                             fawda_fee_percentage = 1.25 
+                        elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2:
+                            fawda_fee_percentage = 1.25    
                         else:
                             fawda_fee_percentage = 2.5 
                         try:

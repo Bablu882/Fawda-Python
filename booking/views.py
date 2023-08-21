@@ -215,22 +215,29 @@ def update_booking_amounts(booking):
     job_sahayak = booking.jobsahayak
     if job_sahayak.job_type == 'individuals_sahayak': 
         jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)   
-        check_refer = ReferCode.objects.filter(from_user=booking.booking_user)
+        check_refer = ReferCode.objects.filter(from_user=booking.booking_user, is_refer_active = True)
         is_refer = False
         for refers in check_refer:
             refer_status = refers.is_refer_active
             used_refer_count = refers.used_count
+            refer_user_count = refers.refer_count
             # print(used_refer_count)
             if refer_status is True:
                 is_refer = True
             updated_used_count = 0    
-            if used_refer_count == 2 :
-                refers.is_refer_active =  False
-                refers.save()
-            if used_refer_count == 0 or used_refer_count == 1:
-                updated_used_count = used_refer_count+ 1
+            # if used_refer_count == 2 :
+            #     refers.is_refer_active =  False
+            #     refers.save()
+            if used_refer_count == 0 and (refer_user_count == 1 or refer_user_count == 2):
+                updated_used_count = used_refer_count + 1
                 refers.used_count = updated_used_count
-                refers.save() 
+                refers.is_refer_active = False
+                refers.save()
+            elif used_refer_count == 1 and (refer_user_count == 2 or refer_user_count == 1):
+                updated_used_count = used_refer_count + 1
+                refers.used_count = updated_used_count
+                refers.is_refer_active = False
+                refers.save()
                 if updated_used_count == 2 :
                     refers.is_refer_active = False
                     refers.save()
@@ -274,22 +281,29 @@ def update_booking_amounts(booking):
         booking.save()
     elif job_sahayak.job_type == 'theke_pe_kam':
         jobs_sahayak = JobBooking.objects.filter(booking_user_id=booking.booking_user)
-        check_refer = ReferCode.objects.filter(from_user=booking.booking_user)
+        check_refer = ReferCode.objects.filter(from_user=booking.booking_user, is_refer_active = True)
         is_refer = False
         for refers in check_refer:
             refer_status = refers.is_refer_active
             used_refer_count = refers.used_count
+            refer_user_count = refers.refer_count
             # print(used_refer_count)
             if refer_status is True:
                 is_refer = True
             updated_used_count = 0  
-            if used_refer_count == 2 :
-                refers.is_refer_active = False
-                refers.save()  
-            if used_refer_count == 0 or used_refer_count == 1:
+            # if used_refer_count == 2 :
+            #     refers.is_refer_active = False
+            #     refers.save()  
+            if used_refer_count == 0 and (refer_user_count == 1 or refer_user_count == 2):
                 updated_used_count = used_refer_count+ 1
                 refers.used_count = updated_used_count
+                refers.is_refer_active =  False
                 refers.save() 
+            elif used_refer_count == 1 and (refer_user_count == 2 or refer_user_count == 1):
+                updated_used_count = used_refer_count+ 1
+                refers.used_count = updated_used_count
+                refers.is_refer_active =  False
+                refers.save()
                 if updated_used_count == 2 :
                     refers.is_refer_active = False
                     refers.save()
