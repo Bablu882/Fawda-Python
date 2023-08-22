@@ -453,7 +453,8 @@ class PaymentDetails(APIView):
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
                     elif job_type == 'theke_pe_kam':
                         total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
-                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    # fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    fawda_fees = float(total_amount_grahak * (2.5/100))
                     total_fawda_fee = float(fawda_fees * 0.5)
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details.fawda_fee = str(total_fawda_fee)
@@ -471,7 +472,8 @@ class PaymentDetails(APIView):
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
                     elif job_type == 'theke_pe_kam':
                         total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
-                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    # fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    fawda_fees = float(total_amount_grahak * (2.5/100))
                     total_fawda_fee = float(fawda_fees * 0.5)
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details.fawda_fee = str(total_fawda_fee)
@@ -489,7 +491,8 @@ class PaymentDetails(APIView):
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
                     elif job_type == 'theke_pe_kam':    
                         total_amount_grahak = sum(float(job_booking.total_amount_theka) for job_booking in job_bookings)
-                    total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    # total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_fawda_fee = float(total_amount_grahak * (2.5/100))
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details.fawda_fee = str(total_fawda_fee)
                     job_details.save()
@@ -528,7 +531,8 @@ class PaymentDetails(APIView):
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount}) 
                 elif is_refer is True and updated_used_count == 1:
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
-                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    # fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    fawda_fees = float(total_amount_grahak * (2.5/100))
                     total_fawda_fee = float(fawda_fees * 0.5)
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details1.fawda_fee = str(total_fawda_fee)
@@ -543,7 +547,8 @@ class PaymentDetails(APIView):
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
                 elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2 :
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
-                    fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    # fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    fawda_fees = float(total_amount_grahak * (2.5/100))
                     total_fawda_fee = float(fawda_fees * 0.5)
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details1.fawda_fee = str(total_fawda_fee)
@@ -558,7 +563,8 @@ class PaymentDetails(APIView):
                     return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
                 else:
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
-                    total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    # total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
+                    total_fawda_fee = float(total_amount_grahak * (2.5/100))
                     total_amount = float(total_amount_grahak + total_fawda_fee)
                     job_details1.fawda_fee = str(total_fawda_fee)
                     job_details1.save()
