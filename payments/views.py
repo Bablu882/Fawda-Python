@@ -447,7 +447,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_sahayak + 0)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount': False})
                 elif is_refer is True and updated_used_count == 1:
                     if job_type == 'individuals_sahayak':
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
@@ -466,7 +466,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_sahayak + fee_grahak)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount': True})
                 elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2:
                     if job_type == 'individuals_sahayak':
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
@@ -485,7 +485,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_sahayak + fee_grahak)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()   
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount}) 
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount':True}) 
                 else:
                     if job_type == 'individuals_sahayak':
                         total_amount_grahak = sum(float(job_booking.total_amount_sahayak) for job_booking in job_bookings)
@@ -502,7 +502,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_sahayak + grahak_fees)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount':False})
             else :
                 job_details1 = JobMachine.objects.get(id=job_id,job_number=job_number)
                 check_refer = ReferCode.objects.filter(from_user=request.user, is_refer_active = True)
@@ -528,7 +528,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_machine + 0)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount}) 
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount': False}) 
                 elif is_refer is True and updated_used_count == 1:
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
                     # fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
@@ -544,7 +544,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_machine + fee_grahak)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount':True})
                 elif is_refer is True and (updated_used_count == 2 or updated_used_count == 1) and refer_user_count == 2 :
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
                     # fawda_fees = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
@@ -560,7 +560,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_machine + fee_grahak)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount':True})
                 else:
                     total_amount_grahak = sum(float(job_booking.total_amount_machine) for job_booking in job_bookings)
                     # total_fawda_fee = sum(float(job_booking.fawda_fee_grahak) for job_booking in job_bookings)
@@ -574,7 +574,7 @@ class PaymentDetails(APIView):
                         updated_admin_commission = float(fawda_fee_sahayak + grahak_fees)
                         booking.admin_commission = str(updated_admin_commission)
                         booking.save()
-                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount})
+                    return Response({'user_amount':total_amount_grahak,'fawda_fee':total_fawda_fee,'total_amount':total_amount,'is_discount': False})
         else:
             return Response({'message':'Only grahak user is allowed to make payment'})
 
