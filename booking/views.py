@@ -1350,6 +1350,8 @@ class MyBookingDetailsHistory(APIView):
                     'datetime':booking.jobsahayak.datetime.replace(tzinfo=utc_tz).astimezone(local_tz),
                     'job_type':booking.jobsahayak.job_type,
                     'description':booking.jobsahayak.description,
+                    'land_area':booking.jobsahayak.land_area,
+                    'land_type':booking.jobsahayak.land_type,
                     'rating':getrating(booking.id)['rating'] if Rating.objects.filter(booking_job=booking.id).exists() else "",
                     'comment':getrating(booking.id)['comment'] if Rating.objects.filter(booking_job=booking.id).exists() else ""
                 })
