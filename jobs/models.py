@@ -41,7 +41,8 @@ class JobSahayak(models.Model):
         ('Completed','Completed'),
         ('Cancelled','Cancelled'),
         ('Timeout','Timeout'),
-        ('Cancelled-After-Payment','Cancelled-After-Payment')
+        ('Cancelled-After-Payment','Cancelled-After-Payment'),
+        ('Rejected-After-Payment','Rejected-After-Payment')
     )
     JOB_TYPE_CHOICES = (
         ('theke_pe_kam', 'theke_pe_kam'),
@@ -188,7 +189,8 @@ class JobMachine(models.Model):
         ('Completed','Completed'),
         ('Cancelled','Cancelled'),
         ('Timeout','Timeout'),
-        ('Cancelled-After-Payment','Cancelled-After-Payment')
+        ('Cancelled-After-Payment','Cancelled-After-Payment'),
+        ('Rejected-After-Payment','Rejected-After-Payment')
 
 
     )
