@@ -1194,7 +1194,7 @@ class CancellationBookingJob(APIView):
                         if booking.status == 'Booked':
                             booking.status = status
                             booking.save()
-                            booking.jobsahayak.status='Cancelled'
+                            booking.jobsahayak.status='Cancelled-After-Payment'
                             booking.jobsahayak.save()
                         else:
                             return Response({'message': {'Job must be in Booked status to update to Cancelled-After-Payment'}})
@@ -1212,7 +1212,7 @@ class CancellationBookingJob(APIView):
                         if booking.status == 'Booked':
                             booking.status = status
                             booking.save()
-                            booking.jobmachine.status='Cancelled'
+                            booking.jobmachine.status='Cancelled-After-Payment'
                             booking.jobmachine.save()
                         else:
                             return Response({'message': {'Job must be in Booked status to update to Cancelled-After-Payment'}})

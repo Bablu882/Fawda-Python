@@ -19,12 +19,19 @@ from datetime import datetime
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAdminUser
+import pytz
+from datetime import datetime
 
 
 class JobDetailsAdmin(APIView):
     authentication_classes=[SessionAuthentication]
     permission_classes=[IsAdminUser,]
     PAGE_SIZE=10
+    IST_TIMEZONE = pytz.timezone('Asia/Kolkata')
+
+    def convert_to_ist(self, utc_time):
+        return utc_time.astimezone(self.IST_TIMEZONE)
+
     def get(self,request,format=None):
         status = request.GET.get('status')
         # print(status)
@@ -37,7 +44,7 @@ class JobDetailsAdmin(APIView):
                     'id':jobs.id,
                     'job_number':jobs.job_number,
                     'Job_type':jobs.job_type,
-                    'Job_posting_date':jobs.date,
+                    'Job_posting_date':self.convert_to_ist(jobs.date),
                     'Job_booking_date':'Null',
                     'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
@@ -51,7 +58,7 @@ class JobDetailsAdmin(APIView):
                     'id':jobs.id,
                     'job_number':jobs.job_number,
                     'Job_type':jobs.job_type,
-                    'Job_posting_date':jobs.date,
+                    'Job_posting_date':self.convert_to_ist(jobs.date),
                     'Job_booking_date':'Null',
                     'Job_status':jobs.status,
                     'payment_to_service_provider':jobs.payment_your,
@@ -70,8 +77,8 @@ class JobDetailsAdmin(APIView):
                             'id':jobs.id,
                             'job_number':jobs.jobsahayak.job_number,
                             'Job_type':jobs.jobsahayak.job_type,
-                            'Job_posting_date':jobs.jobsahayak.date,
-                            'Job_booking_date':jobs.date_booked,
+                            'Job_posting_date':self.convert_to_ist(jobs.jobsahayak.date),
+                            'Job_booking_date':self.convert_to_ist(jobs.date_booked),
                             'Job_status':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
@@ -85,8 +92,8 @@ class JobDetailsAdmin(APIView):
                             'id':jobs.id,
                             'job_number':jobs.jobsahayak.job_number,
                             'Job_type':jobs.jobsahayak.job_type,
-                            'Job_posting_date':jobs.jobsahayak.date,
-                            'Job_booking_date':jobs.date_booked,
+                            'Job_posting_date':self.convert_to_ist(jobs.jobsahayak.date),
+                            'Job_booking_date':self.convert_to_ist(jobs.date_booked),
                             'Job_status':jobs.status,
                             'payment_to_service_provider':jobs.payment_your,
                             'mobile_no_for_payment':jobs.booking_user.mobile_no,
@@ -100,8 +107,8 @@ class JobDetailsAdmin(APIView):
                         'id':jobs.id,
                         'job_number':jobs.jobmachine.job_number,
                         'Job_type':jobs.jobmachine.job_type,
-                        'Job_posting_date':jobs.jobmachine.date,
-                        'Job_booking_date':jobs.date_booked,
+                        'Job_posting_date':self.convert_to_ist(jobs.jobmachine.date),
+                        'Job_booking_date':self.convert_to_ist(jobs.date_booked),
                         'Job_status':jobs.status,
                         'payment_to_service_provider':jobs.payment_your,
                         'mobile_no_for_payment':jobs.booking_user.mobile_no,
@@ -254,6 +261,11 @@ class JobDetailsAdminPanel(APIView):
 class AdminPaymentStatus(APIView):
     authentication_classes=[SessionAuthentication,]
     permission_classes=[IsAdminUser,]
+    IST_TIMEZONE = pytz.timezone('Asia/Kolkata')
+
+    def convert_to_ist(self, utc_time):
+        return utc_time.astimezone(self.IST_TIMEZONE)
+    
     def post(self,request,format=None):
         get_id=request.POST.get('id')
         # if request.user.is_superuser:
@@ -268,8 +280,8 @@ class AdminPaymentStatus(APIView):
                         grahak_mobile_no=get.jobsahayak.grahak.mobile_no,
                         job_type=get.jobsahayak.job_type,
                         job_number=get.jobsahayak.job_number,
-                        job_posting_date=get.jobsahayak.date,
-                        job_booking_date=get.date_booked,
+                        job_posting_date=self.convert_to_ist(get.jobsahayak.date),
+                        job_booking_date=self.convert_to_ist(get.date_booked),
                         job_status=get.jobsahayak.status,
                         payment_status_by_admin=get.is_admin_paid,
                         paid_to_service_provider=get.payment_your,
@@ -285,8 +297,8 @@ class AdminPaymentStatus(APIView):
                         grahak_mobile_no=get.jobmachine.grahak.mobile_no,
                         job_type=get.jobmachine.job_type,
                         job_number=get.jobmachine.job_number,
-                        job_posting_date=get.jobmachine.date,
-                        job_booking_date=get.date_booked,
+                        job_posting_date=self.convert_to_ist(get.jobmachine.date),
+                        job_booking_date=self.convert_to_ist(get.date_booked),
                         job_status=get.jobmachine.status,
                         payment_status_by_admin=get.is_admin_paid,
                         paid_to_service_provider=get.payment_your,
@@ -305,14 +317,14 @@ class AdminPaymentStatus(APIView):
 
 
 def booking_history_sahayak(request):
-    bookings = BookingHistorySahayak.objects.all()
+    bookings = BookingHistorySahayak.objects.all().order_by('-id')
     return render(request, 'booking_history.html', {'bookings': bookings})
 
 
 @staff_member_required
 def my_custom_view(request):
-    bookings=BookingHistorySahayak.objects.all()
-    bookings2=BookingHistoryMachine.objects.all()
+    bookings=BookingHistorySahayak.objects.all().order_by('-id')
+    bookings2=BookingHistoryMachine.objects.all().order_by('-id')
     return render(request, 'admin/custom_home.html', {'bookings':bookings,'bookings2':bookings2})
 
 @staff_member_required
@@ -325,7 +337,7 @@ def booking_log_history(request):
 @staff_member_required
 def custom_users_view(request):
     user_list=[]
-    users=User.objects.all()
+    users=User.objects.all().order_by('-id')
     for user in users:
         user_list.append({
             'name':user.profile.name,
