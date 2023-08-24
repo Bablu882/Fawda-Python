@@ -40,7 +40,9 @@ class JobSahayak(models.Model):
         ('Ongoing','Ongoing'),
         ('Completed','Completed'),
         ('Cancelled','Cancelled'),
-        ('Timeout','Timeout')
+        ('Timeout','Timeout'),
+        ('Cancelled-After-Payment','Cancelled-After-Payment'),
+        ('Rejected-After-Payment','Rejected-After-Payment')
     )
     JOB_TYPE_CHOICES = (
         ('theke_pe_kam', 'theke_pe_kam'),
@@ -48,7 +50,7 @@ class JobSahayak(models.Model):
     )
     grahak = models.ForeignKey(User, on_delete=models.CASCADE)
     job_type = models.CharField(max_length=20, choices=JOB_TYPE_CHOICES)
-    status=models.CharField(max_length=20,choices=STATUS_TYPE_CHOICES,default='Pending')
+    status=models.CharField(max_length=50,choices=STATUS_TYPE_CHOICES,default='Pending')
     village = models.CharField(max_length=100)
     date = models.DateTimeField(auto_now_add=True)
     datetime= models.DateTimeField() 
@@ -186,7 +188,9 @@ class JobMachine(models.Model):
         ('Ongoing','Ongoing'),
         ('Completed','Completed'),
         ('Cancelled','Cancelled'),
-        ('Timeout','Timeout')
+        ('Timeout','Timeout'),
+        ('Cancelled-After-Payment','Cancelled-After-Payment'),
+        ('Rejected-After-Payment','Rejected-After-Payment')
 
 
     )
@@ -202,7 +206,7 @@ class JobMachine(models.Model):
     description=models.TextField(null=True,blank=True)
     land_type=models.CharField(max_length=10,choices=LAND_TYPE_CHOICES)
     job_type=models.CharField(max_length=20,default='machine_malik')
-    status=models.CharField(max_length=20,choices=STATUS_TYPE_CHOICES,default='Pending')
+    status=models.CharField(max_length=50,choices=STATUS_TYPE_CHOICES,default='Pending')
     land_area=models.CharField(max_length=100,null=True,blank=True)
     total_amount=models.CharField(max_length=100, blank=True, null=True)
     fawda_fee=models.CharField(max_length=100,blank=True,null=True)

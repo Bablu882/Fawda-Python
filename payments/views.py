@@ -171,16 +171,14 @@ class TestPaymentAPIView(APIView):
 
                 if job.jobsahayak:
                     if job.jobsahayak.grahak == request.user:
-                        if not job.jobsahayak.status == 'Pending':
-                            job.jobsahayak.status = 'Booked'
-                            job.jobsahayak.save()
+                        job.jobsahayak.status = 'Booked'
+                        job.jobsahayak.save()
                     else:
                         return Response({'message': {'unauthorized grahak !'}})
                 else:
                     if job.jobmachine.grahak == request.user:
-                        if not job.jobmachine.status == 'Pending':
-                            job.jobmachine.status = 'Booked'
-                            job.jobmachine.save()
+                        job.jobmachine.status = 'Booked'
+                        job.jobmachine.save()
                     else:
                         return Response({'message': {'unauthorized grahak !'}})
 
