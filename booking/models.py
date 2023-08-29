@@ -28,6 +28,8 @@ class JobBooking(models.Model):
     date_booked = models.DateTimeField(null=True,blank=True)
     date_ongoing=models.DateTimeField(null=True,blank=True)
     date_completed=models.DateTimeField(null=True,blank=True)
+    date_cancelled=models.DateTimeField(null=True,blank=True)
+    date_cancelled_after_payment=models.DateTimeField(null=True,blank=True)
     status = models.CharField(max_length=50, choices=STATUS_TYPE_CHOICES)
     count_male=models.CharField(max_length=100,null=True,blank=True)
     count_female=models.CharField(max_length=100,null=True,blank=True)
@@ -65,6 +67,10 @@ class JobBooking(models.Model):
             self.date_ongoing = timezone.now()
         elif self.status == 'Completed':
             self.date_completed = timezone.now()
+        elif self.status == 'Cancelled':
+            self.date_cancelled = timezone.now()
+        elif self.status == 'Cancelled-After-Payment':
+            self.date_cancelled_after_payment = timezone.now()        
 
         super(JobBooking, self).save(*args, **kwargs) 
 
